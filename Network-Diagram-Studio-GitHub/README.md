@@ -54,7 +54,7 @@ copies.
 
 ## Version
 
-Network Diagram Studio v0.9.77
+Network Diagram Studio v0.9.78
 
 ## License
 

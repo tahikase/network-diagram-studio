@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const FEEDBACK = 'mailto:tahikase@microsoft.com?subject=Network%20Diagram%20Studio%20feedback';
+  const FEEDBACK = 'mailto:tahikase@microsoft.com?cc=ryujiiwasa@microsoft.com&subject=Network%20Diagram%20Studio%20feedback';
 
   // [label, title] — the bundle's own wording for both strings, so the button
   // reads exactly as the Settings entry it replaces.
