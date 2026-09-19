@@ -1,0 +1,72 @@
+NETWORK DIAGRAM STUDIO - THIRD-PARTY NOTICES
+
+Keep the accompanying license and attribution files when redistributing.
+The original application is licensed separately under the included MIT License.
+These notices do not grant trademark rights.
+
+Software license copies
+-----------------------
+License texts below are preserved from the production dependencies.
+The standalone HTML file contains the production runtime.
+
+@xyflow/react (12.11.2) - MIT
+  licenses\xyflow-react-12.11.2\LICENSE
+zustand (4.5.7) - MIT
+  licenses\zustand-4.5.7\LICENSE
+@xyflow/system (0.0.79) - MIT
+  licenses\xyflow-system-0.0.79\LICENSE
+classcat (5.0.5) - MIT
+  licenses\classcat-5.0.5\LICENSE.md
+d3-color (3.1.0) - ISC
+  licenses\d3-color-3.1.0\LICENSE
+d3-dispatch (3.0.1) - ISC
+  licenses\d3-dispatch-3.0.1\LICENSE
+d3-drag (3.0.0) - ISC
+  licenses\d3-drag-3.0.0\LICENSE
+d3-ease (3.0.1) - BSD-3-Clause
+  licenses\d3-ease-3.0.1\LICENSE
+d3-interpolate (3.0.1) - ISC
+  licenses\d3-interpolate-3.0.1\LICENSE
+d3-selection (3.0.0) - ISC
+  licenses\d3-selection-3.0.0\LICENSE
+d3-timer (3.0.1) - ISC
+  licenses\d3-timer-3.0.1\LICENSE
+d3-transition (3.0.1) - ISC
+  licenses\d3-transition-3.0.1\LICENSE
+d3-zoom (3.0.0) - ISC
+  licenses\d3-zoom-3.0.0\LICENSE
+elkjs (0.12.0) - EPL-2.0 OR GPL-3.0-or-later
+  licenses\elkjs-0.12.0\LICENSE.md
+html-to-image (1.11.13) - MIT
+  licenses\html-to-image-1.11.13\LICENSE
+react (19.2.8) - MIT
+  licenses\react-19.2.8\LICENSE
+react-dom (19.2.8) - MIT
+  licenses\react-dom-19.2.8\LICENSE
+scheduler (0.27.0) - MIT
+  licenses\scheduler-0.27.0\LICENSE
+use-sync-external-store (1.6.0) - MIT
+  licenses\use-sync-external-store-1.6.0\LICENSE
+zod (4.4.3) - MIT
+  licenses\zod-4.4.3\LICENSE
+zustand (5.0.14) - MIT
+  licenses\zustand-5.0.14\LICENSE
+
+Eclipse Layout Kernel / elkjs
+----------------------------
+The elkjs component is available under the Eclipse Public License 2.0.
+Its source code and release history are available from the upstream project:
+https://github.com/kieler/elkjs
+https://github.com/eclipse-elk/elk
+The license copy is included under licenses\elkjs-0.12.0\LICENSE.md.
+The license rights of recipients in this third-party component are unchanged.
+
+Third-party architecture artwork
+--------------------------------
+Keep licenses\vendor-artwork\ARCHITECTURE-ICON-NOTICES.txt,
+licenses\vendor-artwork\catalog.json, and the accompanying license files.
+They record artwork provenance, applicable conditions, and Kubernetes notices.
+AWS, Oracle, Kubernetes, Azure, and other product names/artwork retain their
+respective owners and usage/trademark conditions; no endorsement is implied.
+Vendor diagram-artwork permissions are not a blanket grant for standalone
+icon-library redistribution. Review the applicable terms before public release.
