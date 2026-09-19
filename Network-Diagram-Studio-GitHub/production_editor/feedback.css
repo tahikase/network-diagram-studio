@@ -1,0 +1,47 @@
+/* Match the native h-8 header controls at every UI text scale. */
+.nds-feedback-button {
+  height: calc(var(--spacing, .25rem) * 8);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border-radius: 6px;
+  border: 1px solid #bd6300;
+  background: #db7500;
+  color: #171717;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.nds-feedback-button:hover {
+  background: #ef8500;
+  border-color: #b35f00;
+}
+.nds-feedback-button:focus-visible {
+  outline: 2px solid var(--nds-accent, #0078d4);
+  outline-offset: 2px;
+}
+.nds-feedback-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+}
+.nds-feedback-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.nds-feedback-label {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+/* One entry point, not two: the Settings block that carried the same link is
+   now a duplicate of the header button. */
+div:has(> a[data-nds-feedback-link]) {
+  display: none !important;
+}

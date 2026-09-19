@@ -1,0 +1,57 @@
+.nds-connector-controls {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 8px;
+  color: var(--color-slate-700);
+  background: var(--nds-panel);
+}
+.nds-connector-caption {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.nds-connector-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.nds-connector-options button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 5px;
+  min-height: 32px;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 5px;
+  background: var(--nds-panel);
+  color: var(--color-slate-700);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.nds-connector-options button[aria-pressed="true"] {
+  background: var(--nds-accent, #0078d4);
+  color: white;
+  border-color: var(--nds-accent, #0078d4);
+}
+.nds-connector-options button:focus-visible {
+  outline: 2px solid var(--nds-accent, #0078d4);
+  outline-offset: 2px;
+}
+.nds-connector-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-slate-500);
+}
+
+/* Shape drags capture the pointer in a sibling overlay, outside RF's connecting state. */
+[data-nds-fullscreen-target]:has([data-nds-connect-preview="1"]) .nds-connect-handle {
+  opacity: 1;
+  transform: var(--nds-handle-shift) scale(1);
+}

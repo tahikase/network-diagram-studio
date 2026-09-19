@@ -1,0 +1,119 @@
+[data-nds-notes-panel],
+[data-nds-notes-rail] {
+  right: var(--nds-notes-right, 16px) !important;
+  bottom: var(--nds-notes-bottom, 80px) !important;
+  box-sizing: border-box;
+}
+/* The native rail's blue utility colors are light-only. */
+html[data-theme="dark"] [data-nds-notes-rail] {
+  background-color: var(--nds-panel);
+  border-color: var(--nds-border);
+  color: var(--nds-accent-text);
+}
+html[data-theme="dark"] [data-nds-notes-rail]:hover {
+  background-color: var(--nds-panel-raised);
+  border-color: var(--nds-accent-text);
+}
+html[data-theme="dark"] [data-nds-notes-rail]:focus-visible {
+  outline: 2px solid var(--nds-accent-text);
+  outline-offset: 3px;
+}
+html[data-theme="dark"] [data-nds-notes-rail] [data-nds-notes-tab-label] {
+  color: inherit;
+}
+html[data-theme="dark"] [data-nds-notes-rail] [data-nds-notes-dot] {
+  --nds-accent: var(--nds-accent-text);
+}
+/* The band the closed NOTES pill occupies: its offset, its 44px height, and a
+   12px gap. The selected-node inspector reserves this so its own controls can
+   never end up underneath the pill. */
+:root {
+  --nds-notes-clearance: calc(var(--nds-notes-bottom, 80px) + 56px);
+}
+/* The inspector describes the selected node, so it has to end with its own last
+   control. Stretched to the bottom of the window it ran on underneath the
+   floating NOTES pill, and the pill then read as part of the pane instead of as
+   something sitting on the diagram. height:auto ends the white column right
+   after Delete node; max-height keeps a long inspector scrolling above the pill
+   rather than underneath it, which is the clearance the reserved bottom border
+   used to provide. !important because the utility class sets height:100% and
+   the element carries an inline border-color. */
+aside.nds-scroll {
+  align-self: flex-start !important;
+  height: auto !important;
+  max-height: calc(100% - var(--nds-notes-clearance)) !important;
+  border-bottom: 0 !important;
+}
+/* The strip the shortened pane no longer covers belongs to the diagram, so the
+   NOTES pill sits on the canvas colour instead of on a white column. */
+:where(div):has(> aside.nds-scroll) {
+  background-color: var(--nds-bg, #f8fafc);
+}
+[data-nds-notes-background] {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+[data-nds-notes-panel] {
+  width: var(--nds-notes-width, min(560px, calc(100vw - 32px))) !important;
+  max-height: var(--nds-notes-max-height, calc(100vh - 200px)) !important;
+}
+[data-nds-notes-panel][data-nds-notes-short] {
+  overflow-y: auto !important;
+}
+[data-nds-notes-short] [data-nds-notes-input] {
+  min-height: 100px;
+  flex-shrink: 0;
+}
+[data-nds-notes-rail][data-nds-notes-no-room] {
+  max-height: var(--nds-notes-max-height);
+  overflow: hidden;
+}
+[data-nds-notes-panel][data-nds-notes-no-room],
+[data-nds-notes-rail][data-nds-notes-no-room] {
+  visibility: hidden !important;
+}
+[data-nds-notes-width-resize] {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 0;
+  width: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  border-radius: 0 0 0 9px;
+  background: transparent;
+}
+/* At rest the handle paints nothing. A permanent tint plus a permanent grip
+   read as a stray shadow down the left edge of the notes, not as a control. */
+[data-nds-notes-width-resize] > span {
+  width: 4px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--color-slate-400);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+[data-nds-notes-width-resize]:hover > span,
+[data-nds-notes-width-resize]:focus-visible > span,
+[data-nds-notes-width-resize]:active > span {
+  opacity: 1;
+}
+/* The grip alone is the affordance, exactly as on the height handle at the top
+   edge. Tinting the whole strip painted a blue transparent line down the left
+   side of the notes that read as a rendering fault, not as a control. */
+[data-nds-notes-width-resize]:focus-visible,
+[data-nds-notes-resize]:focus-visible {
+  outline: 2px solid var(--nds-accent, #0078d4);
+  outline-offset: -2px;
+}
+@media print {
+  [data-nds-notes-width-resize],
+  [data-nds-notes-resize] { visibility: hidden !important; }
+}

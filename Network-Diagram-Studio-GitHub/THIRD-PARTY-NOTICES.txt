@@ -7,7 +7,7 @@ These notices do not grant trademark rights.
 Software license copies
 -----------------------
 License texts below are preserved from the production dependencies.
-The standalone HTML file contains the production runtime.
+The HTML file and production asset folders contain the production runtime.
 
 @xyflow/react (12.11.2) - MIT
   licenses\xyflow-react-12.11.2\LICENSE
@@ -63,8 +63,9 @@ The license rights of recipients in this third-party component are unchanged.
 
 Third-party architecture artwork
 --------------------------------
-Keep licenses\vendor-artwork\ARCHITECTURE-ICON-NOTICES.txt,
-licenses\vendor-artwork\catalog.json, and the accompanying license files.
+Keep production_vendor\README.txt, production_vendor\catalog.json,
+licenses\vendor-artwork\ARCHITECTURE-ICON-NOTICES.txt, and the accompanying
+license files.
 They record artwork provenance, applicable conditions, and Kubernetes notices.
 AWS, Oracle, Kubernetes, Azure, and other product names/artwork retain their
 respective owners and usage/trademark conditions; no endorsement is implied.

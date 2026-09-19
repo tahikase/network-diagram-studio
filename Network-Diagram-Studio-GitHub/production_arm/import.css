@@ -1,0 +1,115 @@
+#nds-arm-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+#nds-arm-open:focus-visible, #nds-arm-dialog :focus-visible {
+  outline: 3px solid var(--nds-accent-text, #0078d4);
+  outline-offset: 3px;
+}
+#nds-arm-open .nds-arm-short { display: none; }
+@media (max-width: 1439px) {
+  #nds-arm-open .nds-arm-long { display: none; }
+  #nds-arm-open .nds-arm-short { display: inline; }
+}
+@media (max-width: 1100px) {
+  #nds-arm-open { position: sticky; left: 0; z-index: 1; align-self: center; }
+  #nds-arm-open .nds-arm-long { display: inline; }
+  #nds-arm-open .nds-arm-short { display: none; }
+}
+#nds-arm-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(620px, calc(100vw - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  border: 1px solid var(--nds-border, #d7e1ee);
+  border-radius: 16px;
+  padding: 24px;
+  color: var(--nds-text, #172033);
+  background: var(--nds-panel, #fff);
+  box-shadow: 0 24px 80px #02061755;
+  font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+}
+#nds-arm-dialog::backdrop { background: #0b1220b8; backdrop-filter: blur(4px); }
+#nds-arm-dialog *, #nds-arm-open { box-sizing: border-box; }
+#nds-arm-dialog [hidden] { display: none !important; }
+#nds-arm-dialog h2 { margin: 0 30px 8px 0; font-size: 22px; font-weight: 650; }
+#nds-arm-dialog h3 { margin: 12px 0 4px; font-size: 15px; font-weight: 650; }
+#nds-arm-dialog p { margin: 8px 0; }
+#nds-arm-dialog label { display: block; margin: 16px 0 5px; font-weight: 600; }
+#nds-arm-dialog input[type="text"] {
+  width: 100%;
+  height: 38px;
+  padding: 6px 10px;
+  color: inherit;
+  background: inherit;
+  border: 1px solid var(--nds-border, #cbd5e1);
+  border-radius: 7px;
+  font: inherit;
+}
+#nds-arm-dialog button {
+  min-height: 36px;
+  padding: 7px 12px;
+  color: inherit;
+  background: var(--nds-panel, #fff);
+  border: 1px solid var(--nds-border, #cbd5e1);
+  border-radius: 7px;
+  font: 600 13px "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+#nds-arm-dialog button:disabled { opacity: .55; cursor: default; }
+#nds-arm-dialog .nds-arm-primary { background: var(--nds-accent, #0078d4); border-color: var(--nds-accent, #0078d4); color: #fff; }
+#nds-arm-dialog .nds-arm-muted { color: var(--nds-text-muted, #64748b); font-size: 12px; }
+#nds-arm-dialog .nds-arm-export {
+  padding: 10px 12px;
+  margin: 14px 0;
+  background: var(--nds-accent-soft, #0078d414);
+  border-inline-start: 3px solid var(--nds-accent, #0078d4);
+  border-radius: 8px;
+  font-size: 13px;
+}
+#nds-arm-dialog .nds-arm-export-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--nds-accent-text, #0078d4);
+}
+#nds-arm-dialog .nds-arm-export-list {
+  margin: 0;
+  padding-inline-start: 22px;
+  list-style: decimal outside;
+}
+#nds-arm-dialog .nds-arm-export-list li { margin: 3px 0; }
+#nds-arm-dialog .nds-arm-export-list li::marker { font-weight: 600; color: var(--nds-accent-text, #0078d4); }
+#nds-arm-dialog #nds-arm-choose { color: var(--nds-accent-text, #0078d4); }
+#nds-arm-dialog input[aria-invalid="true"] { border-color: #dc2626; }
+#nds-arm-group-error { color: #b91c1c; font-size: 13px; }
+html[data-theme="dark"] #nds-arm-group-error { color: #fca5a5; }
+#nds-arm-dialog .nds-arm-file { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+#nds-arm-filename { overflow-wrap: anywhere; flex: 1; min-width: 0; font-size: 13px; }
+#nds-arm-dialog .nds-arm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+#nds-arm-progress { display: flex; align-items: center; gap: 20px; padding: 22px 0; }
+#nds-arm-progress > div:first-child { width: 100px; height: 100px; position: relative; flex-shrink: 0; }
+#nds-arm-progress > div:last-child { min-width: 0; overflow-wrap: anywhere; }
+#nds-arm-progress svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+#nds-arm-progress circle { fill: none; stroke-width: 7; }
+#nds-arm-progress circle:first-child { stroke: var(--nds-border, #e2e8f0); }
+#nds-arm-ring { stroke: var(--nds-accent, #0078d4); stroke-linecap: round; stroke-dasharray: 264; stroke-dashoffset: 264; }
+#nds-arm-percent { position: absolute; inset: 0; display: grid; place-items: center; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+#nds-arm-stage { font-size: 16px; font-weight: 600; }
+#nds-arm-error { padding: 12px; border: 1px solid #dc2626; border-radius: 8px; overflow-wrap: anywhere; }
+#nds-arm-report { padding: 12px 14px; background: var(--nds-panel-raised, #f1f5f9); border-radius: 10px; }
+#nds-arm-report details { margin-top: 12px; }
+#nds-arm-report summary { cursor: pointer; font-weight: 600; }
+#nds-arm-report ul { padding-left: 20px; max-height: 220px; overflow: auto; font-size: 12px; }
+#nds-arm-report li { margin: 5px 0; overflow-wrap: anywhere; }
+#nds-arm-dialog .nds-arm-report-counts { font-size: 15px; font-weight: 600; }
+html[data-theme="dark"] #nds-arm-dialog .nds-arm-muted { color: #b6c5d8; }
+@media (max-width: 550px) {
+  #nds-arm-dialog { padding: 18px; }
+  #nds-arm-dialog h2 { font-size: 19px; }
+}

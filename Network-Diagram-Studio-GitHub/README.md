@@ -11,7 +11,7 @@ editing, exporting, and sharing network diagrams.
    desktop version of Microsoft Edge or Google Chrome.
 
 No installation, administrator access, Node.js, npm, local server, or sign-in is
-required. The application is contained in `index.html` and works offline.
+required. The application and its four production asset folders work offline.
 External documentation and email feedback actions require internet access.
 
 ## Optional Windows shortcut
@@ -35,6 +35,10 @@ before sharing them.
 ```text
 index.html
 Network Diagram Studio.bat
+production_arm\
+production_demo\
+production_editor\
+production_vendor\
 desktop\
 licenses\
 LICENSE
@@ -43,12 +47,14 @@ README.txt
 THIRD-PARTY-NOTICES.txt
 ```
 
-`index.html` is a standalone production build. Keep the license and notice files
-with redistributed copies.
+Keep `index.html` and all four `production_*` folders together. They provide ARM
+import, the walkthrough, editor controls, connector routing, screenshots, and
+the vendor icon catalog. Keep the license and notice files with redistributed
+copies.
 
 ## Version
 
-Network Diagram Studio v0.9.76
+Network Diagram Studio v0.9.77
 
 ## License
 

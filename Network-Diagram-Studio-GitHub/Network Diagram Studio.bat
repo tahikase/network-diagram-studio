@@ -12,6 +12,17 @@ if not exist "%APPFILE%" (
     exit /b 1
 )
 
+for %%D in (production_arm production_demo production_editor production_vendor) do (
+    if not exist "%~dp0%%D\" (
+        echo.
+        echo   ERROR: the required %%D folder is missing.
+        echo   Extract the complete Network Diagram Studio package and try again.
+        echo.
+        pause
+        exit /b 1
+    )
+)
+
 set "APPURL=file:///%APPFILE:\=/%"
 set "PF=%ProgramFiles%"
 set "PF86=%ProgramFiles(x86)%"
