@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const FEEDBACK = 'mailto:tahikase@microsoft.com?cc=ryujiiwasa@microsoft.com&subject=Network%20Diagram%20Studio%20feedback';
+  const FEEDBACK = 'https://app.formbricks.com/s/cmu8u4tmzr12h01uy57c0pihk';
 
   // [label, title] — the bundle's own wording for both strings, so the button
   // reads exactly as the Settings entry it replaces.
@@ -54,7 +54,7 @@
 
     button.append(icon, label);
     button.addEventListener('click', () => {
-      window.location.href = FEEDBACK;
+      window.open(FEEDBACK, '_blank', 'noopener,noreferrer');
     });
     paint();
   }
@@ -92,7 +92,7 @@
 
   window.ndsFeedback = {
     url: FEEDBACK,
-    open: () => { window.location.href = FEEDBACK; },
+    open: () => window.open(FEEDBACK, '_blank', 'noopener,noreferrer'),
     button: () => button
   };
 

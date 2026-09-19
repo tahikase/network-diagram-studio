@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.78
+NETWORK DIAGRAM STUDIO v0.9.79
 ================================
 
 HOW TO RUN
