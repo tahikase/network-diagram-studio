@@ -611,12 +611,13 @@
     }
     const narrow = matchMedia('(max-width: 1100px)').matches;
     const load = Array.from(document.querySelectorAll('header button')).find((b) => b.textContent.includes('JSON'));
+    const save = Array.from(document.querySelectorAll('header button')).find((b) => b !== load && b.textContent.includes('JSON'));
     // Reuse the shipped toolbar classes, including rem-based sizing and theme.
     if (load && opener.className !== load.className) opener.className = load.className;
     const anchor = narrow
       ? document.querySelector('[data-nds-tabbar="1"]')
-      : load;
-    if (anchor && opener.parentElement !== (narrow ? anchor : anchor.parentElement)) {
+      : save;
+    if (anchor && (narrow ? opener.parentElement !== anchor : opener.previousElementSibling !== anchor)) {
       if (narrow) anchor.prepend(opener);
       else anchor.after(opener);
     }

@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.79
+NETWORK DIAGRAM STUDIO v0.9.107
 ================================
 
 HOW TO RUN
@@ -25,8 +25,30 @@ Save JSON preserves the editable diagram, Notes, comments, and images.
 Load JSON opens a saved diagram. PNG and SVG export static images.
 
 Browser auto-save stays in the current browser profile and computer.
+Import SVG/PNG icons or a folder; back up and restore the library from its menu.
+Save JSON embeds icons used by the diagram. Drag palette section headers to
+reorder them; the browser remembers that order.
+Imported resources and nested containers can be dragged beyond group borders
+without changing their group membership.
+Only import and share images you have the legal right to use. This reminder
+appears as a warning before importing selected SVG/PNG files or a folder.
+Choose Import icons / Import ready icons to continue, or Cancel to leave the
+library unchanged. The palette footer does not show this message.
 Review diagrams, screenshots, Notes, and JSON files for sensitive information
 before sharing them.
+
+
+THREE-MINUTE DEMO
+-----------------
+Open Settings > Demo video for the current UI walkthrough. It covers palette
+icons and shapes, importing icons or a folder, drawing VNet peering, Notes and a
+colleague's JSON/comment handoff, local ARM import, PNG/SVG exports, screenshots,
+Appearance, keyboard shortcuts and Guide.
+
+The 3:00 video includes English narration, optional captions, 12 chapters and
+a matching transcript, all available offline. The colleague review is a
+simulated file handoff, not live collaboration; names are self-declared.
+The synthetic examples do not deploy or change Azure resources.
 
 
 PACKAGE CONTENTS

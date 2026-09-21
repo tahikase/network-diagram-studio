@@ -7,16 +7,21 @@
   }
   const scale = (factor, textScale) => factor / 1.3 *
     (Number.isFinite(textScale) ? Math.max(.5, Math.min(3, textScale)) : 1);
-  function minimumWidth(factor, textScale) {
-    // Keep the original 60px text column in proportion to the 44px icon.
-    return Math.max(140, Math.ceil(36 + 104 * scale(factor, textScale)));
+  const baseIconSize = value => Number.isFinite(value) ? Math.max(16, Math.min(256, value)) : 56;
+  function showTypeCaption(data, fallback) {
+    const normalize = value => String(value ?? '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+    const caption = normalize(data.typeCaption ?? data.typeLabel ?? fallback);
+    return caption !== '' && caption !== normalize(data.name);
   }
-  function variables(factor, textScale) {
+  function minimumWidth(factor, textScale, iconSize) {
+    return Math.max(140, Math.ceil(24 + Math.max(112, baseIconSize(iconSize)) * scale(factor, textScale)));
+  }
+  function variables(factor, textScale, iconSize) {
     const size = scale(factor, textScale);
     return {
       '--nds-d-text': size,
-      '--nds-d-icon': 44 * size + 'px',
-      '--nds-d-glyph': 40 * size + 'px'
+      '--nds-d-icon': baseIconSize(iconSize) * size + 'px',
+      '--nds-d-glyph': baseIconSize(iconSize) * size + 'px'
     };
   }
   function fieldsOf(node, resourceType, customLabel) {
@@ -37,17 +42,18 @@
   }
   function footprint(node, factor, boxWidth, resourceType, customLabel) {
     const data = node.data;
-    const caption = data.typeCaption ?? data.typeLabel ?? resourceType(node.type).label;
+    const fallback = resourceType(node.type).label;
+    const caption = showTypeCaption(data, fallback) ? data.typeCaption ?? data.typeLabel ?? fallback : '';
     const fields = fieldsOf(node, resourceType, customLabel);
     const font = getComputedStyle(document.body).fontFamily;
-    const key = JSON.stringify([factor, boxWidth, font, caption, data.name, data.subtitle, fields, data.notes, data.textScale]);
+    const key = JSON.stringify([factor, boxWidth, font, caption, data.name, data.subtitle, fields, data.notes, data.textScale, data.iconSize]);
     if (cache.has(key)) return { ...cache.get(key) };
     const card = element('div', 'nds-leaf-row border flex flex-col');
     Object.assign(card.style, {
       position: 'fixed', left: '0', top: '0', visibility: 'hidden',
       pointerEvents: 'none', fontFamily: font, boxSizing: 'border-box'
     });
-    for (const [key, value] of Object.entries(variables(factor, data.textScale))) card.style.setProperty(key, value);
+    for (const [key, value] of Object.entries(variables(factor, data.textScale, data.iconSize))) card.style.setProperty(key, value);
     card.setAttribute('aria-hidden', 'true');
     const content = element('div', 'flex-1', undefined, card);
     element('div', 'rounded-full', undefined, content);
@@ -77,13 +83,14 @@
       card.style.width = 'max-content';
       identity.style.width = 'max-content';
       const identityWidth = identity.getBoundingClientRect().width;
-      width = Math.ceil(Math.min(480 * factor / 1.3, Math.max(
-        fields.length || data.notes?.trim() ? 280 : 140,
-        identityWidth + 22 + 14 + 44 * scale(factor, data.textScale)
+      const detailed = fields.length || data.notes?.trim();
+      width = Math.ceil(Math.min((detailed ? 480 : 280) * factor / 1.3, Math.max(
+        detailed ? 280 : 140,
+        identityWidth + 22
       )));
       identity.style.removeProperty('width');
     }
-    width = Math.max(minimumWidth(factor, data.textScale), width);
+    width = Math.max(minimumWidth(factor, data.textScale, data.iconSize), width);
     card.style.width = width + 'px';
     const height = Math.ceil(content.getBoundingClientRect().height + 2) + 4;
     card.remove();
@@ -137,7 +144,10 @@
       if (parents.has(node.id) || resourceType(node.type).isGroup || (loaded && !node.size)) return node;
       if (old && old.data === node.data && old.type === node.type && sameSize(old.size, node.size)) return node;
       const size = growNode(node, factor, resourceType, customLabel);
-      if (!old || !sameSize(old.size, size)) changed.add(node.id);
+      // Restoring an unchanged card must not grow its group around an
+      // intentionally out-of-frame position.
+      const previousSize = old?.size ?? (loaded ? node.size : undefined);
+      if (!sameSize(previousSize, size)) changed.add(node.id);
       return sameSize(size, node.size) ? node : { ...node, size };
     });
     const fitted = contain(nodes, changed);
@@ -162,5 +172,5 @@
     if (source === clone || clone.isConnected) throw new Error('Appearance export requires a detached clone.');
     clone.style.setProperty('display', 'none', 'important');
   }
-  window.ndsLeafAppearance = Object.freeze({ isContainer, variables, minimumWidth, footprint, growNode, fitChanges, resize, prepareExport });
+  window.ndsLeafAppearance = Object.freeze({ isContainer, showTypeCaption, variables, minimumWidth, footprint, growNode, fitChanges, resize, prepareExport });
 })();
