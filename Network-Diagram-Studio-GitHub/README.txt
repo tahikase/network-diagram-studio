@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.107
+NETWORK DIAGRAM STUDIO v0.9.109
 ================================
 
 HOW TO RUN
@@ -11,6 +11,8 @@ Microsoft Edge or Google Chrome.
 
 No installation, administrator access, Node.js, npm, local server, or sign-in
 is required. The application and its production asset folders work offline.
+Feedback opens Microsoft Forms in a separate tab and requires internet access.
+Form access depends on its sharing settings.
 
 
 OPTIONAL WINDOWS SHORTCUT
@@ -30,6 +32,7 @@ Save JSON embeds icons used by the diagram. Drag palette section headers to
 reorder them; the browser remembers that order.
 Imported resources and nested containers can be dragged beyond group borders
 without changing their group membership.
+Connectors inside imported groups can be selected and edited directly.
 Only import and share images you have the legal right to use. This reminder
 appears as a warning before importing selected SVG/PNG files or a folder.
 Choose Import icons / Import ready icons to continue, or Cancel to leave the

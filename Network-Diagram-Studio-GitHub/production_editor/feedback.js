@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const FEEDBACK = 'https://app.formbricks.com/s/cmu8u4tmzr12h01uy57c0pihk';
+  const FEEDBACK = 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR2VJmW1D0XZAg4tjAfjgezRUNE45SUdSRFFJS0VRWjQyWjk5RzAxMFBDRy4u';
 
   // [label, title] — the bundle's own wording for both strings, so the button
   // reads exactly as the Settings entry it replaces.

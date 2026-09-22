@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 
-rem Network Diagram Studio - production release v0.9.107
+rem Network Diagram Studio - production release v0.9.109
 rem Extract the complete package. Save JSON before replacing an older release.
 set "APPFILE=%~dp0index.html"
 

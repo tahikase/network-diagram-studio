@@ -13,6 +13,8 @@ editing, exporting, and sharing network diagrams.
 No installation, administrator access, Node.js, npm, local server, or sign-in is
 required. The application and its four production asset folders work offline.
 External documentation and the feedback form require internet access.
+Feedback opens Microsoft Forms in a separate tab; access depends on the form's
+sharing settings.
 
 ## Optional Windows shortcut
 
@@ -31,6 +33,7 @@ is moved later, run the shortcut creator again.
 - Drag palette section headers to reorder them; the browser remembers the order.
 - Imported resources and nested containers can be dragged beyond group borders
   without changing their group membership.
+- Connectors inside imported groups can be selected and edited directly.
 
 Only import and share images you have the legal right to use. This reminder
 appears as a warning before importing selected SVG/PNG files or a folder.
@@ -76,7 +79,7 @@ copies.
 
 ## Version
 
-Network Diagram Studio v0.9.107
+Network Diagram Studio v0.9.109
 
 ## License
 
