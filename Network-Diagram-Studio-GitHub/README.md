@@ -34,6 +34,8 @@ is moved later, run the shortcut creator again.
 - Imported resources and nested containers can be dragged beyond group borders
   without changing their group membership.
 - Connectors inside imported groups can be selected and edited directly.
+- Overlapping transparent cards do not block another resource's visible icon
+  or name, regardless of the order in which resources were added.
 
 Only import and share images you have the legal right to use. This reminder
 appears as a warning before importing selected SVG/PNG files or a folder.
@@ -79,7 +81,7 @@ copies.
 
 ## Version
 
-Network Diagram Studio v0.9.109
+Network Diagram Studio v0.9.110
 
 ## License
 

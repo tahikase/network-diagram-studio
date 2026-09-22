@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.109
+NETWORK DIAGRAM STUDIO v0.9.110
 ================================
 
 HOW TO RUN
@@ -33,6 +33,8 @@ reorder them; the browser remembers that order.
 Imported resources and nested containers can be dragged beyond group borders
 without changing their group membership.
 Connectors inside imported groups can be selected and edited directly.
+Overlapping transparent cards do not block another resource's visible icon
+or name, regardless of the order in which resources were added.
 Only import and share images you have the legal right to use. This reminder
 appears as a warning before importing selected SVG/PNG files or a folder.
 Choose Import icons / Import ready icons to continue, or Cancel to leave the
