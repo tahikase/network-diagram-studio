@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.110
+NETWORK DIAGRAM STUDIO v0.9.111
 ================================
 
 HOW TO RUN
@@ -25,6 +25,8 @@ SAVING AND SHARING
 ------------------
 Save JSON preserves the editable diagram, Notes, comments, and images.
 Load JSON opens a saved diagram. PNG and SVG export static images.
+Screenshot captures resources, connectors, Shapes and pencil strokes in the
+selected area, using the current zoom and theme.
 
 Browser auto-save stays in the current browser profile and computer.
 Import SVG/PNG icons or a folder; back up and restore the library from its menu.

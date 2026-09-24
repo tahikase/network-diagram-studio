@@ -27,6 +27,8 @@ is moved later, run the shortcut creator again.
 - **Save JSON** preserves the editable diagram, Notes, comments, and images.
 - **Load JSON** opens a saved diagram.
 - **PNG** and **SVG** export static images.
+- **Screenshot** captures resources, connectors, Shapes and pencil strokes in
+  the selected area, using the current zoom and theme.
 - Browser auto-save is local to the current browser profile and computer.
 - Import SVG/PNG icons or an icon folder; library backup/restore is available.
   Save JSON embeds artwork used in the diagram for sharing.
@@ -81,7 +83,7 @@ copies.
 
 ## Version
 
-Network Diagram Studio v0.9.110
+Network Diagram Studio v0.9.111
 
 ## License
 
