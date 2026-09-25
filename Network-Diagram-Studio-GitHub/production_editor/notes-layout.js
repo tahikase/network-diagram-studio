@@ -283,7 +283,10 @@
 
   window.ndsNotesLayout = Object.freeze({ widthHandleProps, heightHandleProps, prepareExport });
   function init() {
-    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(records => {
+      const drawing = '.react-flow__viewport, [data-nds-shape-overlay], [data-nds-annotation-overlay]';
+      if (records.some(record => !(record.target instanceof Element) || !record.target.closest(drawing))) schedule();
+    }).observe(document.body, { childList: true, subtree: true });
     new MutationObserver(schedule).observe(document.documentElement, { attributes: true });
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule);
     window.addEventListener('resize', schedule);

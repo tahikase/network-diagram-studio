@@ -682,8 +682,12 @@
     dialog.addEventListener('keyup', (event) => event.stopPropagation());
     updateLanguage();
     attach();
-    const observer = new MutationObserver(() => {
-      if (dialog.isConnected) { attach(); return; }
+    const observer = new MutationObserver(records => {
+      if (dialog.isConnected) {
+        if (!opener.isConnected || !langStore || records.some(record =>
+          record.target instanceof Element && record.target.closest('header, [data-nds-tabbar]'))) attach();
+        return;
+      }
       cancelOperation();
       observer.disconnect();
       unsubscribeLanguage?.();

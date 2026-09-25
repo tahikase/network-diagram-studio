@@ -1,4 +1,4 @@
-NETWORK DIAGRAM STUDIO v0.9.111
+NETWORK DIAGRAM STUDIO v0.9.117
 ================================
 
 HOW TO RUN
@@ -23,15 +23,29 @@ If you move the extracted folder later, run the shortcut creator again.
 
 SAVING AND SHARING
 ------------------
-Save JSON preserves the editable diagram, Notes, comments, and images.
+Save JSON preserves the current tab's editable diagram, Notes, comments, and
+images. It does not save the complete tab strip.
 Load JSON opens a saved diagram. PNG and SVG export static images.
 Screenshot captures resources, connectors, Shapes and pencil strokes in the
 selected area, using the current zoom and theme.
+Hand panning and object dragging avoid unnecessary redraws and toolbar layout
+work without flattening the artwork or changing the editable objects.
+Fullscreen, the drawing toolbar, the tab strip/New tab and the closed Notes
+button use 55%-transparent backgrounds. Text, icons and selected tools stay
+solid. Light/dark themes, hover and keyboard focus are preserved. Reduced
+transparency or forced-color preferences use opaque surfaces instead.
 
 Browser auto-save stays in the current browser profile and computer.
 Import SVG/PNG icons or a folder; back up and restore the library from its menu.
 Save JSON embeds icons used by the diagram. Drag palette section headers to
 reorder them; the browser remembers that order.
+All Icons scrolls with the palette, without a height-capped inner list or unused
+space below it. Search and category headers stay visible while scrolling
+through the catalog. The separate icon picker keeps its own bounded scroll area.
+Drag diagram tabs, including Overview, to reorder them. The blue insertion line
+shows the destination; dragging at either edge scrolls the strip. Alternatively,
+focus a tab and press Alt+Left/Right. Escape cancels a drag. Browser auto-save
+remembers the order without changing the active diagram or its view.
 Imported resources and nested containers can be dragged beyond group borders
 without changing their group membership.
 Connectors inside imported groups can be selected and edited directly.
@@ -58,6 +72,22 @@ simulated file handoff, not live collaboration; names are self-declared.
 The synthetic examples do not deploy or change Azure resources.
 
 
+WHAT'S NEW
+----------
+Click What's new beside the palette version, or open Settings > What's new.
+The smaller centered window lists releases newest first, with dates, short
+descriptions and before/after images. Scroll, choose a version or enlarge an
+image. The same style is used for every release.
+
+History and images are included offline. Text follows the selected language;
+screenshot labels retain their captured language. A quiet New badge marks an
+unseen version. The window does not open automatically while you draw, and
+viewing history never changes the diagram.
+The Settings panel stays inside the drawing area, below the top toolbar and
+above the diagram tabs. It adapts to window and side-panel resizing, with
+internal scrolling and a visible heading and version.
+
+
 PACKAGE CONTENTS
 ----------------
 index.html
@@ -71,6 +101,7 @@ licenses\
 LICENSE
 README.md
 README.txt
+AGENTS.md
 THIRD-PARTY-NOTICES.txt
 
 Keep index.html and all four production_* folders together. They provide ARM

@@ -213,7 +213,9 @@
 
   window.ndsTextDock = { createText };
   function start() {
-    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(records => {
+      if (!toolbar?.isConnected || records.some(record => toolbar.contains(record.target))) schedule();
+    }).observe(document.body, { childList: true, subtree: true });
     new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     document.addEventListener('fullscreenchange', schedule);
     window.addEventListener('resize', schedule);

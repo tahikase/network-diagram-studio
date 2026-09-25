@@ -51,7 +51,7 @@
 }
 
 /* Shape drags capture the pointer in a sibling overlay, outside RF's connecting state. */
-[data-nds-fullscreen-target]:has([data-nds-connect-preview="1"]) .nds-connect-handle {
+[data-nds-fullscreen-target][data-nds-shape-connecting="1"] .nds-connect-handle {
   opacity: 1;
   transform: var(--nds-handle-shift) scale(1);
 }
