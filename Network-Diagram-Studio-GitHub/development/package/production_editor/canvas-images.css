@@ -1,0 +1,40 @@
+[data-nds-canvas-image-message] {
+  position: fixed;
+  left: 50%;
+  bottom: 58px;
+  transform: translateX(-50%);
+  z-index: 10000;
+  width: max-content;
+  max-width: min(680px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #172554;
+  box-shadow: 0 4px 20px #0002;
+  font: 14px/1.4 system-ui, sans-serif;
+}
+[data-nds-canvas-image-message][data-error="true"] {
+  border-color: #dc2626;
+  background: #fff1f2;
+  color: #881337;
+}
+[data-nds-canvas-image-message] button {
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+[data-nds-canvas-image-message] button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+[data-nds-canvas-image] + text {
+  display: none;
+}

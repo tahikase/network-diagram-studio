@@ -1,0 +1,24 @@
+/* Undo and Redo in the header are wired to the diagram store alone, so a pencil
+   stroke, an eraser pass or a shape left both buttons greyed out even though the
+   action is perfectly undoable. history.js re-enables the real button; these
+   rules restore the enabled skin the bundle only paints when the diagram store
+   itself has history. The values are the bundle's own enabled classes
+   (text-slate-700 border-slate-300 bg-white hover:bg-slate-100), so an enabled
+   button looks identical whichever store the next step belongs to. */
+[data-nds-history-live='1'] {
+  color: var(--color-slate-700, #334155) !important;
+  background-color: #fff !important;
+  border-color: var(--color-slate-300, #cbd5e1) !important;
+  cursor: pointer !important;
+}
+[data-nds-history-live='1']:hover {
+  background-color: var(--color-slate-100, #f1f5f9) !important;
+}
+html[data-theme='dark'] [data-nds-history-live='1'] {
+  color: var(--color-slate-200, #e2e8f0) !important;
+  background-color: var(--color-slate-800, #1e293b) !important;
+  border-color: var(--color-slate-600, #475569) !important;
+}
+html[data-theme='dark'] [data-nds-history-live='1']:hover {
+  background-color: var(--color-slate-700, #334155) !important;
+}

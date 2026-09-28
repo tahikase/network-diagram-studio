@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "All Icons fills the available palette space.": {
+    "ja": "すべてのアイコンがパレットの空き領域を活用します。",
+    "zh": "所有图标充分利用调色板空间。",
+    "es": "La sección Todos los iconos aprovecha el espacio de la paleta.",
+    "pt": "A seção Todos os ícones ocupa o espaço disponível da paleta.",
+    "fr": "La section Toutes les icônes utilise l'espace disponible de la palette.",
+    "de": "Der Bereich Alle Symbole nutzt den verfügbaren Platz in der Palette.",
+    "ko": "모든 아이콘이 팔레트의 사용 가능한 공간을 채웁니다."
+  },
+  "Removed the height cap that left a blank gap below All Icons. The icon catalog now scrolls with the palette, while search and category headers remain visible.": {
+    "ja": "すべてのアイコンの下に余白を生じさせていた高さ制限を削除しました。アイコン一覧はパレットと一緒にスクロールし、検索欄とカテゴリ見出しは表示されたままです。",
+    "zh": "移除了在所有图标下方留下空白的高度限制。图标目录现在随调色板滚动，搜索框和类别标题保持可见。",
+    "es": "Se eliminó el límite de altura que dejaba un hueco bajo Todos los iconos. El catálogo se desplaza con la paleta y mantiene visibles la búsqueda y los encabezados de categoría.",
+    "pt": "Removemos o limite de altura que deixava um espaço vazio abaixo de Todos os ícones. O catálogo rola com a paleta, mantendo a busca e os títulos das categorias visíveis.",
+    "fr": "La limite de hauteur laissant un vide sous Toutes les icônes a été supprimée. Le catalogue défile avec la palette, tout en gardant la recherche et les titres de catégorie visibles.",
+    "de": "Die Höhenbegrenzung mit dem Leerraum unter Alle Symbole wurde entfernt. Der Katalog scrollt mit der Palette; Suche und Kategorieüberschriften bleiben sichtbar.",
+    "ko": "모든 아이콘 아래에 빈 공간을 만들던 높이 제한을 제거했습니다. 검색창과 범주 제목은 표시된 상태로 유지되며 아이콘 목록이 팔레트와 함께 스크롤됩니다."
+  },
+  "Works at different window and palette sizes. Search, Favorites, drag-and-drop and the separate icon picker retain their behavior.": {
+    "ja": "ウィンドウやパレットのサイズが変わっても対応します。検索、お気に入り、ドラッグ＆ドロップ、独立したアイコン選択画面の動作は維持されます。",
+    "zh": "适用于不同窗口和调色板尺寸。搜索、收藏、拖放及独立图标选择器的行为保持不变。",
+    "es": "Funciona con distintos tamaños de ventana y paleta. Se conservan la búsqueda, Favoritos, arrastrar y soltar y el selector de iconos independiente.",
+    "pt": "Funciona em diferentes tamanhos de janela e paleta. Busca, Favoritos, arrastar e soltar e o seletor de ícones separado mantêm seu comportamento.",
+    "fr": "Fonctionne avec différentes tailles de fenêtre et de palette. Recherche, favoris, glisser-déposer et sélecteur d'icônes séparé conservent leur comportement.",
+    "de": "Funktioniert bei verschiedenen Fenster- und Palettengrößen. Suche, Favoriten, Drag-and-drop und die separate Symbolauswahl bleiben unverändert.",
+    "ko": "다양한 창과 팔레트 크기에 대응합니다. 검색, 즐겨찾기, 끌어서 놓기, 별도의 아이콘 선택기 동작은 유지됩니다."
+  },
+  "A fixed-height icon list leaves unused space": {
+    "ja": "高さ固定の一覧の下に未使用の余白",
+    "zh": "固定高度列表留下空白",
+    "es": "La altura fija deja espacio sin usar",
+    "pt": "A altura fixa deixa espaço sem uso",
+    "fr": "La hauteur fixe laisse de l'espace inutilisé",
+    "de": "Eine feste Listenhöhe lässt Platz ungenutzt",
+    "ko": "고정 높이 목록 아래에 빈 공간이 남음"
+  },
+  "Icons continue to the bottom of the palette": {
+    "ja": "パレットの下端までアイコンを表示",
+    "zh": "图标延伸到调色板底部",
+    "es": "Los iconos llegan al final de la paleta",
+    "pt": "Os ícones continuam até o fim da paleta",
+    "fr": "Les icônes vont jusqu'au bas de la palette",
+    "de": "Symbole reichen bis zum unteren Palettenrand",
+    "ko": "팔레트 하단까지 아이콘이 이어짐"
+  }
+}

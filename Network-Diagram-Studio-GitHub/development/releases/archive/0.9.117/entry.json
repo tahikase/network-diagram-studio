@@ -1,0 +1,18 @@
+{
+  "version": "0.9.117",
+  "date": "2026-09-24",
+  "category": "Fix",
+  "title": "Settings stays inside the canvas.",
+  "description": "Settings now fits between the top toolbar and the diagram tabs. The panel follows the visible canvas when window or side-panel sizes change, with scrolling inside the panel.",
+  "before": {
+    "file": "0.9.117-before.png",
+    "version": "0.9.116",
+    "caption": "Settings overlaps the canvas boundaries"
+  },
+  "after": {
+    "file": "0.9.117-after.png",
+    "version": "0.9.117",
+    "caption": "Settings clears the toolbar and diagram tabs"
+  },
+  "note": "All Settings options remain available. The Settings button and the shared What's new window keep their existing placement and style."
+}

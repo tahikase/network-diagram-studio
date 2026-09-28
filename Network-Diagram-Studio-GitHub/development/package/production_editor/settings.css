@@ -1,0 +1,107 @@
+[data-nds-settings-panel] {
+  --nds-settings-blue: var(--nds-accent-text);
+  --nds-settings-line: #ccdef1;
+  --nds-settings-surface: #f7faff;
+  --nds-settings-card: #ffffff;
+  --nds-settings-active: #e8f2ff;
+  width: min(360px, calc(100vw - 32px));
+  border-color: var(--nds-settings-line);
+  border-radius: 14px;
+  box-shadow: 0 20px 55px #102d5726, 0 2px 8px #102d5712;
+}
+[data-nds-settings-panel] > :first-child {
+  padding: 15px 18px;
+  border-bottom: 0;
+  background: var(--nds-accent);
+}
+[data-nds-settings-panel] > :first-child > div {
+  color: #fff;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+[data-nds-settings-panel] > .nds-scroll {
+  padding: 16px;
+  background: var(--nds-settings-surface);
+  scrollbar-color: #a7c5e8 transparent;
+}
+[data-nds-settings-panel] .nds-scroll > .border-t {
+  border-color: var(--nds-settings-line);
+  padding-top: 16px;
+  margin-top: 18px;
+}
+[data-nds-settings-panel] .nds-scroll div:has(> span.font-bold.uppercase) {
+  color: var(--nds-settings-blue);
+  margin-bottom: 10px;
+}
+[data-nds-settings-panel] .nds-scroll span.font-bold.uppercase {
+  font-size: 12px;
+}
+[data-nds-settings-panel] :is([role="radio"], [data-nds-feedback-link]) {
+  border-radius: 8px;
+  border-color: var(--nds-settings-line);
+  background: var(--nds-settings-card);
+}
+[data-nds-settings-panel] [role="radio"][aria-checked="true"] {
+  background: var(--nds-settings-active);
+  border-color: var(--nds-settings-blue);
+  box-shadow: inset 3px 0 0 var(--nds-settings-blue);
+}
+[data-nds-settings-panel] :is(button, a):hover {
+  border-color: var(--nds-settings-blue);
+}
+[data-nds-settings-panel] :is(button, a, input):focus-visible {
+  outline: 2px solid var(--nds-settings-blue);
+  outline-offset: 2px;
+}
+[data-nds-settings-panel] [data-nds-comment-name] {
+  border-color: var(--nds-settings-line);
+  background: var(--nds-settings-card);
+  border-radius: 8px;
+  min-height: 34px;
+}
+[data-nds-settings-panel] > :last-child {
+  background: var(--nds-settings-surface);
+  border-color: var(--nds-settings-line);
+}
+[data-nds-settings-panel] #nds-demo-settings-open {
+  border-color: var(--nds-settings-line);
+  background: var(--nds-settings-active);
+}
+[data-nds-settings-panel] :is([data-nds-guide-group], [data-nds-shortcut-group]) > span:first-child,
+[data-nds-settings-panel] [data-nds-guide-item] > div,
+[data-nds-settings-panel] [data-nds-shortcut] > span:first-child {
+  font-size: 13px;
+  line-height: 1.45;
+}
+[data-nds-settings-panel] [data-nds-guide-item] p {
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+[data-nds-settings-panel] [data-nds-shortcut] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding-block: 5px;
+}
+[data-nds-settings-panel] [data-nds-shortcut] kbd {
+  font-size: 11px;
+  line-height: 1.2;
+}
+[data-nds-settings-panel] :is([data-nds-guide-group], [data-nds-shortcut-group]) > span:nth-child(2) {
+  font-size: 11px;
+}
+[data-nds-settings-panel] [data-nds-shortcuts] + p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+html[data-theme="dark"] [data-nds-settings-panel] {
+  --nds-settings-line: #344e70;
+  --nds-settings-surface: #122238;
+  --nds-settings-card: #1a2e47;
+  --nds-settings-active: #203f62;
+  box-shadow: 0 20px 55px #0007;
+}
+@media (prefers-contrast: more) {
+  [data-nds-settings-panel] { --nds-settings-line: var(--nds-settings-blue); }
+}

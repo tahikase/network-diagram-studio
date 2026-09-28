@@ -1,0 +1,18 @@
+{
+  "version": "0.9.125",
+  "date": "2026-09-27",
+  "category": "Fix",
+  "title": "Connected shapes stay selectable.",
+  "description": "Select, move or edit connected shapes normally after changing an arrow, including resized boxes.",
+  "before": {
+    "file": "0.9.125-before.png",
+    "version": "0.9.124",
+    "caption": "Clicking inside a connected box could miss it"
+  },
+  "after": {
+    "file": "0.9.125-after.png",
+    "version": "0.9.125",
+    "caption": "Clicking inside the box selects it"
+  },
+  "note": "Double-click to edit shape text. Existing diagrams and connector routes are preserved."
+}

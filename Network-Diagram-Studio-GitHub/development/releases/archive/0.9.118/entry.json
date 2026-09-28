@@ -1,0 +1,18 @@
+{
+  "version": "0.9.118",
+  "date": "2026-09-24",
+  "category": "Fix",
+  "title": "Production can now be maintained on its own.",
+  "description": "The production folder now includes its editable source and release tools. Production changes can be built and released without another project folder, and do not update the separate demo.",
+  "before": {
+    "file": "0.9.118-before.png",
+    "version": "0.9.117",
+    "caption": "Previous production editor, v0.9.117"
+  },
+  "after": {
+    "file": "0.9.118-after.png",
+    "version": "0.9.118",
+    "caption": "The same editor in independent production, v0.9.118"
+  },
+  "note": "This is a development and packaging change, not a visual redesign. The images show the same sample diagram. Launching, editing, saved diagrams and the What's new layout stay unchanged."
+}

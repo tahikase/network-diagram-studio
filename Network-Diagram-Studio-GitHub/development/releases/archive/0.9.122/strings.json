@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "Enter adds a new line in shape text.": {
+    "ja": "図形内の文字を Enter キーで改行できます。",
+    "zh": "按 Enter 即可在形状文本中换行。",
+    "es": "Enter añade una nueva línea en el texto de las formas.",
+    "pt": "Enter adiciona uma nova linha no texto das formas.",
+    "fr": "Entrée ajoute une nouvelle ligne dans le texte des formes.",
+    "de": "Enter fügt im Formtext eine neue Zeile ein.",
+    "ko": "도형 텍스트에서 Enter를 누르면 줄이 바뀝니다."
+  },
+  "Press Enter while editing a Text box or another text-capable shape to start a new line and keep typing.": {
+    "ja": "テキストボックスなど、文字を入力できる図形の編集中に Enter キーを押すと、改行してそのまま入力を続けられます。",
+    "zh": "编辑文本框或其他可输入文本的形状时，按 Enter 即可换行并继续输入。",
+    "es": "Pulsa Enter al editar un cuadro de texto u otra forma que admita texto para empezar una nueva línea y seguir escribiendo.",
+    "pt": "Pressione Enter ao editar uma caixa de texto ou outra forma que aceite texto para começar uma nova linha e continuar digitando.",
+    "fr": "Appuyez sur Entrée pendant la modification d'une zone de texte ou d'une autre forme acceptant du texte pour passer à la ligne et continuer à écrire.",
+    "de": "Drücken Sie beim Bearbeiten eines Textfelds oder einer anderen Form mit Text Enter, um eine neue Zeile zu beginnen und weiterzuschreiben.",
+    "ko": "텍스트 상자나 텍스트를 입력할 수 있는 다른 도형을 편집할 때 Enter를 누르면 새 줄에서 계속 입력할 수 있습니다."
+  },
+  "Ctrl+Enter (Cmd+Enter on Mac) or clicking outside finishes editing. Shift+Enter still adds a new line; Escape cancels text edits.": {
+    "ja": "Ctrl+Enter（Mac では Cmd+Enter）を押すか、図形の外をクリックすると編集が終了します。Shift+Enter でも引き続き改行できます。Escape キーで文字の編集をキャンセルします。",
+    "zh": "按 Ctrl+Enter（Mac 上为 Cmd+Enter）或点击外部即可结束编辑。Shift+Enter 仍可换行；Escape 取消文本编辑。",
+    "es": "Ctrl+Enter (Cmd+Enter en Mac) o un clic fuera finaliza la edición. Shift+Enter sigue añadiendo una línea; Escape cancela los cambios de texto.",
+    "pt": "Ctrl+Enter (Cmd+Enter no Mac) ou um clique fora encerra a edição. Shift+Enter continua adicionando uma linha; Escape cancela as alterações no texto.",
+    "fr": "Ctrl+Entrée (Cmd+Entrée sur Mac) ou un clic à l'extérieur termine la modification. Maj+Entrée ajoute toujours une ligne ; Échap annule les modifications du texte.",
+    "de": "Ctrl+Enter (Cmd+Enter auf dem Mac) oder ein Klick außerhalb beendet die Bearbeitung. Shift+Enter fügt weiterhin eine Zeile ein; Escape verwirft Textänderungen.",
+    "ko": "Ctrl+Enter(Mac에서는 Cmd+Enter)를 누르거나 바깥을 클릭하면 편집이 종료됩니다. Shift+Enter로도 계속 줄을 바꿀 수 있으며, Escape는 텍스트 편집을 취소합니다."
+  },
+  "Enter finished editing": {
+    "ja": "Enter キーで編集が終了",
+    "zh": "Enter 会结束编辑",
+    "es": "Enter finalizaba la edición",
+    "pt": "Enter encerrava a edição",
+    "fr": "Entrée terminait la modification",
+    "de": "Enter beendete die Bearbeitung",
+    "ko": "Enter를 누르면 편집이 종료됨"
+  },
+  "Enter adds a new line and keeps editing open": {
+    "ja": "Enter キーで改行し、編集を継続",
+    "zh": "Enter 换行后可继续编辑",
+    "es": "Enter añade una línea y permite seguir editando",
+    "pt": "Enter adiciona uma linha e mantém a edição aberta",
+    "fr": "Entrée ajoute une ligne sans quitter la modification",
+    "de": "Enter fügt eine Zeile ein und lässt die Bearbeitung geöffnet",
+    "ko": "Enter로 줄을 바꾸고 편집을 계속함"
+  }
+}

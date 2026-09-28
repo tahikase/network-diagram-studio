@@ -1,0 +1,1067 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+@source not "./demo/**/*";
+@source not "./DemoApp.tsx";
+@source not "./main-demo.tsx";
+
+/* Design tokens ------------------------------------------------------------ */
+:root {
+  --nds-bg: #f8fafc;
+  --nds-panel: #ffffff;
+  --nds-border: #e2e8f0;
+  --nds-text: #0f172a;
+  --nds-text-dim: #64748b;
+  --nds-accent: #0078d4; /* Azure blue — surfaces that carry white text */
+  --nds-accent-soft: rgba(0, 120, 212, 0.08);
+  /* The accent used AS a foreground (icons, selection outlines, the active
+     Settings option). It has to satisfy the opposite constraint to
+     --nds-accent: light enough to read ON a dark panel, where --nds-accent
+     has to stay dark enough to carry white text. Same value in light mode. */
+  --nds-accent-text: #0078d4;
+  --nds-ok: #16a34a;
+  --nds-degraded: #d97706;
+  --nds-broken: #dc2626;
+  --nds-unknown: #94a3b8;
+  --nds-grid: #e2e8f0;
+
+  /* Canvas surfaces. Split out from the chrome tokens above because a node
+     card floating on the canvas and a docked side panel need to sit at
+     different elevations in dark mode (see the dark block below). In light
+     mode both are plain white, so these values reproduce today's render
+     exactly. */
+  --nds-node-bg: #ffffff;
+  --nds-node-border: #e2e8f0; /* = slate-200 */
+  --nds-chip-bg: #ffffff; /* edge label pills */
+  --nds-chip-border: #e2e8f0;
+  --nds-pill-bg: color-mix(in srgb, var(--nds-panel) 85%, transparent);
+  --nds-scrim: rgba(15, 23, 42, 0.55);
+
+  /* Edge strokes, keyed by role rather than by edge kind so several kinds
+     can share one colour. Indirected through variables so dark mode can
+     brighten them without a React re-render — the arrow markers pick the
+     same value up automatically. */
+  --nds-edge-azure: #0078d4;
+  --nds-edge-er: #f97316;
+  --nds-edge-backend: #475569;
+  --nds-edge-dns: #64748b;
+  --nds-edge-muted: #94a3b8;
+  --nds-edge-degraded: #d97706;
+  --nds-edge-broken: #dc2626;
+
+  /* v0.9.30 — hand-drawn shape INK and PAPER. The Black and White swatches
+     are not literal colours, they are "whatever reads on the canvas", so a
+     diagram drawn in one theme stays legible in the other. Resolved by
+     `paintColor()` in theme/palette.ts. */
+  --nds-shape-ink: #0f172a;
+
+  /* Ink for shape LABEL text, split from the stroke ink above because the two
+     want different weights on a dark canvas — see `paintTextColor()`. In the
+     light theme they are identical. */
+  --nds-shape-ink-text: #0f172a;
+
+  /* Backdrop painted behind text that has to stay legible whatever is behind
+     it — the inline editor while a label is being typed, and an arrow label's
+     pill. It MUST be the inverse of --nds-shape-ink: both render their text
+     through `paintColor()`, so a hardcoded white box meant near-white ink on
+     white paper — invisible — in the dark theme. */
+  --nds-label-paper: rgba(255, 255, 255, 0.92);
+
+  /* Stroke of the in-flight connection line, shared by resource handles
+     (React Flow's `connectionLineStyle`) and by a shape's connect anchor
+     (ShapeOverlay's preview) so the same gesture always looks the same.
+     React Flow's own #b1b1b7 default is too faint to follow on either
+     background. */
+  --nds-connection-line: #64748b;
+
+  /* Node status ring (the circle behind each resource icon). */
+  --nds-ring-ok: #16a34a;
+  --nds-ring-ok-bg: rgba(22, 163, 74, 0.1);
+  --nds-ring-degraded: #d97706;
+  --nds-ring-degraded-bg: rgba(217, 119, 6, 0.1);
+  --nds-ring-broken: #dc2626;
+  --nds-ring-broken-bg: rgba(220, 38, 38, 0.1);
+  --nds-ring-unknown: #94a3b8;
+  --nds-ring-unknown-bg: rgba(148, 163, 184, 0.1);
+  font: 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--nds-text);
+  background: var(--nds-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* React Flow node/edge tweaks --------------------------------------------- */
+.react-flow__node {
+  font-family: inherit;
+}
+.react-flow__node.selected .nds-node {
+  outline: 2px solid var(--nds-accent-text);
+  outline-offset: 2px;
+}
+/* Overlapping transparent cards keep their native drag targets, but empty
+   padding must not intercept another resource's icon or name. */
+.nds-resource-hit-through {
+  pointer-events: none;
+}
+.nds-resource-hit-through > .flex-1 > .rounded-full,
+.nds-resource-hit-through > .flex-1 > .text-center > *,
+.nds-resource-hit-through > .flex-1 > .w-full:not(.text-center),
+.nds-resource-overlap > .react-flow__resize-control {
+  pointer-events: auto;
+}
+.nds-resource-hit-through > .flex-1 > .text-center > * {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--nds-accent);
+  border: 2px solid #fff;
+  /* ⚠️ Load-bearing, see the `.connectionindicator` rule below. */
+  z-index: 1;
+}
+
+/* WHICH of the two stacked handles a drop lands on.
+   -----------------------------------------------------------------------
+   Every connect dot is TWO handles at the same pixel: a source and a
+   target (a dot has to work in both directions). React Flow decides what
+   the pointer released on with
+
+       const handleBelow = doc.elementFromPoint(x, y);
+       const handleToCheck = handleBelow?.classList.contains('…__handle')
+         ? handleBelow            // ← the handle UNDER the cursor wins
+         : handleDomNode;         //   the closest-within-connectionRadius
+
+   `elementFromPoint` returns the TOPMOST element, and `ConnectHandles`
+   emits target-then-source per side, so the SOURCE handle was always on
+   top. In the default `strict` connection mode a source→source drop is
+   invalid, so releasing *exactly on* a dot was rejected every time — the
+   edge only ever appeared because `onConnectEnd`'s body-drop fallback
+   caught it, which is also why it came out routed to the side midpoint
+   instead of the dot. Releasing NEAR a dot worked (that path goes through
+   `getClosestHandle`, which breaks the tie by preferring the opposite
+   type), so the bug looked like "some dots connect and some don't".
+
+   React Flow already marks exactly the handles that can END the current
+   drag with `.connectionindicator`, so lifting those above their twin puts
+   the right handle under the cursor for both drag directions. While idle
+   every handle carries the class, the rule is a no-op, and DOM order still
+   makes the source handle the one a press starts from. */
+.react-flow__handle.connectionindicator {
+  z-index: 2;
+}
+
+/* Connection-handle affordance ------------------------------------------
+   Every connectable node exposes 12 connect points — the 4 side midpoints
+   plus 8 more at 25 % / 75 % along each side (see canvas/handles.tsx) —
+   with a source and a target handle stacked at each. At rest they are
+   invisible so the canvas stays clean, then fade in the moment the user
+   hovers or selects the card.
+
+   A connect point is a WHITE DOT WITH A BLUE RING. A resize grip is a
+   SOLID BLUE SQUARE, and it only ever appears at a CORNER. That contrast —
+   different shape, different place — is the whole point of this block: the
+   two used to be identical blue circles drawn on top of each other at every
+   side midpoint, so there was no way to tell "drag to resize" from "drag to
+   connect", and the dot silently won every press. The same pairing is used
+   by annotation shapes in ShapeOverlay.
+
+   ⚠️ `transform` here MUST re-apply React Flow's own centring translate.
+   RF positions a handle with rules like
+   `.react-flow__handle-left { left: 0; top: 50%; transform: translate(-50%, -50%) }`,
+   and this stylesheet is loaded AFTER RF's, so the bare `transform:
+   scale()` that used to live here silently REPLACED that translate — every
+   dot rendered ~9 px inside the card instead of on its border, and since a
+   handle is also where an edge attaches, edges started 9 px inside the card
+   too. The per-side translate now lives in `--nds-handle-shift` so the
+   scale animation multiplies onto it instead of overwriting it. */
+.nds-connect-handle {
+  --nds-handle-shift: translate(-50%, -50%);
+  background: #ffffff !important;
+  border: 2.5px solid var(--nds-accent) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  opacity: 0;
+  transform: var(--nds-handle-shift) scale(0.6);
+  transition: opacity 140ms ease, transform 140ms ease,
+              box-shadow 140ms ease;
+  cursor: crosshair;
+  pointer-events: auto;
+}
+.react-flow__handle-right.nds-connect-handle {
+  --nds-handle-shift: translate(50%, -50%);
+}
+.react-flow__handle-bottom.nds-connect-handle {
+  --nds-handle-shift: translate(-50%, 50%);
+}
+/* Fade in on hover of the whole card or when selected. */
+.react-flow__node:hover .nds-connect-handle,
+.react-flow__node.selected .nds-connect-handle,
+.react-flow__node.dragging .nds-connect-handle {
+  opacity: 1;
+  transform: var(--nds-handle-shift) scale(1);
+}
+/* A SELECTED card shows its resize frame: square grips at the four corners
+   and a draggable accent line along each side. Squares sit only at corners
+   and the nearest connect dot is a quarter of a side away, so the two
+   affordances never share a pixel and BOTH stay live — you can resize and
+   connect a selected card without first deselecting it. */
+/* Emphasis on the individual handle under the pointer — grows slightly
+   with a soft glow so users know they've "grabbed" the connect point. */
+.nds-connect-handle:hover {
+  transform: var(--nds-handle-shift) scale(1.4) !important;
+  opacity: 1 !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.35),
+              0 0 0 4px rgba(0, 120, 212, 0.22) !important;
+}
+/* WHILE A CONNECTION IS BEING DRAGGED, SHOW EVERY DOT.
+   -----------------------------------------------------------------------
+   The comment that used to sit here claimed React Flow marks "all handles
+   across the board" with .connectingfrom / .connectingto. It does not.
+   `connectingSelector` in @xyflow/react sets .connectingfrom on the handle
+   the drag STARTED from and .connectingto on the single handle currently
+   under the cursor — nothing else. Every other dot on the node being
+   dragged towards stayed at opacity 0, so there was nothing to aim at:
+   "I cannot see where I am connecting the line to".
+
+   :hover cannot cover for it either. The origin handle takes pointer
+   capture for the whole gesture, so the browser stops updating :hover on
+   the node underneath and `.react-flow__node:hover .nds-connect-handle`
+   never fires. Canvas therefore puts `nds-connecting` on the wrapper for
+   the duration of the drag, and every dot fades in. */
+.nds-connecting .nds-connect-handle {
+  opacity: 1;
+  transform: var(--nds-handle-shift) scale(1);
+}
+.react-flow__handle.connectingfrom,
+.react-flow__handle.connectingto {
+  opacity: 1 !important;
+}
+/* The dot the drop will actually land on. React Flow only adds `valid`
+   when releasing there really would create an edge, so this reads as
+   confirmation and not merely a hover echo. */
+.nds-connect-handle.connectingto,
+.nds-connect-handle.valid {
+  transform: var(--nds-handle-shift) scale(1.6) !important;
+  background: var(--nds-accent) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.4),
+              0 0 0 5px rgba(0, 120, 212, 0.28) !important;
+}
+.nds-connect-handle.connectingfrom {
+  transform: var(--nds-handle-shift) scale(1.2) !important;
+  background: var(--nds-accent) !important;
+}
+/* Small "grip ring" that pulses on the SOURCE-side handles of a hovered
+   node to signal "you can pull from here". The ring is a pseudo-element
+   painted OUTSIDE the handle so pointer capture on the handle itself is
+   untouched. Only the four side-midpoint source handles get the ring: one
+   per side is the cue, and pulsing all twelve dots would be noise. */
+.react-flow__node:hover .nds-connect-handle[data-handleid="s-r"]::after,
+.react-flow__node:hover .nds-connect-handle[data-handleid="s-b"]::after,
+.react-flow__node:hover .nds-connect-handle[data-handleid="s-l"]::after,
+.react-flow__node:hover .nds-connect-handle[data-handleid="s-t"]::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(0, 120, 212, 0.5);
+  animation: nds-connect-pulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes nds-connect-pulse {
+  0%, 100% { transform: scale(1);   opacity: 0.7; }
+  50%      { transform: scale(1.4); opacity: 0;   }
+}
+.react-flow__edge-path {
+  stroke-width: 1.75;
+}
+/* Selection must ANNOUNCE itself without REPAINTING the edge.
+   This rule used to be `stroke: var(--nds-accent-text) !important`, which
+   meant a selected edge was always accent-blue — so the moment you clicked a
+   line in order to restyle it, its real colour vanished and every change you
+   made looked like it had done nothing. (That is the "the color cannot be
+   changed" bug.) A glow + a width bump reads just as clearly as selection
+   while leaving the edge's own kind/override colour visible, so you can see
+   what you are picking as you pick it. */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 3.25 !important;
+  filter: drop-shadow(0 0 2px var(--nds-accent-text))
+          drop-shadow(0 0 4px var(--nds-accent-text));
+}
+
+/* Canvas stacks group frames at 500.. and resource cards at 1000 + group
+   count (another 1000 when selected). Keep nodes in the shared stacking
+   context so the edge layer can sit BETWEEN frames and cards. Wrapping
+   every node in one higher layer makes even transparent group backgrounds
+   intercept clicks on the connectors inside them. */
+.react-flow .react-flow__nodes {
+  z-index: auto;
+}
+.react-flow .react-flow__edges {
+  z-index: calc(900 + var(--nds-group-count, 0));
+}
+/* Edge labels are portalled into this overlay by SmartLabelEdge (via
+   EdgeLabelRenderer). They MUST stack above nodes AND edges so a label
+   whose natural position falls inside a node card stays fully readable. */
+.react-flow .react-flow__edgelabel-renderer {
+  z-index: calc(3000 + var(--nds-group-count, 0));
+}
+
+.react-flow__background {
+  background-color: var(--nds-bg);
+}
+.react-flow__controls-button {
+  background: var(--nds-panel);
+  border: 1px solid var(--nds-border);
+  color: var(--nds-text);
+}
+.react-flow__minimap {
+  background: var(--nds-panel);
+  border: 1px solid var(--nds-border);
+  border-radius: 6px;
+}
+
+/* Group node styling ------------------------------------------------------- */
+.nds-group {
+  background: rgba(0, 120, 212, 0.04);
+  border: 1.5px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 8px;
+}
+.nds-group.selected {
+  border-color: var(--nds-accent);
+  background: rgba(0, 120, 212, 0.08);
+}
+
+/* Utility scrollbars ------------------------------------------------------- */
+.nds-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.nds-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+}
+.nds-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.nds-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Modal form controls ------------------------------------------------------
+   A bare `border` gives no feedback on focus, so the big paste box read as
+   inert. The ring uses --nds-accent-soft, which is already theme-aware, so
+   the same rule works on light and dark. */
+.nds-field {
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+.nds-field:focus,
+.nds-field:focus-visible {
+  outline: none;
+  border-color: var(--nds-accent);
+  box-shadow: 0 0 0 3px var(--nds-accent-soft);
+}
+.nds-field::placeholder {
+  color: var(--color-slate-400);
+}
+
+/* The "composer": one bordered surface holding a borderless textarea above a
+   docked action bar, the way every current AI product builds its prompt input
+   (ChatGPT, Claude, v0, Linear). The alternative — a bordered box with the
+   button floating underneath it — reads as two unrelated controls, and the
+   button ends up visually detached from the thing it acts on. The focus ring
+   belongs to the whole surface, not the textarea, so it frames both. */
+.nds-composer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 10px;
+  background: var(--nds-panel);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+.nds-composer:focus-within {
+  border-color: var(--nds-accent);
+  box-shadow: 0 0 0 3px var(--nds-accent-soft);
+}
+/* The textarea and its ghost share one positioning context. A `position:
+   relative` on `.nds-composer` itself would put the ghost behind the bottom
+   bar as well, so the field gets its own wrapper. */
+.nds-composer-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.nds-composer textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: inherit;
+}
+/* A structured empty state instead of a multi-line `placeholder`. NN/g, GitHub
+   Primer and Carbon all say instructions do not belong in a placeholder: it is
+   clipped to the field width, several screen readers skip it, Chrome's
+   auto-translate ignores it, and it cannot carry any structure. The persistent
+   caption above the field is the accessible copy; this layer is decorative and
+   is marked aria-hidden so it is not announced twice.
+   It also fixes an old bug for free: the textarea is `white-space: pre`, so a
+   wide placeholder used to force a horizontal scrollbar. A separate element
+   can wrap. */
+.nds-composer-ghost {
+  position: absolute;
+  inset: 0;
+  padding: 12px 14px;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+.nds-composer textarea::placeholder {
+  color: var(--color-slate-400);
+}
+/* The bar is separated by a hairline rather than a background fill: a filled
+   bar inside an already-recessed dialog well reads as a third elevation. */
+.nds-composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-top: 1px solid var(--color-slate-200);
+}
+
+/* Square icon-only buttons (modal close, and anything else that is a glyph
+   in a hit target). The hover surface is what makes it read as a control. */
+.nds-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--color-slate-500);
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.nds-iconbtn:hover {
+  background: var(--color-slate-100);
+  color: var(--color-slate-900);
+}
+
+/* Primary/secondary action buttons inside dialogs. Kept as classes rather
+   than repeated utility strings so the radius and lift stay consistent when
+   a new button is added. */
+.nds-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition:
+    filter 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 60ms ease;
+}
+.nds-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.nds-btn-primary {
+  background: var(--nds-accent);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+.nds-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 8px var(--nds-accent-soft);
+}
+/* Disabled must read as "not yet", not as "broken". A solid grey fill with
+   white text looked like a dead primary button; a tinted surface with dim
+   text reads as a step that has not been unlocked. */
+.nds-btn-primary:disabled {
+  background: var(--color-slate-100);
+  color: var(--color-slate-400);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.nds-btn-ghost {
+  border: 1px solid var(--color-slate-300);
+  background: var(--nds-panel);
+  color: var(--color-slate-600);
+}
+.nds-btn-ghost:hover {
+  background: var(--color-slate-100);
+  color: var(--color-slate-900);
+  border-color: var(--color-slate-400);
+}
+
+/* ==========================================================================
+   DARK THEME
+   ==========================================================================
+   Tailwind v4 compiles every colour utility down to `var(--color-*)`, e.g.
+   `.text-slate-700{color:var(--color-slate-700)}`. So re-theming the whole
+   app is mostly a matter of redefining those variables — no `dark:` variant
+   has to be bolted onto the ~300 utility classes across the components.
+
+   The neutral scale is INVERTED (slate-50 becomes the darkest tone, slate-900
+   the lightest) because this codebase uses low numbers for surfaces and high
+   numbers for text. Accent scales get the same treatment at their light and
+   dark ends but keep vivid mid-tones (400-600), so buttons and status colours
+   stay recognisably blue / amber / red.
+
+   Two classes of exception are handled by explicit utility overrides below:
+     1. `bg-white` — the main surface. `--color-white` is deliberately NOT
+        remapped, because `text-white` on a coloured button must stay white.
+     2. Utilities where a shade means "dark surface" rather than "dark text"
+        (`bg-slate-800`, `hover:bg-blue-700`). Inverting those would leave
+        white text on a light background.
+   ========================================================================== */
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Design tokens.
+     Surfaces climb in a deliberate ladder so the canvas reads as depth:
+       canvas #0a1017 < panel #151e2b < raised #1e2938 < node card #202d40
+     Group containers (VNet / subnet / RG …) sit between the canvas and the
+     node cards. They are painted as a flat translucent wash rather than a
+     tint of their brand colour, because a diagram nests up to four levels
+     deep and a per-level brand tint compounds past the node-card tone —
+     which is what made every surface look identical. */
+  --nds-bg: #0a1017;
+  --nds-panel: #151e2b;
+  --nds-panel-raised: #1e2938;
+  --nds-border: #2c3a4e;
+  --nds-text: #e8eef6;
+  --nds-text-dim: #9fb0c6;
+  --nds-accent: #2563eb;
+  --nds-accent-soft: rgba(37, 99, 235, 0.18);
+  --nds-accent-text: #7cb8ff;
+  --nds-grid: #1e2b3d;
+
+  --nds-node-bg: #202d40;
+  --nds-node-border: #42556e;
+  --nds-chip-bg: #1e2938;
+  --nds-chip-border: #3d4f68;
+  --nds-pill-bg: rgba(17, 25, 37, 0.9);
+  /* A slate-tinted 55% scrim barely separates a dark modal from a dark page,
+     so dark mode dims harder and the dialog itself moves up an elevation. */
+  --nds-scrim: rgba(2, 6, 12, 0.72);
+
+  /* Edges: the light palette (#475569 backend, #64748b DNS …) is darker
+     than the canvas itself, so every role is brightened while keeping its
+     hue — the diagram still "means" the same thing at a glance. */
+  --nds-edge-azure: #4da3ff;
+  --nds-edge-er: #ff9d4d;
+  --nds-edge-backend: #8fa3bd;
+  --nds-edge-dns: #9db4cc;
+  --nds-edge-muted: #b4c4d6;
+  --nds-edge-degraded: #fbbf24;
+  --nds-edge-broken: #f87171;
+
+  /* Hand-drawn shapes swap ink and paper wholesale. A user who drew a black
+     box in the light theme must still see it here — reported as "all the
+     shapes disappeared in dark mode". Not pure #fff: a full-strength white
+     stroke on a near-black canvas glares, and every shape on the canvas is
+     an outline. */
+  --nds-shape-ink: #e8eef7;
+
+  /* Label text goes to FULL white, unlike the stroke above. Text is a small
+     amount of ink, it often sits on the shape's own tinted fill rather than
+     the bare canvas, and it is the part the reader has to decode — so it gets
+     maximum contrast where an outline would only glare. */
+  --nds-shape-ink-text: #ffffff;
+
+  /* Slightly lighter than the canvas so a label reads as sitting on top of
+     the shape rather than as a hole punched in it. */
+  --nds-label-paper: rgba(22, 32, 48, 0.94);
+
+  /* Brighter than the light-theme slate, for the same reason the edge
+     palette is brightened: the canvas is darker than the stroke was. */
+  --nds-connection-line: #93a7bd;
+
+  /* Status rings. `ok` is the default on virtually every node, so the
+     saturated green ring that reads as a subtle accent on white becomes
+     the loudest, least informative thing on a dark canvas. It goes neutral
+     here; degraded / broken stay semantic and now actually stand out. */
+  --nds-ring-ok: #44566f;
+  --nds-ring-ok-bg: rgba(255, 255, 255, 0.05);
+  --nds-ring-degraded: #f59e0b;
+  --nds-ring-degraded-bg: rgba(245, 158, 11, 0.14);
+  --nds-ring-broken: #f87171;
+  --nds-ring-broken-bg: rgba(248, 113, 113, 0.15);
+  --nds-ring-unknown: #64748b;
+  --nds-ring-unknown-bg: rgba(148, 163, 184, 0.1);
+
+  /* Neutral scale — inverted, but with the dim end lifted well above a
+     literal inversion. slate-400/500 carry the 9-11px field captions on
+     node cards ("PRIVATE IP", "ALLOCATION"); the mathematically correct
+     inverse left those at ~3.3:1 and effectively unreadable. */
+  --color-slate-50: #111a26;
+  --color-slate-100: #18222f;
+  --color-slate-200: #2a3646;
+  --color-slate-300: #3d4d64;
+  --color-slate-400: #93a3ba;
+  --color-slate-500: #a7b6ca;
+  --color-slate-600: #bfcbdb;
+  --color-slate-700: #d5dee9;
+  --color-slate-800: #e4ebf3;
+  --color-slate-900: #f1f5fa;
+  --color-slate-950: #ffffff;
+
+  --color-gray-50: #111a26;
+  --color-gray-100: #18222f;
+  --color-gray-200: #2a3646;
+  --color-gray-300: #3d4d64;
+  --color-gray-400: #93a3ba;
+  --color-gray-500: #a7b6ca;
+  --color-gray-600: #bfcbdb;
+  --color-gray-700: #d5dee9;
+  --color-gray-800: #e4ebf3;
+  --color-gray-900: #f1f5fa;
+
+  /* Blue — tinted dark surfaces at the light end, legible text at the dark
+     end, vivid mid-tones preserved for primary buttons. */
+  --color-blue-50: #14213a;
+  --color-blue-100: #1b2c4d;
+  --color-blue-200: #24395f;
+  --color-blue-300: #2f4a78;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #3b82f6;
+  --color-blue-700: #93c5fd;
+  --color-blue-800: #bfdbfe;
+  --color-blue-900: #dbeafe;
+
+  --color-amber-50: #2a2013;
+  --color-amber-100: #3a2c17;
+  --color-amber-200: #4d3a1c;
+  --color-amber-300: #6b5124;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #f59e0b;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-amber-900: #fef3c7;
+
+  --color-red-50: #2c1417;
+  --color-red-100: #3d191d;
+  --color-red-200: #512024;
+  --color-red-300: #6f2a30;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #ef4444;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+  --color-red-900: #fee2e2;
+
+  --color-green-50: #10241a;
+  --color-green-100: #143324;
+  --color-green-200: #1a442f;
+  --color-green-400: #4ade80;
+  --color-green-500: #22c55e;
+  --color-green-600: #22c55e;
+  --color-green-700: #86efac;
+  --color-green-800: #bbf7d0;
+  --color-green-900: #dcfce7;
+
+  --color-emerald-50: #0f2422;
+  --color-emerald-100: #12332f;
+  --color-emerald-200: #17443e;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #10b981;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #a7f3d0;
+  --color-emerald-900: #d1fae5;
+
+  --color-purple-50: #1e1733;
+  --color-purple-100: #2a1f47;
+  --color-purple-200: #37295c;
+  --color-purple-400: #c084fc;
+  --color-purple-500: #a855f7;
+  --color-purple-600: #a855f7;
+  --color-purple-700: #d8b4fe;
+  --color-purple-800: #e9d5ff;
+  --color-purple-900: #f3e8ff;
+}
+
+/* --- Dark-mode exceptions -------------------------------------------------
+   `bg-white` is the app's main surface (65 usages: header, panels, cards,
+   node bodies). `--color-white` itself is left alone so `text-white` on the
+   blue / emerald action buttons stays white.                              */
+html[data-theme='dark'] .bg-white {
+  background-color: var(--nds-panel);
+}
+/* Opacity variants compile to inlined hex rather than a var, so they need
+   their own rules. */
+html[data-theme='dark'] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--nds-panel) 95%, transparent);
+}
+html[data-theme='dark'] .bg-white\/98 {
+  background-color: color-mix(in srgb, var(--nds-panel) 98%, transparent);
+}
+
+/* Shades that mean "dark surface carrying white text" rather than "dark
+   text". Inverting these would leave white-on-light. A selected toggle reads
+   better as the accent colour in dark mode anyway. */
+html[data-theme='dark'] .bg-slate-800 {
+  background-color: var(--nds-accent);
+}
+html[data-theme='dark'] .border-slate-800 {
+  border-color: var(--nds-accent);
+}
+/* Dialogs sit one elevation above the page in dark mode; without this a
+   `bg-white` modal lands on the same tone as the panels behind it. */
+html[data-theme='dark'] .nds-modal.bg-white {
+  background-color: var(--nds-panel-raised);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* Same elevation problem, one level smaller: the notes toolbar's dropdown
+   floats over the notes panel, and in dark mode the inverted `bg-white`
+   resolves to exactly `--nds-panel` — the tone it is floating ON. It then
+   reads as a flat hole with a hairline rather than a raised menu. In light
+   mode white-on-white is correct and matches every other dropdown, so this
+   is scoped to dark only. */
+html[data-theme='dark'] .nds-notes-menu {
+  background-color: var(--nds-panel-raised);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+/* ---------------------------------------------------------------------------
+   v0.9.41 — the in-place notes editor.
+
+   The editor is a contentEditable div holding real elements, so the formatting
+   the toolbar applies has to be styled here. Everything is scoped under
+   `.nds-notes-editor` so it cannot leak into the diagram or the property panel.
+   --------------------------------------------------------------------------- */
+.nds-notes-editor:empty::before,
+.nds-notes-editor[data-empty='1']::before {
+  content: attr(data-placeholder);
+  color: var(--color-slate-400);
+  pointer-events: none;
+}
+.nds-notes-editor h1,
+.nds-notes-editor h2,
+.nds-notes-editor h3,
+.nds-notes-editor h4,
+.nds-notes-editor h5,
+.nds-notes-editor h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0.6em 0 0.3em;
+}
+.nds-notes-editor h1 { font-size: 1.35em; }
+.nds-notes-editor h2 { font-size: 1.2em; }
+.nds-notes-editor h3 { font-size: 1.08em; }
+.nds-notes-editor h4,
+.nds-notes-editor h5,
+.nds-notes-editor h6 { font-size: 1em; }
+.nds-notes-editor ul,
+.nds-notes-editor ol {
+  margin: 0.25em 0;
+  padding-left: 1.4em;
+}
+.nds-notes-editor ul { list-style: disc; }
+.nds-notes-editor ol { list-style: decimal; }
+.nds-notes-editor li { margin: 0.1em 0; }
+.nds-notes-editor b,
+.nds-notes-editor strong { font-weight: 600; }
+.nds-notes-editor code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  padding: 0.1em 0.32em;
+  border-radius: 3px;
+  background: var(--color-slate-100);
+}
+.nds-notes-editor a {
+  color: var(--color-blue-600);
+  text-decoration: underline;
+}
+.nds-notes-editor table.nds-note-table {
+  border-collapse: collapse;
+  margin: 0.4em 0;
+  width: 100%;
+  font-size: 0.95em;
+}
+.nds-notes-editor table.nds-note-table th,
+.nds-notes-editor table.nds-note-table td {
+  border: 1px solid var(--color-slate-300);
+  padding: 0.22em 0.45em;
+  text-align: left;
+  vertical-align: top;
+}
+.nds-notes-editor table.nds-note-table th {
+  background: var(--color-slate-100);
+  font-weight: 600;
+}
+/* The editor inherits `--nds-text` in dark mode, but the code and header chips
+   carry their own light fills that do NOT invert with it. Same class of defect
+   as the v0.9.39 dropdown: a surface that looks right in light and becomes a
+   pale block in dark. */
+html[data-theme='dark'] .nds-notes-editor code,
+html[data-theme='dark'] .nds-notes-editor table.nds-note-table th {
+  background: var(--nds-panel-raised);
+}
+
+/* v0.9.66 — screenshots in a note.
+   `display: block` keeps a capture on its own line even though the Markdown
+   form is an INLINE image, which is what makes the note read like a document
+   rather than a paragraph with a picture wedged into it. */
+.nds-notes-editor img.nds-note-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.5em 0;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  background: #fff;
+  /* The only hint that a screenshot is double-clickable. Chrome inside a
+     contentEditable would have to be a real element the serialiser understands,
+     so the cursor carries the affordance instead. */
+  cursor: zoom-in;
+}
+.nds-notes-editor img.nds-note-img:hover {
+  border-color: var(--color-sky-400);
+}
+/* The bytes are not here — the file was shared without its images, or
+   IndexedDB was cleared. The reference in the Markdown is intact, so this is a
+   placeholder and not a deletion.
+
+   `imageEl` deliberately omits `src` in this case, which is what makes the
+   browser paint the alt text as the element's content — so this rule styles a
+   LABELLED strip, not an empty box. Height is therefore content-driven; the
+   old `width: 100%` made the 1x1 placeholder a full-width SQUARE that swallowed
+   the whole note. Every colour is a slate token so the theme's dark-mode remap
+   carries it without a `dark:` variant. */
+.nds-notes-editor img.nds-note-img-missing {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 0.55em 0.7em;
+  font-size: 0.8125rem;
+  color: var(--color-slate-500);
+  cursor: default;
+  border-style: dashed;
+  border-color: var(--color-slate-400);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-slate-100),
+    var(--color-slate-100) 8px,
+    var(--color-slate-200) 8px,
+    var(--color-slate-200) 16px
+  );
+}
+
+/* The closed-state NOTES tab in the bottom-right corner.
+   The button carries `bg-blue-50 border-blue-200 text-blue-700` for its rest
+   state; these rules only add the hover, which Tailwind utilities cannot
+   express here because the label needs its own darker hover tone. Blue in
+   BOTH builds on purpose — this is a UI affordance, not diagram content, so
+   it does not follow the demo build's red `--nds-accent`. */
+[data-nds-notes-tab] {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+[data-nds-notes-tab]:hover {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1e3a8a;
+}
+[data-nds-notes-tab-label] {
+  color: #1d4ed8;
+  cursor: pointer;
+}
+[data-nds-notes-tab-label]:hover {
+  color: #1e3a8a;
+}
+
+/* Primary blue fills carry white text, so they have to stay dark enough for
+   4.5:1 — the inverted `--color-blue-600` (#3b82f6) only reaches 3.7:1.
+   Overriding the *background* utility rather than the variable keeps
+   `text-blue-600` at the brighter, legible-on-dark tone. */
+html[data-theme='dark'] .bg-blue-600 {
+  background-color: #2563eb;
+}
+/* Base fills are #2563eb in dark, so hovers have to move off that value. */
+html[data-theme='dark'] .hover\:bg-slate-900:hover {
+  background-color: #1d4ed8;
+}
+html[data-theme='dark'] .hover\:bg-blue-700:hover {
+  background-color: #1d4ed8;
+}
+html[data-theme='dark'] .hover\:bg-emerald-700:hover {
+  background-color: #059669;
+}
+/* Disabled fills: slate-300 inverts to a mid tone that stops reading as
+   "inactive" against a dark panel. */
+html[data-theme='dark'] .disabled\:bg-slate-300:disabled {
+  background-color: #2b3646;
+  color: #6b7a90;
+}
+
+/* React Flow ships its own light defaults for these. */
+html[data-theme='dark'] .react-flow__attribution {
+  background: transparent;
+}
+html[data-theme='dark'] .react-flow__attribution a {
+  color: var(--nds-text-dim);
+}
+html[data-theme='dark'] .react-flow__controls-button:hover {
+  background: var(--nds-panel-raised);
+}
+html[data-theme='dark'] .react-flow__controls-button svg {
+  fill: var(--nds-text);
+}
+
+/* Scrollbars */
+html[data-theme='dark'] .nds-scroll::-webkit-scrollbar-thumb {
+  background: #3a475a;
+}
+html[data-theme='dark'] .nds-scroll::-webkit-scrollbar-thumb:hover {
+  background: #4d5d74;
+}
+
+/* Node cards float above the group containers, so on a dark canvas they get
+   the brightest surface plus a real shadow — on light they rely on
+   `shadow-sm` and a hairline border, which disappears against #0a1017.
+   Specificity (0,2,0) beats Tailwind's `.shadow-sm` (0,1,0). */
+html[data-theme='dark'] .nds-node {
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+/* Group containers paint `${brandColour}0F` (~6%) inline, which is all but
+   invisible over a dark canvas — and because containers nest up to four
+   deep (region > RG > VNet > subnet) a per-level brand tint compounds past
+   the node-card tone. Dark mode therefore swaps in one flat, very low
+   neutral wash that stacks predictably, and moves the hierarchy cue onto a
+   much brighter dashed border derived from the container's own colour.
+   `!important` is required because both properties are set inline. */
+html[data-theme='dark'] .nds-group-box {
+  background: rgba(150, 180, 225, 0.045) !important;
+  border-color: color-mix(in srgb, var(--nds-gc, #94a3b8), #ffffff 34%) !important;
+}
+html[data-theme='dark'] .nds-group-box.selected {
+  background: rgba(77, 155, 255, 0.1) !important;
+}
+
+/* Violet was used by the removed generator modal's JSON-format badges.
+   The overrides are kept as dark-palette definitions so any future use of
+   these Tailwind tokens inherits a dark-correct value rather than the
+   light default. */
+html[data-theme='dark'] {
+  --color-violet-50: #1e1733;
+  --color-violet-100: #2a1f47;
+  --color-violet-200: #37295c;
+  --color-violet-300: #453473;
+  --color-violet-400: #c084fc;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #8b5cf6;
+  --color-violet-700: #c4b5fd;
+  --color-violet-800: #ddd6fe;
+  --color-violet-900: #ede9fe;
+  --color-green-300: #1f5638;
+  --color-blue-950: #101a2e;
+  --color-slate-850: #1c2634;
+}
+
+/* Opacity variants compile to `color-mix(in oklab, var(--color-X) N%,
+   transparent)`, so they re-resolve against the dark palette. That is right
+   for surfaces (bg-slate-50/70 correctly becomes a dark wash). */
+
+/* Only the floating control surfaces blend with the diagram, never their ink. */
+:root {
+  --nds-chrome-opacity: 45%;
+  --nds-chrome-hover-opacity: 85%;
+  --nds-chrome-filter: blur(2px);
+}
+
+.nds-canvas-chrome {
+  background-color: color-mix(in srgb, var(--nds-panel) var(--nds-chrome-opacity), transparent);
+  border-color: color-mix(in srgb, var(--color-slate-500) 25%, transparent);
+  box-shadow: 0 1px 5px rgb(15 23 42 / 5%);
+  -webkit-backdrop-filter: var(--nds-chrome-filter);
+  backdrop-filter: var(--nds-chrome-filter);
+}
+
+button.nds-canvas-chrome:hover {
+  background-color: color-mix(in srgb, var(--nds-panel) var(--nds-chrome-hover-opacity), transparent);
+  border-color: var(--color-slate-400);
+}
+
+button.nds-canvas-chrome:focus-visible {
+  outline: 2px solid var(--nds-accent-text);
+  outline-offset: 3px;
+}
+
+[data-nds-annotation-toolbar] [data-nds-tool][aria-pressed="false"],
+[data-nds-annotation-toolbar] [data-nds-style-chevron][aria-expanded="false"],
+[data-nds-annotation-toolbar] [data-nds-annotation-undo] {
+  background-color: color-mix(in srgb, var(--nds-panel) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-slate-500) 22%, transparent);
+}
+
+[data-nds-annotation-toolbar] [data-nds-tool][aria-pressed="false"]:hover,
+[data-nds-annotation-toolbar] [data-nds-style-chevron][aria-expanded="false"]:hover,
+[data-nds-annotation-toolbar] [data-nds-annotation-undo]:enabled:hover {
+  background-color: color-mix(in srgb, var(--nds-panel) var(--nds-chrome-hover-opacity), transparent);
+  border-color: var(--color-slate-400);
+}
+
+[data-nds-tabbar] [data-nds-tab][aria-selected="false"] {
+  background-color: color-mix(in srgb, var(--color-slate-100) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-slate-500) 18%, transparent);
+}
+
+[data-nds-tabbar] [data-nds-tab][aria-selected="true"] {
+  background-color: color-mix(in srgb, var(--nds-panel) 50%, transparent);
+}
+
+[data-nds-tabbar] [data-nds-tab]:hover {
+  background-color: color-mix(in srgb, var(--nds-panel) var(--nds-chrome-hover-opacity), transparent);
+}
+
+/* Override the Notes sidecar's old solid fill without changing its positioning. */
+html[data-theme] .nds-canvas-chrome[data-nds-notes-open] {
+  background-color: color-mix(in srgb, var(--color-blue-50) var(--nds-chrome-opacity), transparent);
+  border-color: color-mix(in srgb, var(--color-blue-400) 30%, transparent);
+}
+
+html[data-theme] .nds-canvas-chrome[data-nds-notes-open]:hover {
+  background-color: color-mix(in srgb, var(--color-blue-50) var(--nds-chrome-hover-opacity), transparent);
+  border-color: var(--nds-accent-text);
+}
+
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  :root {
+    --nds-chrome-opacity: 100%;
+    --nds-chrome-hover-opacity: 100%;
+    --nds-chrome-filter: none;
+  }
+}

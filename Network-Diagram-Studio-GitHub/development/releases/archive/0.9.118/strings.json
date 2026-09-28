@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "Production can now be maintained on its own.": {
+    "ja": "本番版を単独で保守できるようになりました。",
+    "zh": "现在可以独立维护生产版。",
+    "es": "La versión de producción ya se puede mantener por separado.",
+    "pt": "A versão de produção agora pode ser mantida de forma independente.",
+    "fr": "La version de production peut désormais être maintenue indépendamment.",
+    "de": "Die Produktionsversion lässt sich jetzt unabhängig pflegen.",
+    "ko": "이제 프로덕션 버전을 독립적으로 유지 관리할 수 있습니다."
+  },
+  "The production folder now includes its editable source and release tools. Production changes can be built and released without another project folder, and do not update the separate demo.": {
+    "ja": "本番フォルダーに編集可能なソースとリリースツールを追加しました。別のプロジェクトフォルダーに依存せず、本番版をビルド・公開できます。別管理のデモ版は更新しません。",
+    "zh": "生产文件夹现在包含可编辑的源代码和发布工具。无需其他项目文件夹即可构建和发布生产版更改，也不会更新独立的演示版。",
+    "es": "La carpeta de producción incluye el código fuente editable y las herramientas de publicación. Sus cambios se pueden compilar y publicar sin otra carpeta de proyecto y no actualizan la demo independiente.",
+    "pt": "A pasta de produção inclui o código-fonte editável e as ferramentas de publicação. As alterações podem ser compiladas e publicadas sem outra pasta de projeto e não atualizam a demonstração separada.",
+    "fr": "Le dossier de production contient le code source modifiable et les outils de publication. Les changements peuvent être compilés et publiés sans autre dossier de projet et ne mettent pas à jour la démonstration séparée.",
+    "de": "Der Produktionsordner enthält nun den bearbeitbaren Quellcode und die Veröffentlichungswerkzeuge. Änderungen lassen sich ohne weiteren Projektordner erstellen und veröffentlichen; die separate Demo wird nicht aktualisiert.",
+    "ko": "프로덕션 폴더에 편집 가능한 소스와 릴리스 도구가 포함되었습니다. 다른 프로젝트 폴더 없이 변경 사항을 빌드하고 배포할 수 있으며, 별도로 관리되는 데모는 업데이트하지 않습니다."
+  },
+  "This is a development and packaging change, not a visual redesign. The images show the same sample diagram. Launching, editing, saved diagrams and the What's new layout stay unchanged.": {
+    "ja": "開発環境と配布構成の変更であり、画面のデザイン変更ではありません。画像は同じサンプル図を示しています。起動方法、編集操作、保存した図、更新情報のレイアウトは変わりません。",
+    "zh": "这是开发和打包方式的更改，并非界面重新设计。两张图片显示相同的示例图。启动方式、编辑操作、已保存的图表和更新内容布局保持不变。",
+    "es": "Es un cambio de desarrollo y empaquetado, no un rediseño visual. Las imágenes muestran el mismo diagrama de ejemplo. El inicio, la edición, los diagramas guardados y el diseño de Novedades no cambian.",
+    "pt": "Esta é uma alteração no desenvolvimento e no pacote, não no visual. As imagens mostram o mesmo diagrama de exemplo. A inicialização, a edição, os diagramas salvos e o layout de Novidades não mudam.",
+    "fr": "Ce changement concerne le développement et le paquet, pas l'apparence. Les images montrent le même exemple de diagramme. Le lancement, l'édition, les diagrammes enregistrés et la présentation des Nouveautés restent inchangés.",
+    "de": "Diese Änderung betrifft Entwicklung und Paketierung, nicht das Design. Die Bilder zeigen dasselbe Beispieldiagramm. Start, Bearbeitung, gespeicherte Diagramme und das Neuigkeitenlayout bleiben unverändert.",
+    "ko": "화면 디자인이 아닌 개발 환경과 패키징 변경입니다. 두 이미지는 동일한 샘플 다이어그램을 보여 줍니다. 실행, 편집, 저장된 다이어그램 및 새 소식 레이아웃은 그대로 유지됩니다."
+  },
+  "Previous production editor, v0.9.117": {
+    "ja": "従来の本番エディター、v0.9.117",
+    "zh": "之前的生产版编辑器，v0.9.117",
+    "es": "Editor de producción anterior, v0.9.117",
+    "pt": "Editor de produção anterior, v0.9.117",
+    "fr": "Éditeur de production précédent, v0.9.117",
+    "de": "Bisheriger Produktionseditor, v0.9.117",
+    "ko": "이전 프로덕션 편집기, v0.9.117"
+  },
+  "The same editor in independent production, v0.9.118": {
+    "ja": "単独管理になった同じ本番エディター、v0.9.118",
+    "zh": "独立生产版中的相同编辑器，v0.9.118",
+    "es": "El mismo editor en producción independiente, v0.9.118",
+    "pt": "O mesmo editor na produção independente, v0.9.118",
+    "fr": "Le même éditeur en production indépendante, v0.9.118",
+    "de": "Derselbe Editor in der unabhängigen Produktion, v0.9.118",
+    "ko": "독립 프로덕션의 동일한 편집기, v0.9.118"
+  }
+}

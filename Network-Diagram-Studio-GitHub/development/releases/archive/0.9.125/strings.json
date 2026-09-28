@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "Connected shapes stay selectable.": {
+    "ja": "矢印でつないだ図形も選択できます。",
+    "zh": "连接的形状仍可正常选中。",
+    "es": "Las formas conectadas siguen siendo seleccionables.",
+    "pt": "As formas conectadas continuam selecionáveis.",
+    "fr": "Les formes connectées restent sélectionnables.",
+    "de": "Verbundene Formen bleiben auswählbar.",
+    "ko": "연결된 도형을 계속 선택할 수 있습니다."
+  },
+  "Select, move or edit connected shapes normally after changing an arrow, including resized boxes.": {
+    "ja": "矢印を変更した後も、つながった図形を通常どおり選択・移動・編集できます。サイズ変更したボックスも対象です。",
+    "zh": "修改箭头后，仍可正常选择、移动或编辑连接的形状，包括调整过大小的框。",
+    "es": "Tras cambiar una flecha, selecciona, mueve o edita normalmente las formas conectadas, incluidos los cuadros cuyo tamaño hayas cambiado.",
+    "pt": "Após alterar uma seta, selecione, mova ou edite normalmente as formas conectadas, incluindo caixas redimensionadas.",
+    "fr": "Après avoir modifié une flèche, sélectionnez, déplacez ou modifiez normalement les formes connectées, y compris les rectangles redimensionnés.",
+    "de": "Nach dem Ändern eines Pfeils lassen sich verbundene Formen weiterhin normal auswählen, verschieben und bearbeiten, auch nach einer Größenänderung.",
+    "ko": "화살표를 변경한 후에도 크기를 조절한 상자를 포함해 연결된 도형을 정상적으로 선택, 이동하거나 편집할 수 있습니다."
+  },
+  "Double-click to edit shape text. Existing diagrams and connector routes are preserved.": {
+    "ja": "ダブルクリックで図形内の文字を編集できます。既存の図や矢印の経路は変わりません。",
+    "zh": "双击即可编辑形状文本。现有图表和连接线路径保持不变。",
+    "es": "Haz doble clic para editar el texto de la forma. Se conservan los diagramas existentes y las rutas de los conectores.",
+    "pt": "Clique duas vezes para editar o texto da forma. Os diagramas existentes e os trajetos dos conectores são preservados.",
+    "fr": "Double-cliquez pour modifier le texte d'une forme. Les diagrammes existants et les tracés des connecteurs sont conservés.",
+    "de": "Bearbeiten Sie Formtext per Doppelklick. Vorhandene Diagramme und Verbindungspfade bleiben erhalten.",
+    "ko": "두 번 클릭하여 도형 텍스트를 편집하세요. 기존 다이어그램과 연결선 경로는 유지됩니다."
+  },
+  "Clicking inside a connected box could miss it": {
+    "ja": "つながったボックスの内側をクリックしても選択できない場合がありました",
+    "zh": "点击连接框的内部时可能无法选中",
+    "es": "Hacer clic dentro de un cuadro conectado podía no seleccionarlo",
+    "pt": "Clicar dentro de uma caixa conectada podia não selecioná-la",
+    "fr": "Un clic à l'intérieur d'un rectangle connecté pouvait ne pas le sélectionner",
+    "de": "Ein Klick in ein verbundenes Rechteck konnte die Auswahl verfehlen",
+    "ko": "연결된 상자 안을 클릭해도 선택되지 않을 수 있었음"
+  },
+  "Clicking inside the box selects it": {
+    "ja": "ボックスの内側をクリックして選択できます",
+    "zh": "点击框的内部即可选中",
+    "es": "Hacer clic dentro del cuadro lo selecciona",
+    "pt": "Clicar dentro da caixa a seleciona",
+    "fr": "Un clic à l'intérieur du rectangle le sélectionne",
+    "de": "Ein Klick in das Rechteck wählt es aus",
+    "ko": "상자 안을 클릭하면 선택됨"
+  }
+}

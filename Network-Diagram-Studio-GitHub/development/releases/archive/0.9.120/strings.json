@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "Edit group properties directly on the canvas.": {
+    "ja": "グループのプロパティをキャンバス上で直接編集できます。",
+    "zh": "直接在画布上编辑组属性。",
+    "es": "Edita las propiedades del grupo directamente en el lienzo.",
+    "pt": "Edite as propriedades do grupo diretamente na tela de desenho.",
+    "fr": "Modifiez les propriétés du groupe directement sur le canevas.",
+    "de": "Gruppeneigenschaften direkt auf der Zeichenfläche bearbeiten.",
+    "ko": "캔버스에서 그룹 속성을 직접 편집하세요."
+  },
+  "Double-click an address range, region or custom property beside a group name to edit its value, including in VNet and subnet headers.": {
+    "ja": "グループ名の横にあるアドレス範囲、リージョン、カスタムプロパティをダブルクリックすると、その値を編集できます。VNet やサブネットの見出しでも利用できます。",
+    "zh": "双击组名称旁的地址范围、区域或自定义属性即可编辑其值，VNet 和子网标题也支持此操作。",
+    "es": "Haz doble clic en un rango de direcciones, región o propiedad personalizada junto al nombre del grupo para editar su valor, también en los encabezados de VNet y subred.",
+    "pt": "Clique duas vezes em um intervalo de endereços, região ou propriedade personalizada ao lado do nome do grupo para editar seu valor, inclusive nos cabeçalhos de VNet e sub-rede.",
+    "fr": "Double-cliquez sur une plage d'adresses, une région ou une propriété personnalisée à côté du nom du groupe pour modifier sa valeur, y compris dans les en-têtes de VNet et de sous-réseau.",
+    "de": "Doppelklicken Sie auf einen Adressbereich, eine Region oder eine benutzerdefinierte Eigenschaft neben dem Gruppennamen, um den Wert zu bearbeiten. Dies gilt auch für VNet- und Subnetzüberschriften.",
+    "ko": "그룹 이름 옆의 주소 범위, 지역 또는 사용자 지정 속성을 두 번 클릭하여 값을 편집하세요. VNet 및 서브넷 머리글에서도 사용할 수 있습니다."
+  },
+  "Press Enter or click elsewhere to save; Escape cancels. Changes support undo and Save JSON. Group names, dragging and resizing keep their existing behavior.": {
+    "ja": "Enter キーを押すか別の場所をクリックすると保存し、Escape キーでキャンセルします。変更は元に戻せるほか、Save JSON にも保存されます。グループ名の編集、ドラッグ、サイズ変更の動作は変わりません。",
+    "zh": "按 Enter 或点击其他位置保存，按 Escape 取消。更改支持撤销和 Save JSON。组名称编辑、拖动和调整大小的行为保持不变。",
+    "es": "Pulsa Enter o haz clic fuera para guardar; Escape cancela. Los cambios admiten deshacer y Save JSON. La edición del nombre, el arrastre y el cambio de tamaño del grupo conservan su comportamiento.",
+    "pt": "Pressione Enter ou clique fora para salvar; Escape cancela. As alterações permitem desfazer e são incluídas em Save JSON. A edição do nome, o arraste e o redimensionamento do grupo continuam como antes.",
+    "fr": "Appuyez sur Entrée ou cliquez ailleurs pour enregistrer ; Échap annule. Les modifications peuvent être annulées et sont incluses dans Save JSON. Le nom du groupe, le déplacement et le redimensionnement conservent leur fonctionnement.",
+    "de": "Enter oder ein Klick außerhalb speichert; Escape bricht ab. Änderungen können rückgängig gemacht und mit Save JSON gespeichert werden. Gruppenname, Ziehen und Größenänderung funktionieren wie bisher.",
+    "ko": "Enter를 누르거나 다른 곳을 클릭하면 저장되고 Escape는 취소합니다. 변경 사항은 실행 취소와 Save JSON을 지원합니다. 그룹 이름 편집, 끌기 및 크기 조정은 기존과 동일하게 작동합니다."
+  },
+  "Header properties could not be edited directly": {
+    "ja": "見出しのプロパティを直接編集できない",
+    "zh": "无法直接编辑标题中的属性",
+    "es": "Las propiedades del encabezado no se podían editar directamente",
+    "pt": "As propriedades do cabeçalho não podiam ser editadas diretamente",
+    "fr": "Les propriétés de l'en-tête n'étaient pas modifiables directement",
+    "de": "Eigenschaften in der Überschrift waren nicht direkt bearbeitbar",
+    "ko": "머리글 속성을 직접 편집할 수 없었음"
+  },
+  "Double-click a value to edit it in place": {
+    "ja": "値をダブルクリックしてその場で編集",
+    "zh": "双击值即可就地编辑",
+    "es": "Haz doble clic en un valor para editarlo en el mismo lugar",
+    "pt": "Clique duas vezes em um valor para editá-lo no local",
+    "fr": "Double-cliquez sur une valeur pour la modifier sur place",
+    "de": "Einen Wert doppelklicken und direkt bearbeiten",
+    "ko": "값을 두 번 클릭하여 바로 편집"
+  }
+}

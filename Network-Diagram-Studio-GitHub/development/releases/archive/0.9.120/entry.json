@@ -1,0 +1,18 @@
+{
+  "version": "0.9.120",
+  "date": "2026-09-25",
+  "category": "Fix",
+  "title": "Edit group properties directly on the canvas.",
+  "description": "Double-click an address range, region or custom property beside a group name to edit its value, including in VNet and subnet headers.",
+  "before": {
+    "file": "0.9.120-before.png",
+    "version": "0.9.119",
+    "caption": "Header properties could not be edited directly"
+  },
+  "after": {
+    "file": "0.9.120-after.png",
+    "version": "0.9.120",
+    "caption": "Double-click a value to edit it in place"
+  },
+  "note": "Press Enter or click elsewhere to save; Escape cancels. Changes support undo and Save JSON. Group names, dragging and resizing keep their existing behavior."
+}

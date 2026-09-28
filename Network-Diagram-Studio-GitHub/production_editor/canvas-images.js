@@ -14,7 +14,7 @@
     'input', 'textarea', 'select', '[contenteditable]:not([contenteditable="false"])',
     '[role="textbox"]', '[role="dialog"]', '[aria-modal="true"]', 'dialog',
     '[data-nds-notes-panel]', '[data-nds-notes-rail]', '[data-nds-screenshot-editor]',
-    '[data-nds-canvas-image-message]'
+    '[data-nds-canvas-image-message]', '[data-nds-text-editor]'
   ].join(',');
   const COPY_PREFIX = 'Network Diagram Studio selection: ';
   let pointer = null;

@@ -1,0 +1,128 @@
+[
+  {
+    "version": "0.9.124",
+    "date": "2026-09-26",
+    "category": "New feature",
+    "title": "Shape text sizes now go up to 128px.",
+    "description": "Choose 48, 56, 64, 72, 96 or 128px while editing Text boxes, arrows, callouts and other text-capable shapes.",
+    "before": {
+      "file": "0.9.124-before.png",
+      "version": "0.9.123",
+      "caption": "Text-size presets stopped at 40px"
+    },
+    "after": {
+      "file": "0.9.124-after.png",
+      "version": "0.9.124",
+      "caption": "Choose larger text sizes up to 128px"
+    },
+    "note": "Dense text may still shrink to fit. Enlarge the shape to give it more room. Existing diagrams and default text sizes are unchanged."
+  },
+  {
+    "version": "0.9.123",
+    "date": "2026-09-26",
+    "category": "New feature",
+    "title": "Add a Database shape to your diagram.",
+    "description": "Database is now the last tile in Shapes, immediately after the brick wall. Click or drag it onto the canvas.",
+    "before": {
+      "file": "0.9.123-before.png",
+      "version": "0.9.122",
+      "caption": "Empty slot after the brick wall"
+    },
+    "after": {
+      "file": "0.9.123-after.png",
+      "version": "0.9.123",
+      "caption": "Database fills the last Shapes slot"
+    },
+    "note": "Resize, rotate and double-click to edit text. Save JSON keeps it editable; PNG, SVG and screenshots include the shape."
+  },
+  {
+    "version": "0.9.121",
+    "date": "2026-09-26",
+    "category": "New feature",
+    "title": "Align and space text in every shape.",
+    "description": "Double-click a text-capable shape to use left, center or right alignment, indent controls, and paragraph and line spacing. Works with Text boxes, arrows, callouts and other shapes.",
+    "before": {
+      "file": "0.9.121-before.png",
+      "version": "0.9.120",
+      "caption": "Only text size, bold and color were available"
+    },
+    "after": {
+      "file": "0.9.121-after.png",
+      "version": "0.9.121",
+      "caption": "Alignment, indentation and spacing for all text in a shape"
+    },
+    "note": "Formatting applies to the whole shape, not just selected text. Open the alignment menu for Paragraph spacing. Save JSON and image exports keep the formatting."
+  },
+  {
+    "version": "0.9.115",
+    "date": "2026-09-24",
+    "category": "New feature",
+    "title": "Your update history, in one place.",
+    "description": "Open What's new from the version link or Settings. Browse dated releases, compare before/after images and reopen the history whenever you need it.",
+    "before": {
+      "file": "0.9.115-before.png",
+      "version": "0.9.114",
+      "caption": "Only the version number was available"
+    },
+    "after": {
+      "file": "0.9.115-after.png",
+      "version": "0.9.115",
+      "caption": "A centered, scrollable history with visual comparisons"
+    },
+    "note": "History is included offline in both editions. A New badge appears for a version you have not viewed."
+  },
+  {
+    "version": "0.9.114",
+    "date": "2026-09-24",
+    "category": "Appearance",
+    "title": "See-through controls. Clear text and icons.",
+    "description": "Fullscreen, the drawing toolbar, tabs and Notes have 55% transparent backgrounds. Text, icons and selected tools stay solid. Light and dark themes, hover and keyboard focus are preserved.",
+    "before": {
+      "file": "0.9.114-before.png",
+      "version": "0.9.113",
+      "caption": "Solid surfaces hide the diagram underneath"
+    },
+    "after": {
+      "file": "0.9.114-after.png",
+      "version": "0.9.114",
+      "caption": "The diagram shows through; controls stay readable"
+    },
+    "note": "Actual controls over matching sample diagram lines. Open menus and the Notes editor remain opaque."
+  },
+  {
+    "version": "0.9.113",
+    "date": "2026-09-24",
+    "category": "Usability",
+    "title": "Arrange your diagram tabs your way.",
+    "description": "Drag any tab, including Overview, to reorder it. Or focus a tab and press Alt+Left/Right. The active workspace stays open, and browser auto-save remembers the order.",
+    "before": {
+      "file": "0.9.113-before.png",
+      "version": "0.9.112",
+      "caption": "Tabs stay in their original order"
+    },
+    "after": {
+      "file": "0.9.113-after.png",
+      "version": "0.9.113",
+      "caption": "Reorder tabs without switching your diagram"
+    },
+    "note": "Browser auto-save remembers tab order. Save JSON still saves only the current diagram."
+  },
+  {
+    "version": "0.9.112",
+    "date": "2026-09-24",
+    "category": "Performance",
+    "title": "Smoother panning and resource dragging.",
+    "description": "Hand panning and object dragging do less redraw work. Resources, connectors, shapes and pencil strokes stay editable. Undo, saved positions and tab views retain their existing behavior.",
+    "before": {
+      "file": "0.9.112-before.png",
+      "version": "0.9.111",
+      "caption": "Longer drag frame gaps in the measured workload"
+    },
+    "after": {
+      "file": "0.9.112-after.png",
+      "version": "0.9.112",
+      "caption": "Shorter frame gaps in the same workload"
+    },
+    "note": "54 nodes, 62 connectors, 48 shapes and 12 pencil strokes. Median of three controlled runs; results vary."
+  }
+]

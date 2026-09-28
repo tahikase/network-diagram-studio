@@ -1,0 +1,56 @@
+{
+  "Fix": {
+    "ja": "修正",
+    "zh": "修复",
+    "es": "Corrección",
+    "pt": "Correção",
+    "fr": "Correction",
+    "de": "Fehlerbehebung",
+    "ko": "수정"
+  },
+  "Settings stays inside the canvas.": {
+    "ja": "設定画面がキャンバス内に収まります。",
+    "zh": "设置面板保持在画布内。",
+    "es": "Configuración se mantiene dentro del lienzo.",
+    "pt": "O painel de Configurações fica dentro da tela de desenho.",
+    "fr": "Les paramètres restent dans le canevas.",
+    "de": "Die Einstellungen bleiben innerhalb der Zeichenfläche.",
+    "ko": "설정 패널이 캔버스 안에 표시됩니다."
+  },
+  "Settings now fits between the top toolbar and the diagram tabs. The panel follows the visible canvas when window or side-panel sizes change, with scrolling inside the panel.": {
+    "ja": "設定画面を上部ツールバーと図のタブの間に配置しました。ウィンドウやサイドパネルのサイズが変わっても、表示中のキャンバスに合わせて調整され、内容は設定画面内でスクロールできます。",
+    "zh": "设置面板现在位于顶部工具栏与图表选项卡之间。窗口或侧面板大小变化时，它会随可见画布调整，并在面板内部滚动。",
+    "es": "Configuración ahora se ajusta entre la barra superior y las pestañas del diagrama. El panel sigue el lienzo visible al cambiar el tamaño de la ventana o los paneles laterales, con desplazamiento interno.",
+    "pt": "O painel de Configurações agora se ajusta entre a barra superior e as abas do diagrama. Ele acompanha a área visível quando a janela ou os painéis laterais mudam de tamanho, com rolagem interna.",
+    "fr": "Les paramètres se placent entre la barre supérieure et les onglets du diagramme. Le panneau s'adapte au canevas visible lorsque la fenêtre ou les panneaux latéraux changent de taille, avec un défilement interne.",
+    "de": "Die Einstellungen passen nun zwischen die obere Werkzeugleiste und die Diagrammregisterkarten. Bei Änderungen der Fenster- oder Seitenpanelgröße folgt das Panel der sichtbaren Zeichenfläche; der Inhalt scrollt innerhalb des Panels.",
+    "ko": "설정 패널이 상단 도구 모음과 다이어그램 탭 사이에 맞춰집니다. 창이나 측면 패널 크기가 바뀌면 보이는 캔버스에 맞게 조정되며, 내용은 패널 안에서 스크롤됩니다."
+  },
+  "All Settings options remain available. The Settings button and the shared What's new window keep their existing placement and style.": {
+    "ja": "設定のすべての項目を引き続き利用できます。設定ボタンと共通の更新情報ウィンドウの配置やスタイルは変更していません。",
+    "zh": "所有设置选项仍然可用。设置按钮和共用的新增功能窗口保持原有位置与样式。",
+    "es": "Todas las opciones siguen disponibles. El botón Configuración y la ventana Novedades conservan su posición y estilo.",
+    "pt": "Todas as opções continuam disponíveis. O botão Configurações e a janela Novidades mantêm a posição e o estilo existentes.",
+    "fr": "Toutes les options restent disponibles. Le bouton Paramètres et la fenêtre Nouveautés conservent leur position et leur style.",
+    "de": "Alle Einstellungen bleiben verfügbar. Die Position und das Design der Einstellungsschaltfläche und des gemeinsamen Neuigkeitenfensters bleiben unverändert.",
+    "ko": "모든 설정 옵션을 계속 사용할 수 있습니다. 설정 버튼과 공통 새 소식 창의 위치 및 스타일은 변경되지 않습니다."
+  },
+  "Settings overlaps the canvas boundaries": {
+    "ja": "設定画面がキャンバスの境界にはみ出す",
+    "zh": "设置面板超出画布边界",
+    "es": "Configuración rebasa los límites del lienzo",
+    "pt": "O painel ultrapassa os limites da tela",
+    "fr": "Les paramètres dépassent les limites du canevas",
+    "de": "Einstellungen ragen über die Zeichenfläche hinaus",
+    "ko": "설정 패널이 캔버스 경계를 벗어남"
+  },
+  "Settings clears the toolbar and diagram tabs": {
+    "ja": "ツールバーや図のタブに重ならず表示",
+    "zh": "设置面板不再遮挡工具栏和图表选项卡",
+    "es": "Configuración no tapa la barra ni las pestañas",
+    "pt": "O painel não cobre a barra nem as abas",
+    "fr": "Les paramètres laissent la barre et les onglets dégagés",
+    "de": "Werkzeugleiste und Registerkarten bleiben frei",
+    "ko": "도구 모음과 다이어그램 탭을 가리지 않음"
+  }
+}

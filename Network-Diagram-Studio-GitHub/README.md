@@ -44,7 +44,13 @@ is moved later, run the shortcut creator again.
   auto-save remembers the order without changing the active diagram or its view.
 - Imported resources and nested containers can be dragged beyond group borders
   without changing their group membership.
+- Double-click an address range, region or custom property value beside a group
+  name to edit it on the canvas. Press **Enter** or click elsewhere to save;
+  **Escape** cancels. **Tab** saves and moves focus. Undo and Save JSON include
+  these edits. Clear a value to hide its chip; it remains available in Properties.
 - Connectors inside imported groups can be selected and edited directly.
+- Connected shapes remain selectable, movable and text-editable after arrow
+  changes, including resized boxes. Click inside a shape to select it.
 - Overlapping transparent cards do not block another resource's visible icon
   or name, regardless of the order in which resources were added.
 - Hand panning and object dragging avoid unnecessary redraws and toolbar layout
@@ -61,6 +67,24 @@ leave the library unchanged. The palette footer does not show this message.
 
 Review diagrams, screenshots, Notes, and JSON files for sensitive information
 before sharing them.
+
+## Shape text
+
+**Database** is the last tile in **Shapes**, immediately after the brick wall.
+Click or drag it onto the canvas, then move, resize or rotate it like other
+shapes. Double-click to add text; it is an editable shape, not a bitmap icon.
+
+Double-click a Text box or another text-capable shape to open its text toolbar.
+Choose left, center or right alignment, increase/decrease indentation, or open
+**Text alignment > Paragraph spacing** for before/after spacing and line spacing.
+These controls apply to **all text in the shape**, not only selected text.
+Text sizes include **48, 56, 64, 72, 96 and 128px**. Existing auto-fit behavior
+is unchanged: if dense text still appears small, enlarge the shape to give it
+more room. Existing diagrams and default text sizes do not change.
+**Enter** or **Shift+Enter** starts a new paragraph; automatic wrapping does not.
+**Ctrl+Enter** (**Cmd+Enter** on Mac) or clicking elsewhere finishes editing.
+**Escape** cancels text edits; Undo also reverses formatting. Save JSON, browser
+auto-save and image exports retain the formatting.
 
 ## Three-minute demo
 
@@ -86,6 +110,8 @@ offline, and the text follows the selected interface language. Screenshot
 labels retain the language of the original capture. A quiet New badge marks
 an unseen version; the window does not open automatically while you draw.
 Viewing or closing history does not change your diagram.
+Only new product features and enhancements appear here. Bug fixes and internal
+maintenance are omitted and do not trigger a New badge; the fixes remain in the app.
 The Settings panel stays inside the drawing area, below the top toolbar and
 above the diagram tabs. It adapts to window and side-panel resizing, with
 internal scrolling and a visible heading and version.
@@ -106,6 +132,7 @@ README.md
 README.txt
 AGENTS.md
 THIRD-PARTY-NOTICES.txt
+development\
 ```
 
 Keep `index.html` and all four `production_*` folders together. They provide ARM
@@ -113,9 +140,32 @@ import, the walkthrough, editor controls, connector routing, screenshots, and
 the vendor icon catalog. Keep the license and notice files with redistributed
 copies.
 
+## Developing and releasing
+
+This is the main production project. The `development` folder contains its own
+editable source, runtime asset templates, dependency lockfile, tests and release
+tools. A colleague can copy this complete folder and work without a separate
+demo project. See `development\README.md` for setup and the release workflow.
+
+Normal builds stage a candidate without replacing the installed app.
+Publication is a separate, verified command and updates only this production
+folder. The demo/testing project is independent and is not automatically
+updated. Keep `development` when sharing editable source; omit its
+`node_modules` and `.release` directories.
+Staged runtime-only candidates omit `development`; share the whole main
+project, not just a staged candidate, when a colleague needs editable source.
+
+Every release needs a classification checked by the included tools. Only new
+product features and enhancements require a localized What's new entry and
+real comparison images in the shared layout. Classify bug-fix-only releases as
+`fix` and maintenance as `internal`; neither belongs in the user history.
+The build rejects public Fix categories and nonpublic classifications. Mixed
+releases announce only the new product update. Authors still review the content
+and must not relabel bug fixes as features or enhancements.
+
 ## Version
 
-Network Diagram Studio v0.9.117
+Network Diagram Studio v0.9.126
 
 ## License
 

@@ -1,0 +1,5 @@
+development/node_modules/
+development/.release/
+development/_test_*.png
+development/_test_*.svg
+development/*.tsbuildinfo

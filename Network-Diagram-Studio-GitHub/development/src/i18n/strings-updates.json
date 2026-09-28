@@ -1,0 +1,326 @@
+{
+  "Shape text sizes now go up to 128px.": {
+    "ja": "図形内の文字サイズを最大 128px まで選べます。",
+    "zh": "形状文本现可选择最大 128px 的字号。",
+    "es": "El tamaño del texto de las formas ahora llega hasta 128px.",
+    "pt": "O tamanho do texto das formas agora vai até 128px.",
+    "fr": "La taille du texte des formes peut désormais atteindre 128px.",
+    "de": "Die Textgröße in Formen lässt sich jetzt bis 128px auswählen.",
+    "ko": "도형의 글자 크기를 이제 최대 128px까지 선택할 수 있습니다."
+  },
+  "Choose 48, 56, 64, 72, 96 or 128px while editing Text boxes, arrows, callouts and other text-capable shapes.": {
+    "ja": "テキストボックス、矢印、吹き出しなど、文字を入力できる図形の編集中に 48、56、64、72、96、128px を選べます。",
+    "zh": "编辑文本框、箭头、标注及其他可输入文本的形状时，可选择 48、56、64、72、96 或 128px。",
+    "es": "Elige 48, 56, 64, 72, 96 o 128px al editar cuadros de texto, flechas, llamadas y otras formas que admitan texto.",
+    "pt": "Escolha 48, 56, 64, 72, 96 ou 128px ao editar caixas de texto, setas, chamadas e outras formas que aceitem texto.",
+    "fr": "Choisissez 48, 56, 64, 72, 96 ou 128px lors de la modification des zones de texte, flèches, légendes et autres formes contenant du texte.",
+    "de": "Wählen Sie beim Bearbeiten von Textfeldern, Pfeilen, Legenden und anderen Formen mit Text zwischen 48, 56, 64, 72, 96 und 128px.",
+    "ko": "텍스트 상자, 화살표, 설명선 등 텍스트를 입력할 수 있는 도형을 편집할 때 48, 56, 64, 72, 96 또는 128px을 선택하세요."
+  },
+  "Text-size presets stopped at 40px": {
+    "ja": "選べる文字サイズは 40px まで",
+    "zh": "预设字号仅到 40px",
+    "es": "Los tamaños predefinidos llegaban hasta 40px",
+    "pt": "Os tamanhos predefinidos iam até 40px",
+    "fr": "Les tailles prédéfinies s'arrêtaient à 40px",
+    "de": "Voreingestellte Textgrößen endeten bei 40px",
+    "ko": "기존 글자 크기 옵션은 40px까지"
+  },
+  "Choose larger text sizes up to 128px": {
+    "ja": "最大 128px の大きな文字サイズを選択",
+    "zh": "可选择最大 128px 的更大字号",
+    "es": "Elige tamaños de texto más grandes, hasta 128px",
+    "pt": "Escolha tamanhos de texto maiores, até 128px",
+    "fr": "Choisissez des tailles de texte plus grandes, jusqu'à 128px",
+    "de": "Größere Textgrößen bis 128px auswählen",
+    "ko": "최대 128px의 더 큰 글자 크기 선택"
+  },
+  "Dense text may still shrink to fit. Enlarge the shape to give it more room. Existing diagrams and default text sizes are unchanged.": {
+    "ja": "文字が多い場合は、図形に収まるように小さく表示されることがあります。図形を大きくして表示領域を広げてください。既存の図や既定の文字サイズは変わりません。",
+    "zh": "文本较多时仍可能缩小以适应形状。放大形状可提供更多空间。现有图表和默认字号保持不变。",
+    "es": "El texto abundante puede seguir reduciéndose para encajar. Amplía la forma para darle más espacio. Los diagramas existentes y los tamaños predeterminados no cambian.",
+    "pt": "Textos longos ainda podem ser reduzidos para caber. Aumente a forma para dar mais espaço. Os diagramas existentes e os tamanhos de texto padrão não mudam.",
+    "fr": "Un texte dense peut toujours être réduit pour tenir dans la forme. Agrandissez celle-ci pour lui donner plus d'espace. Les diagrammes existants et les tailles de texte par défaut restent inchangés.",
+    "de": "Umfangreicher Text kann weiterhin verkleinert werden, damit er in die Form passt. Vergrößern Sie die Form, um mehr Platz zu schaffen. Vorhandene Diagramme und Standardtextgrößen bleiben unverändert.",
+    "ko": "텍스트가 많으면 도형에 맞게 작게 표시될 수 있습니다. 도형을 키워 공간을 확보하세요. 기존 다이어그램과 기본 글자 크기는 바뀌지 않습니다."
+  },
+  "Add a Database shape to your diagram.": {
+    "ja": "図にデータベースの図形を追加できます。",
+    "zh": "在图表中添加数据库形状。",
+    "es": "Añade una forma de base de datos al diagrama.",
+    "pt": "Adicione uma forma de banco de dados ao diagrama.",
+    "fr": "Ajoutez une forme de base de données à votre diagramme.",
+    "de": "Fügen Sie Ihrem Diagramm eine Datenbankform hinzu.",
+    "ko": "다이어그램에 데이터베이스 도형을 추가하세요."
+  },
+  "Database is now the last tile in Shapes, immediately after the brick wall. Click or drag it onto the canvas.": {
+    "ja": "Shapes の最後、レンガの壁のすぐ右に Database が追加されました。クリックするか、キャンバスへドラッグして配置できます。",
+    "zh": "Database 现位于 Shapes 的最后一个位置，紧接在砖墙之后。点击或将其拖到画布上即可添加。",
+    "es": "Database ocupa ahora la última posición de Shapes, justo después del muro de ladrillos. Haz clic o arrástrala al lienzo.",
+    "pt": "Database agora ocupa a última posição em Shapes, logo após a parede de tijolos. Clique ou arraste para a tela de desenho.",
+    "fr": "Database est désormais la dernière tuile de Shapes, juste après le mur de briques. Cliquez dessus ou faites-la glisser sur le canevas.",
+    "de": "Database ist jetzt die letzte Kachel in Shapes, direkt nach der Ziegelmauer. Klicken Sie darauf oder ziehen Sie sie auf die Zeichenfläche.",
+    "ko": "Shapes의 마지막 칸, 벽돌 벽 바로 다음에 Database가 추가되었습니다. 클릭하거나 캔버스로 끌어 놓으세요."
+  },
+  "Empty slot after the brick wall": {
+    "ja": "レンガの壁の右は空きスペース",
+    "zh": "砖墙后的空位",
+    "es": "Espacio vacío después del muro de ladrillos",
+    "pt": "Espaço vazio após a parede de tijolos",
+    "fr": "Emplacement vide après le mur de briques",
+    "de": "Leerer Platz nach der Ziegelmauer",
+    "ko": "벽돌 벽 다음의 빈칸"
+  },
+  "Database fills the last Shapes slot": {
+    "ja": "Shapes の最後の空きスペースに Database を追加",
+    "zh": "Database 填入 Shapes 的最后一个空位",
+    "es": "Database ocupa el último espacio de Shapes",
+    "pt": "Database preenche o último espaço em Shapes",
+    "fr": "Database occupe le dernier emplacement de Shapes",
+    "de": "Database füllt den letzten Platz in Shapes",
+    "ko": "Shapes의 마지막 칸에 Database 추가"
+  },
+  "Resize, rotate and double-click to edit text. Save JSON keeps it editable; PNG, SVG and screenshots include the shape.": {
+    "ja": "サイズ変更や回転ができ、ダブルクリックで文字を編集できます。Save JSON では編集可能な状態で保存され、PNG・SVG・スクリーンショットにも図形が含まれます。",
+    "zh": "可调整大小、旋转，并双击编辑文本。Save JSON 保留可编辑状态；PNG、SVG 和截图也会包含此形状。",
+    "es": "Cambia el tamaño, gírala y haz doble clic para editar el texto. Save JSON la mantiene editable; PNG, SVG y las capturas de pantalla incluyen la forma.",
+    "pt": "Redimensione, gire e clique duas vezes para editar o texto. Save JSON mantém a forma editável; PNG, SVG e capturas de tela incluem a forma.",
+    "fr": "Redimensionnez-la, faites-la pivoter et double-cliquez pour modifier le texte. Save JSON la conserve modifiable ; les exports PNG, SVG et les captures d'écran incluent la forme.",
+    "de": "Ändern Sie die Größe, drehen Sie die Form und bearbeiten Sie den Text per Doppelklick. Save JSON erhält die Bearbeitbarkeit; PNG, SVG und Screenshots enthalten die Form.",
+    "ko": "크기를 조절하거나 회전하고, 두 번 클릭하여 텍스트를 편집할 수 있습니다. Save JSON은 편집 가능한 상태를 유지하며, PNG, SVG 및 스크린샷에도 도형이 포함됩니다."
+  },
+  "Align and space text in every shape.": {
+    "ja": "すべての図形で文字の配置と間隔を調整できます。",
+    "zh": "调整各类形状中的文本对齐和间距。",
+    "es": "Alinea y ajusta el espaciado del texto en todas las formas.",
+    "pt": "Alinhe e ajuste o espaçamento do texto em todas as formas.",
+    "fr": "Alignez et espacez le texte dans toutes les formes.",
+    "de": "Text in allen Formen ausrichten und Abstände anpassen.",
+    "ko": "모든 도형에서 텍스트 정렬과 간격을 조정하세요."
+  },
+  "Double-click a text-capable shape to use left, center or right alignment, indent controls, and paragraph and line spacing. Works with Text boxes, arrows, callouts and other shapes.": {
+    "ja": "文字を入力できる図形をダブルクリックすると、左揃え・中央揃え・右揃え、インデント、段落の間隔、行間を調整できます。テキストボックス、矢印、吹き出しなどで利用できます。",
+    "zh": "双击可输入文本的形状，即可设置左对齐、居中、右对齐、缩进、段落间距和行距。支持文本框、箭头、标注及其他形状。",
+    "es": "Haz doble clic en una forma que admita texto para alinearlo a la izquierda, al centro o a la derecha y ajustar la sangría, el espaciado entre párrafos y el interlineado. Funciona con cuadros de texto, flechas, llamadas y otras formas.",
+    "pt": "Clique duas vezes em uma forma que aceite texto para alinhá-lo à esquerda, ao centro ou à direita e ajustar o recuo, o espaçamento entre parágrafos e entre linhas. Funciona com caixas de texto, setas, chamadas e outras formas.",
+    "fr": "Double-cliquez sur une forme contenant du texte pour l'aligner à gauche, au centre ou à droite, ajuster le retrait, l'espacement des paragraphes et l'interligne. Fonctionne avec les zones de texte, les flèches, les légendes et les autres formes.",
+    "de": "Doppelklicken Sie auf eine Form mit Text, um ihn linksbündig, zentriert oder rechtsbündig auszurichten und Einzug, Absatz- und Zeilenabstand anzupassen. Dies funktioniert mit Textfeldern, Pfeilen, Legenden und anderen Formen.",
+    "ko": "텍스트를 입력할 수 있는 도형을 두 번 클릭하면 왼쪽·가운데·오른쪽 정렬, 들여쓰기, 문단 간격 및 줄 간격을 조정할 수 있습니다. 텍스트 상자, 화살표, 설명선 등에서 사용할 수 있습니다."
+  },
+  "Only text size, bold and color were available": {
+    "ja": "文字サイズ・太字・色のみ調整可能",
+    "zh": "仅支持文字大小、粗体和颜色",
+    "es": "Solo se podían cambiar el tamaño, la negrita y el color",
+    "pt": "Só era possível alterar tamanho, negrito e cor",
+    "fr": "Seuls la taille, le gras et la couleur étaient disponibles",
+    "de": "Bisher nur Schriftgröße, Fettdruck und Farbe",
+    "ko": "글자 크기, 굵게 및 색상만 조정 가능"
+  },
+  "Alignment, indentation and spacing for all text in a shape": {
+    "ja": "図形内のすべての文字の配置・インデント・間隔を調整",
+    "zh": "设置形状内所有文本的对齐、缩进和间距",
+    "es": "Alineación, sangría y espaciado para todo el texto de una forma",
+    "pt": "Alinhamento, recuo e espaçamento para todo o texto de uma forma",
+    "fr": "Alignement, retrait et espacement de tout le texte d'une forme",
+    "de": "Ausrichtung, Einzug und Abstände für den gesamten Formtext",
+    "ko": "도형 내 모든 텍스트의 정렬, 들여쓰기 및 간격 조정"
+  },
+  "Formatting applies to the whole shape, not just selected text. Open the alignment menu for Paragraph spacing. Save JSON and image exports keep the formatting.": {
+    "ja": "書式は選択した文字だけでなく、図形内のすべての文字に適用されます。段落の間隔は文字の配置メニューから設定できます。Save JSON や画像へのエクスポートでも書式が保持されます。",
+    "zh": "格式设置应用于形状中的全部文本，而不仅是选中的文字。在对齐菜单中打开段落间距。Save JSON 和图像导出都会保留这些格式。",
+    "es": "El formato se aplica a todo el texto de la forma, no solo al seleccionado. Abre el menú de alineación para ajustar el espaciado entre párrafos. Save JSON y las imágenes exportadas conservan el formato.",
+    "pt": "A formatação se aplica a todo o texto da forma, não apenas ao trecho selecionado. Abra o menu de alinhamento para ajustar o espaçamento entre parágrafos. Save JSON e as imagens exportadas mantêm a formatação.",
+    "fr": "La mise en forme s'applique à tout le texte de la forme, pas seulement à la sélection. Ouvrez le menu d'alignement pour régler l'espacement des paragraphes. Save JSON et les images exportées conservent la mise en forme.",
+    "de": "Die Formatierung gilt für den gesamten Text der Form, nicht nur für die Auswahl. Den Absatzabstand stellen Sie im Ausrichtungsmenü ein. Save JSON und exportierte Bilder behalten die Formatierung bei.",
+    "ko": "서식은 선택한 부분뿐 아니라 도형의 모든 텍스트에 적용됩니다. 정렬 메뉴에서 문단 간격을 설정할 수 있습니다. Save JSON과 이미지 내보내기에서도 서식이 유지됩니다."
+  },
+  "What's new": {
+    "ja": "更新情報", "zh": "更新内容", "es": "Novedades", "pt": "Novidades", "fr": "Nouveautés", "de": "Neuigkeiten", "ko": "업데이트"
+  },
+  "Latest v{version} | {count} releases": {
+    "ja": "最新 v{version} | {count} 件のリリース", "zh": "最新 v{version} | {count} 个版本", "es": "Última v{version} | {count} versiones", "pt": "Última v{version} | {count} versões", "fr": "Dernière v{version} | {count} versions", "de": "Aktuell v{version} | {count} Versionen", "ko": "최신 v{version} | 릴리스 {count}개"
+  },
+  "Jump to version": {
+    "ja": "バージョンを選択", "zh": "跳转到版本", "es": "Ir a la versión", "pt": "Ir para a versão", "fr": "Aller à la version", "de": "Zur Version springen", "ko": "버전으로 이동"
+  },
+  "Newest first": {
+    "ja": "新しい順", "zh": "最新版本在前", "es": "Más recientes primero", "pt": "Mais recentes primeiro", "fr": "Plus récentes d'abord", "de": "Neueste zuerst", "ko": "최신순"
+  },
+  "Latest": {
+    "ja": "最新", "zh": "最新", "es": "Última", "pt": "Última", "fr": "Dernière", "de": "Aktuell", "ko": "최신"
+  },
+  "Before this update": {
+    "ja": "更新前", "zh": "更新前", "es": "Antes", "pt": "Antes", "fr": "Avant", "de": "Vorher", "ko": "업데이트 전"
+  },
+  "After this update": {
+    "ja": "更新後", "zh": "更新后", "es": "Después", "pt": "Depois", "fr": "Après", "de": "Nachher", "ko": "업데이트 후"
+  },
+  "View larger image": {
+    "ja": "画像を拡大", "zh": "查看大图", "es": "Ampliar imagen", "pt": "Ampliar imagem", "fr": "Agrandir l'image", "de": "Bild vergrößern", "ko": "이미지 확대"
+  },
+  "Back to release history": {
+    "ja": "更新履歴に戻る", "zh": "返回更新历史", "es": "Volver al historial", "pt": "Voltar ao histórico", "fr": "Retour à l'historique", "de": "Zurück zum Verlauf", "ko": "업데이트 기록으로 돌아가기"
+  },
+  "Back to diagram": {
+    "ja": "図に戻る", "zh": "返回关系图", "es": "Volver al diagrama", "pt": "Voltar ao diagrama", "fr": "Retour au schéma", "de": "Zurück zum Diagramm", "ko": "다이어그램으로 돌아가기"
+  },
+  "Image preview": {
+    "ja": "画像プレビュー", "zh": "图片预览", "es": "Vista previa de imagen", "pt": "Prévia da imagem", "fr": "Aperçu de l'image", "de": "Bildvorschau", "ko": "이미지 미리 보기"
+  },
+  "Close update history": {
+    "ja": "更新情報を閉じる", "zh": "关闭更新历史", "es": "Cerrar el historial", "pt": "Fechar histórico", "fr": "Fermer l'historique", "de": "Verlauf schließen", "ko": "업데이트 기록 닫기"
+  },
+  "Scrollable release history": {
+    "ja": "スクロールできる更新履歴", "zh": "可滚动的更新历史", "es": "Historial desplazable", "pt": "Histórico com rolagem", "fr": "Historique défilant", "de": "Scrollbarer Versionsverlauf", "ko": "스크롤 가능한 업데이트 기록"
+  },
+  "Release {position} of {count}": {
+    "ja": "{count} 件中 {position} 件目", "zh": "第 {position} 个版本，共 {count} 个", "es": "Versión {position} de {count}", "pt": "Versão {position} de {count}", "fr": "Version {position} sur {count}", "de": "Version {position} von {count}", "ko": "릴리스 {position}/{count}"
+  },
+  "History from v{version}": {
+    "ja": "v{version} 以降の履歴", "zh": "从 v{version} 开始的历史", "es": "Historial desde v{version}", "pt": "Histórico desde v{version}", "fr": "Historique depuis v{version}", "de": "Verlauf ab v{version}", "ko": "v{version}부터의 기록"
+  },
+  "New updates": {
+    "ja": "新着", "zh": "新更新", "es": "Nuevo", "pt": "Novo", "fr": "Nouveau", "de": "Neu", "ko": "새 소식"
+  },
+  "Release history and before/after images": {
+    "ja": "更新履歴と更新前後の画像", "zh": "更新历史及前后对比图", "es": "Historial e imágenes del antes y después", "pt": "Histórico e imagens de antes e depois", "fr": "Historique et images avant/après", "de": "Versionsverlauf und Vorher-Nachher-Bilder", "ko": "업데이트 기록 및 전후 이미지"
+  },
+  "This browser could not remember the viewed version. The New badge may appear again.": {
+    "ja": "閲覧済みのバージョンをブラウザーに保存できませんでした。新着マークが再び表示されることがあります。",
+    "zh": "浏览器无法保存已查看的版本。新更新标记可能再次出现。",
+    "es": "El navegador no pudo guardar la versión vista. El indicador de novedades puede volver a aparecer.",
+    "pt": "O navegador não pôde salvar a versão visualizada. O indicador de novidades pode reaparecer.",
+    "fr": "Le navigateur n'a pas pu mémoriser la version consultée. Le badge peut réapparaître.",
+    "de": "Der Browser konnte die gelesene Version nicht speichern. Die Neu-Markierung kann erneut erscheinen.",
+    "ko": "브라우저가 확인한 버전을 저장하지 못했습니다. 새 소식 표시가 다시 나타날 수 있습니다."
+  },
+  "The release image is unavailable. Check the application package.": {
+    "ja": "更新画像を表示できません。アプリのパッケージを確認してください。",
+    "zh": "更新图片不可用。请检查应用程序包。",
+    "es": "La imagen no está disponible. Comprueba el paquete de la aplicación.",
+    "pt": "A imagem não está disponível. Verifique o pacote do aplicativo.",
+    "fr": "L'image est indisponible. Vérifiez le package de l'application.",
+    "de": "Das Versionsbild ist nicht verfügbar. Prüfen Sie das Anwendungspaket.",
+    "ko": "업데이트 이미지를 사용할 수 없습니다. 앱 패키지를 확인하세요."
+  },
+  "New feature": {
+    "ja": "新機能", "zh": "新功能", "es": "Nueva función", "pt": "Novo recurso", "fr": "Nouvelle fonction", "de": "Neue Funktion", "ko": "새 기능"
+  },
+  "Appearance": {
+    "ja": "外観", "zh": "外观", "es": "Apariencia", "pt": "Aparência", "fr": "Apparence", "de": "Darstellung", "ko": "모양"
+  },
+  "Usability": {
+    "ja": "使いやすさ", "zh": "易用性", "es": "Usabilidad", "pt": "Usabilidade", "fr": "Ergonomie", "de": "Bedienbarkeit", "ko": "사용성"
+  },
+  "Performance": {
+    "ja": "パフォーマンス", "zh": "性能", "es": "Rendimiento", "pt": "Desempenho", "fr": "Performances", "de": "Leistung", "ko": "성능"
+  },
+  "Your update history, in one place.": {
+    "ja": "更新履歴を一か所で確認できます。", "zh": "集中查看更新历史。", "es": "Todas las novedades en un solo lugar.", "pt": "Seu histórico de atualizações em um só lugar.", "fr": "Votre historique de mises à jour au même endroit.", "de": "Ihr Update-Verlauf an einem Ort.", "ko": "업데이트 기록을 한곳에서 확인하세요."
+  },
+  "Open What's new from the version link or Settings. Browse dated releases, compare before/after images and reopen the history whenever you need it.": {
+    "ja": "バージョンのリンクまたは設定から「更新情報」を開けます。日付付きの更新履歴と更新前後の画像を確認でき、いつでも開き直せます。",
+    "zh": "从版本链接或设置打开更新内容。浏览带日期的版本、比较更新前后的图片，并随时重新打开历史记录。",
+    "es": "Abre Novedades desde el enlace de versión o Ajustes. Consulta versiones por fecha, compara imágenes y vuelve al historial cuando lo necesites.",
+    "pt": "Abra Novidades pelo link da versão ou pelas Configurações. Consulte versões por data, compare imagens e reabra o histórico quando precisar.",
+    "fr": "Ouvrez Nouveautés depuis le lien de version ou les Paramètres. Consultez les versions datées, comparez les images et retrouvez l'historique à tout moment.",
+    "de": "Öffnen Sie Neuigkeiten über den Versionslink oder die Einstellungen. Sehen Sie datierte Updates, vergleichen Sie Bilder und öffnen Sie den Verlauf jederzeit erneut.",
+    "ko": "버전 링크나 설정에서 업데이트를 여세요. 날짜별 릴리스와 전후 이미지를 확인하고 필요할 때 언제든 기록을 다시 열 수 있습니다."
+  },
+  "Only the version number was available": {
+    "ja": "以前はバージョン番号のみ表示", "zh": "以前只能查看版本号", "es": "Antes solo se mostraba el número de versión", "pt": "Antes, apenas o número da versão", "fr": "Seul le numéro de version était disponible", "de": "Bisher war nur die Versionsnummer verfügbar", "ko": "이전에는 버전 번호만 표시"
+  },
+  "A centered, scrollable history with visual comparisons": {
+    "ja": "画面中央でスクロールしながら画像を比較", "zh": "居中显示可滚动的历史和图片对比", "es": "Historial centrado y desplazable con comparaciones", "pt": "Histórico centralizado com rolagem e comparações", "fr": "Historique centré, défilant, avec comparaisons", "de": "Zentrierter, scrollbarer Verlauf mit Bildvergleichen", "ko": "화면 중앙의 스크롤 기록과 이미지 비교"
+  },
+  "History is included offline in both editions. A New badge appears for a version you have not viewed.": {
+    "ja": "両エディションでオフライン閲覧できます。未確認のバージョンには新着マークが表示されます。",
+    "zh": "两个版本均可离线查看历史。未查看的版本会显示新更新标记。",
+    "es": "El historial funciona sin conexión en ambas ediciones. Un indicador señala las versiones que aún no has visto.",
+    "pt": "O histórico funciona offline nas duas edições. Um indicador destaca versões ainda não visualizadas.",
+    "fr": "L'historique est disponible hors ligne dans les deux éditions. Un badge signale une version non consultée.",
+    "de": "Der Verlauf ist in beiden Editionen offline enthalten. Ungelesene Versionen werden als neu markiert.",
+    "ko": "두 에디션 모두 오프라인으로 기록을 볼 수 있습니다. 확인하지 않은 버전에는 새 소식이 표시됩니다."
+  },
+  "See-through controls. Clear text and icons.": {
+    "ja": "背景が透けても、文字とアイコンは鮮明に。", "zh": "控件透明，文字与图标清晰。", "es": "Controles transparentes, texto e iconos claros.", "pt": "Controles transparentes, texto e ícones nítidos.", "fr": "Contrôles translucides, texte et icônes nets.", "de": "Durchsichtige Steuerelemente, klare Texte und Symbole.", "ko": "배경은 투명하게, 글자와 아이콘은 선명하게."
+  },
+  "Fullscreen, the drawing toolbar, tabs and Notes have 55% transparent backgrounds. Text, icons and selected tools stay solid. Light and dark themes, hover and keyboard focus are preserved.": {
+    "ja": "全画面、描画ツールバー、タブ、メモの背景を55%透明にしました。文字、アイコン、選択中のツールは不透明です。明暗テーマ、ホバー、キーボードフォーカスにも対応しています。",
+    "zh": "全屏、绘图工具栏、标签页和笔记的背景透明度为55%。文字、图标和选中工具保持不透明，并保留明暗主题、悬停和键盘焦点效果。",
+    "es": "Pantalla completa, herramientas, pestañas y notas tienen fondos con un 55% de transparencia. Texto, iconos y herramientas seleccionadas siguen opacos. Se conservan temas, efectos al pasar el cursor y foco.",
+    "pt": "Tela cheia, barra de desenho, guias e notas têm fundos 55% transparentes. Texto, ícones e ferramentas selecionadas continuam opacos. Temas, realce do mouse e foco são preservados.",
+    "fr": "Plein écran, barre de dessin, onglets et notes ont des fonds transparents à 55 %. Texte, icônes et outils sélectionnés restent opaques. Thèmes, survol et focus sont préservés.",
+    "de": "Vollbild, Zeichenleiste, Tabs und Notizen haben zu 55 % transparente Hintergründe. Text, Symbole und ausgewählte Werkzeuge bleiben deckend. Designs, Hover und Tastaturfokus bleiben erhalten.",
+    "ko": "전체 화면, 그리기 도구 모음, 탭, 메모의 배경을 55% 투명하게 했습니다. 글자, 아이콘, 선택 도구는 선명하게 유지되며 테마, 호버와 키보드 포커스도 유지됩니다."
+  },
+  "Solid surfaces hide the diagram underneath": {
+    "ja": "不透明な背景で図が隠れる", "zh": "不透明背景遮住下方关系图", "es": "Los fondos opacos ocultan el diagrama", "pt": "Fundos opacos ocultam o diagrama", "fr": "Les surfaces opaques masquent le schéma", "de": "Deckende Flächen verdecken das Diagramm", "ko": "불투명한 배경이 다이어그램을 가림"
+  },
+  "The diagram shows through; controls stay readable": {
+    "ja": "図が透けて見え、操作部も読みやすい", "zh": "透出关系图，控件仍清晰可读", "es": "El diagrama se ve y los controles siguen claros", "pt": "O diagrama aparece e os controles ficam legíveis", "fr": "Le schéma reste visible, les contrôles lisibles", "de": "Das Diagramm scheint durch, die Bedienung bleibt lesbar", "ko": "다이어그램이 비쳐도 조작부는 선명함"
+  },
+  "Actual controls over matching sample diagram lines. Open menus and the Notes editor remain opaque.": {
+    "ja": "同じサンプル線の上で実際の操作部を比較しています。開いたメニューとメモ編集画面は不透明のままです。",
+    "zh": "在相同示例线条上对比实际控件。打开的菜单和笔记编辑器仍保持不透明。",
+    "es": "Controles reales sobre las mismas líneas de ejemplo. Los menús abiertos y el editor de notas siguen opacos.",
+    "pt": "Controles reais sobre as mesmas linhas de exemplo. Menus abertos e o editor de notas continuam opacos.",
+    "fr": "Contrôles réels sur les mêmes lignes d'exemple. Les menus ouverts et l'éditeur de notes restent opaques.",
+    "de": "Echte Steuerelemente über identischen Beispiellinien. Geöffnete Menüs und der Notizeditor bleiben deckend.",
+    "ko": "동일한 예제 선 위의 실제 조작부를 비교했습니다. 열린 메뉴와 메모 편집기는 불투명하게 유지됩니다."
+  },
+  "Arrange your diagram tabs your way.": {
+    "ja": "図のタブを好きな順番に。", "zh": "按自己的习惯排列标签页。", "es": "Ordena las pestañas a tu manera.", "pt": "Organize as guias do seu jeito.", "fr": "Organisez vos onglets à votre façon.", "de": "Ordnen Sie Ihre Diagramm-Tabs nach Wunsch.", "ko": "다이어그램 탭을 원하는 순서로 정렬하세요."
+  },
+  "Drag any tab, including Overview, to reorder it. Or focus a tab and press Alt+Left/Right. The active workspace stays open, and browser auto-save remembers the order.": {
+    "ja": "Overviewを含むすべてのタブをドラッグして並べ替えられます。フォーカスしてAlt+左右矢印でも移動できます。作業中の図は開いたまま、順序はブラウザーに自動保存されます。",
+    "zh": "拖动任意标签页（包括Overview）即可排序，也可聚焦后按Alt+左/右方向键。当前工作区保持打开，浏览器自动保存顺序。",
+    "es": "Arrastra cualquier pestaña, incluida Overview, o enfócala y pulsa Alt+Izquierda/Derecha. El espacio activo sigue abierto y el navegador guarda el orden.",
+    "pt": "Arraste qualquer guia, inclusive Overview, ou foque-a e pressione Alt+Esquerda/Direita. O espaço ativo permanece aberto e o navegador salva a ordem.",
+    "fr": "Faites glisser un onglet, y compris Overview, ou utilisez Alt+Gauche/Droite après l'avoir ciblé. L'espace actif reste ouvert et l'ordre est sauvegardé.",
+    "de": "Verschieben Sie jeden Tab, auch Overview, per Ziehen oder mit Alt+Pfeil links/rechts. Der aktive Arbeitsbereich bleibt geöffnet; die automatische Speicherung merkt sich die Reihenfolge.",
+    "ko": "Overview를 포함한 모든 탭을 드래그하거나 포커스 후 Alt+왼쪽/오른쪽 화살표로 정렬할 수 있습니다. 작업 중인 화면은 유지되고 순서는 브라우저에 자동 저장됩니다."
+  },
+  "Tabs stay in their original order": {
+    "ja": "以前は元のタブ順序のまま", "zh": "标签页保持原始顺序", "es": "Las pestañas mantienen su orden original", "pt": "As guias mantêm a ordem original", "fr": "Les onglets conservent leur ordre initial", "de": "Tabs behalten ihre ursprüngliche Reihenfolge", "ko": "탭이 원래 순서로 유지됨"
+  },
+  "Reorder tabs without switching your diagram": {
+    "ja": "図を切り替えずにタブを並べ替え", "zh": "不切换关系图即可排序", "es": "Reordena sin cambiar de diagrama", "pt": "Reordene sem trocar de diagrama", "fr": "Réordonnez sans changer de schéma", "de": "Tabs ohne Diagrammwechsel umordnen", "ko": "다이어그램을 전환하지 않고 탭 정렬"
+  },
+  "Browser auto-save remembers tab order. Save JSON still saves only the current diagram.": {
+    "ja": "タブの順序はブラウザーに自動保存されます。JSON保存の対象は現在の図のみです。",
+    "zh": "浏览器自动保存标签页顺序。保存JSON仍仅保存当前关系图。",
+    "es": "El navegador guarda el orden de las pestañas. Guardar JSON sigue guardando solo el diagrama actual.",
+    "pt": "O navegador salva a ordem das guias. Salvar JSON continua salvando apenas o diagrama atual.",
+    "fr": "La sauvegarde du navigateur mémorise l'ordre. Enregistrer JSON ne sauvegarde toujours que le schéma actuel.",
+    "de": "Die automatische Speicherung merkt sich die Tab-Reihenfolge. JSON speichern sichert weiterhin nur das aktuelle Diagramm.",
+    "ko": "브라우저가 탭 순서를 자동 저장합니다. JSON 저장은 현재 다이어그램만 저장합니다."
+  },
+  "Smoother panning and resource dragging.": {
+    "ja": "画面移動とリソースのドラッグを滑らかに。", "zh": "平移和资源拖动更加流畅。", "es": "Desplazamiento y arrastre más fluidos.", "pt": "Movimentação e arraste mais suaves.", "fr": "Déplacement et glissement plus fluides.", "de": "Flüssigeres Schwenken und Verschieben.", "ko": "화면 이동과 리소스 드래그가 더 부드러워졌습니다."
+  },
+  "Hand panning and object dragging do less redraw work. Resources, connectors, shapes and pencil strokes stay editable. Undo, saved positions and tab views retain their existing behavior.": {
+    "ja": "ハンドでの画面移動やオブジェクトのドラッグ時の再描画を減らしました。リソース、接続線、図形、ペン描画は編集可能なままです。元に戻す操作、保存位置、タブの表示も維持されます。",
+    "zh": "手形平移和对象拖动减少了重绘。资源、连接线、形状和笔画仍可编辑，撤销、保存位置和标签页视图保持原有行为。",
+    "es": "Mover el lienzo y arrastrar objetos requiere menos redibujado. Recursos, conectores, formas y trazos siguen editables. Deshacer, posiciones guardadas y vistas conservan su comportamiento.",
+    "pt": "Mover a tela e arrastar objetos exige menos redesenho. Recursos, conectores, formas e traços continuam editáveis. Desfazer, posições salvas e visualizações mantêm o comportamento.",
+    "fr": "Le déplacement du canevas et des objets nécessite moins de redessin. Ressources, connecteurs, formes et traits restent modifiables. Annulation, positions et vues sont préservées.",
+    "de": "Schwenken und Ziehen benötigen weniger Neuzeichnungen. Ressourcen, Verbinder, Formen und Freihandlinien bleiben bearbeitbar. Rückgängig, gespeicherte Positionen und Tab-Ansichten bleiben erhalten.",
+    "ko": "화면 이동과 개체 드래그의 다시 그리기 작업을 줄였습니다. 리소스, 연결선, 도형, 펜 획은 계속 편집할 수 있으며 실행 취소, 저장 위치, 탭 보기도 유지됩니다."
+  },
+  "Longer drag frame gaps in the measured workload": {
+    "ja": "測定時のドラッグのフレーム間隔が長い", "zh": "测量负载下拖动帧间隔较长", "es": "Intervalos de fotograma más largos en la prueba", "pt": "Intervalos entre quadros maiores no teste", "fr": "Intervalles plus longs lors du test de glissement", "de": "Längere Frame-Abstände im gemessenen Test", "ko": "측정 작업에서 드래그 프레임 간격이 더 김"
+  },
+  "Shorter frame gaps in the same workload": {
+    "ja": "同じ条件でフレーム間隔が短縮", "zh": "相同负载下帧间隔更短", "es": "Intervalos más cortos con la misma carga", "pt": "Intervalos menores com a mesma carga", "fr": "Intervalles plus courts avec la même charge", "de": "Kürzere Frame-Abstände bei gleicher Last", "ko": "동일한 작업에서 프레임 간격이 짧아짐"
+  },
+  "54 nodes, 62 connectors, 48 shapes and 12 pencil strokes. Median of three controlled runs; results vary.": {
+    "ja": "54ノード、62接続線、48図形、12本のペン描画で測定。条件をそろえた3回の中央値です。結果は環境により異なります。",
+    "zh": "54个节点、62条连接线、48个形状、12条笔画。采用三次受控测试的中位数，实际结果会有所不同。",
+    "es": "54 nodos, 62 conectores, 48 formas y 12 trazos. Mediana de tres pruebas controladas; los resultados varían.",
+    "pt": "54 nós, 62 conectores, 48 formas e 12 traços. Mediana de três testes controlados; os resultados variam.",
+    "fr": "54 nœuds, 62 connecteurs, 48 formes et 12 traits. Médiane de trois essais contrôlés ; les résultats varient.",
+    "de": "54 Knoten, 62 Verbinder, 48 Formen und 12 Freihandlinien. Median aus drei kontrollierten Durchläufen; Ergebnisse variieren.",
+    "ko": "노드 54개, 연결선 62개, 도형 48개, 펜 획 12개로 측정했습니다. 동일 조건 3회 측정의 중앙값이며 결과는 달라질 수 있습니다."
+  }
+}

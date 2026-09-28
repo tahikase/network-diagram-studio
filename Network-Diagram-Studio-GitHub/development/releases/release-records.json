@@ -1,0 +1,98 @@
+[
+  {
+    "version": "0.9.126",
+    "date": "2026-09-28",
+    "kind": "internal",
+    "reason": "Enforce product-only What's new content and withdraw the five bug-fix announcements at the user's request. Release-policy maintenance does not need a public announcement."
+  },
+  {
+    "version": "0.9.125",
+    "date": "2026-09-27",
+    "kind": "fix",
+    "reason": "Connected-shape selection bug fix. The user requested removal of bug-fix announcements; retain the original sealed entry and images only in the development archive.",
+    "withdrawnIn": "0.9.126"
+  },
+  {
+    "version": "0.9.124",
+    "date": "2026-09-26",
+    "kind": "functionality",
+    "userImpact": "Users can choose 48, 56, 64, 72, 96 and 128px text sizes in text-capable shapes, while existing diagrams and auto-fit behavior are preserved."
+  },
+  {
+    "version": "0.9.123",
+    "date": "2026-09-26",
+    "kind": "functionality",
+    "userImpact": "Users can add an editable, tiered Database shape from the final Shapes tile, after the brick wall."
+  },
+  {
+    "version": "0.9.122",
+    "date": "2026-09-26",
+    "kind": "fix",
+    "reason": "Shape-text Enter-key behavior fix. The user requested removal of bug-fix announcements; retain the original sealed entry and images only in the development archive.",
+    "withdrawnIn": "0.9.126"
+  },
+  {
+    "version": "0.9.121",
+    "date": "2026-09-26",
+    "kind": "functionality",
+    "userImpact": "Users can align, indent and space all text in any text-capable shape, including Text boxes, arrows and callouts."
+  },
+  {
+    "version": "0.9.120",
+    "date": "2026-09-25",
+    "kind": "fix",
+    "reason": "Group-header editing fix. The user requested removal of bug-fix announcements; retain the original sealed entry and images only in the development archive.",
+    "withdrawnIn": "0.9.126"
+  },
+  {
+    "version": "0.9.119",
+    "date": "2026-09-25",
+    "kind": "internal",
+    "reason": "Enforce user-facing-only release communication and remove the maintenance-only v0.9.118 announcement as requested. This policy correction does not need its own user announcement."
+  },
+  {
+    "version": "0.9.118",
+    "date": "2026-09-24",
+    "kind": "internal",
+    "reason": "Production source ownership and release-tool packaging affect maintainers, not editor UI or functionality. The user explicitly requested removal of this announcement; retain its sealed content only in the development archive.",
+    "withdrawnIn": "0.9.119"
+  },
+  {
+    "version": "0.9.117",
+    "date": "2026-09-24",
+    "kind": "fix",
+    "reason": "Settings canvas-boundary fix. The user requested removal of bug-fix announcements; retain the original sealed entry and images only in the development archive.",
+    "withdrawnIn": "0.9.126"
+  },
+  {
+    "version": "0.9.116",
+    "date": "2026-09-24",
+    "kind": "fix",
+    "reason": "All Icons blank-gap fix. The user requested removal of bug-fix announcements; retain the original sealed entry and images only in the development archive.",
+    "withdrawnIn": "0.9.126"
+  },
+  {
+    "version": "0.9.115",
+    "date": "2026-09-24",
+    "kind": "functionality",
+    "userImpact": "Users can open, browse and compare previous editor updates offline."
+  },
+  {
+    "version": "0.9.114",
+    "date": "2026-09-24",
+    "kind": "ui",
+    "userImpact": "Users can see the diagram beneath floating controls while their labels remain readable."
+  },
+  {
+    "version": "0.9.113",
+    "date": "2026-09-24",
+    "kind": "functionality",
+    "userImpact": "Users can reorder diagram tabs using drag-and-drop or the keyboard."
+  },
+  {
+    "version": "0.9.112",
+    "date": "2026-09-24",
+    "kind": "functionality",
+    "userImpact": "Hand panning and resource dragging are smoother without changing editable geometry."
+  }
+]

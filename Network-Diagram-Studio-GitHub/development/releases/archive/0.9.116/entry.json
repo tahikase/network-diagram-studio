@@ -1,0 +1,18 @@
+{
+  "version": "0.9.116",
+  "date": "2026-09-24",
+  "category": "Fix",
+  "title": "All Icons fills the available palette space.",
+  "description": "Removed the height cap that left a blank gap below All Icons. The icon catalog now scrolls with the palette, while search and category headers remain visible.",
+  "before": {
+    "file": "0.9.116-before.png",
+    "version": "0.9.115",
+    "caption": "A fixed-height icon list leaves unused space"
+  },
+  "after": {
+    "file": "0.9.116-after.png",
+    "version": "0.9.116",
+    "caption": "Icons continue to the bottom of the palette"
+  },
+  "note": "Works at different window and palette sizes. Search, Favorites, drag-and-drop and the separate icon picker retain their behavior."
+}

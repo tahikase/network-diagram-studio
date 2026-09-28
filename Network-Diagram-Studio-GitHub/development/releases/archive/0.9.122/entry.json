@@ -1,0 +1,18 @@
+{
+  "version": "0.9.122",
+  "date": "2026-09-26",
+  "category": "Fix",
+  "title": "Enter adds a new line in shape text.",
+  "description": "Press Enter while editing a Text box or another text-capable shape to start a new line and keep typing.",
+  "before": {
+    "file": "0.9.122-before.png",
+    "version": "0.9.121",
+    "caption": "Enter finished editing"
+  },
+  "after": {
+    "file": "0.9.122-after.png",
+    "version": "0.9.122",
+    "caption": "Enter adds a new line and keeps editing open"
+  },
+  "note": "Ctrl+Enter (Cmd+Enter on Mac) or clicking outside finishes editing. Shift+Enter still adds a new line; Escape cancels text edits."
+}
