@@ -164,7 +164,7 @@ export interface CanvasProps {
   selectionOnDrag?: boolean;
 }
 
-function stackFlowNodes(nodes: Node[]): Node[] {
+function stackFlowNodes(nodes: Node[], pickedNodeId: string | null): Node[] {
   const groups = nodes.filter((node) => node.type === 'azureGroup');
   const area = (node: Node) => Number(node.style?.width ?? 0) * Number(node.style?.height ?? 0);
   groups.sort((a, b) => area(b) - area(a) || a.id.localeCompare(b.id));
@@ -183,7 +183,9 @@ function stackFlowNodes(nodes: Node[]): Node[] {
     ordered.push(...chain.reverse());
   }
   let groupIndex = 0;
-  return ordered.map((node) => node.type === 'azureGroup'
+  return ordered.map((node) => node.id === pickedNodeId
+    ? { ...node, zIndex: 3000 + groups.length }
+    : node.type === 'azureGroup'
     ? { ...node, zIndex: 500 + groupIndex++ }
     : node.type === 'azure'
       ? { ...node, zIndex: 1000 + groups.length + (node.selected ? 1000 : 0) }
@@ -203,6 +205,8 @@ export function Canvas(props: CanvasProps = {}) {
   const selectedNodeId = useDiagramStore((s) => s.selectedNodeId);
   const selectedNodeIds = useDiagramStore((s) => s.selectedNodeIds);
   const selectedEdgeIds = useDiagramStore((s) => s.selectedEdgeIds);
+  const pickedObject = useAnnotationStore(state => state.pickedObject);
+  const pickedNodeId = pickedObject?.kind === 'node' && selectedNodeIds.includes(pickedObject.id) ? pickedObject.id : null;
   const moveNode = useDiagramStore((s) => s.moveNode);
   const beginGesture = useDiagramStore((s) => s.beginGesture);
   const commitGesture = useDiagramStore((s) => s.commitGesture);
@@ -415,15 +419,29 @@ export function Canvas(props: CanvasProps = {}) {
 
   const resourceHitExclusions = useMemo(() => {
     const result = new Map<string, BBox[]>();
+    const padding = new Map<string, BBox[]>();
     const appearance = leafAppearance();
-    if (!appearance) return result;
     const boxes = absoluteNodeBoxes(diagram.nodes.map(node => ({
       ...node, size: renderedSize(node, textFactor),
     })));
     const resources = diagram.nodes.filter(node => !getResourceType(node.type).isGroup);
     for (const node of resources) {
-      if (appearance.isContainer(node.id)) continue;
       const box = boxes.get(node.id)!;
+      const nearby = resources.filter(peer => {
+        if (peer.id === node.id) return false;
+        const other = boxes.get(peer.id)!;
+        // The canvas minimum zoom is 0.1, so padding never spans more than 240 world pixels.
+        const padW = Math.max(0, (240 - box.w) / 2), padH = Math.max(0, (240 - box.h) / 2);
+        return other.x < box.x + box.w + padW && other.x + other.w > box.x - padW &&
+          other.y < box.y + box.h + padH && other.y + other.h > box.y - padH;
+      });
+      if (nearby.length) padding.set(node.id, nearby.map(peer => {
+        const other = boxes.get(peer.id)!;
+        return { x: other.x - box.x, y: other.y - box.y, w: other.w, h: other.h };
+      }));
+      if (!appearance) continue;
+      if (node.id === pickedNodeId) continue;
+      if (appearance.isContainer(node.id)) continue;
       const exclusions: BBox[] = [];
       for (const other of resources) {
         if (node.id === other.id) continue;
@@ -435,8 +453,8 @@ export function Canvas(props: CanvasProps = {}) {
       }
       if (exclusions.length) result.set(node.id, exclusions);
     }
-    return result;
-  }, [diagram.nodes, textFactor]);
+    return { body: result, padding };
+  }, [diagram.nodes, textFactor, pickedNodeId]);
 
   /* v0.9.29 — shapes on the ACTIVE tab that an edge may attach to.
      Per-tab on purpose: a shape only exists on its own tab, so an edge into
@@ -547,7 +565,8 @@ export function Canvas(props: CanvasProps = {}) {
           notes: n.data.notes,
           textScale: n.data.textScale,
           multiSelected: multi,
-          hitExclusions: resourceHitExclusions.get(n.id),
+          hitExclusions: resourceHitExclusions.body.get(n.id),
+          hitPaddingExclusions: resourceHitExclusions.padding.get(n.id),
         };
         // NodeResizer needs an explicit width/height on the React Flow
         // wrapper. `leafFootprint` is the SAME function the layout packer
@@ -572,9 +591,14 @@ export function Canvas(props: CanvasProps = {}) {
         } as Node;
       });
 
-      const next = stackFlowNodes([...resourceNodes, ...shapeAnchors]).map(node => {
+      const next = stackFlowNodes([...resourceNodes, ...shapeAnchors], pickedNodeId).map(node => {
         const previous = previousFlowNodes.current.get(node.id);
         if (!previous) return node;
+        for (const field of ['hitExclusions', 'hitPaddingExclusions']) {
+          const before = previous.data[field], after = node.data[field];
+          if (Array.isArray(before) && Array.isArray(after) && before.length === after.length &&
+            after.every((box, index) => shallow(box, before[index]))) node.data[field] = before;
+        }
         // An unchanged card must retain its data and node identities while
         // another object moves, including through React Flow's internals.
         const candidate = {
@@ -588,7 +612,7 @@ export function Canvas(props: CanvasProps = {}) {
       previousFlowNodes.current = new Map(next.map(node => [node.id, node]));
       return next;
     },
-    [diagram.nodes, shapeAnchors, selectedNodeIds, textFactor, resourceHitExclusions]
+    [diagram.nodes, shapeAnchors, selectedNodeIds, textFactor, resourceHitExclusions, pickedNodeId]
   );
 
   const edges = useMemo<Edge[]>(() => {

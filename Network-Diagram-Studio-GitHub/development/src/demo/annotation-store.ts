@@ -18,6 +18,11 @@ export type Tool =
   | 'shape-ellipse'
   | 'shape-callout';
 
+export interface PickedCanvasObject {
+  kind: 'shape' | 'node' | 'edge';
+  id: string;
+}
+
 // Re-exported so existing demo imports keep working; the palette itself now
 // lives in `theme/palette.ts` so prod code can use it without pulling this
 // store in. See the note there.
@@ -109,6 +114,8 @@ interface AnnotationState {
   // Shape editing session state — array so multi-select works.
   // Order is preserved: last-clicked is at the end.
   selectedShapeIds: string[];
+  pickedObject: PickedCanvasObject | null;
+  setPickedObject: (object: PickedCanvasObject | null) => void;
   // Demo v0.6: per-tool style variants that new shapes / strokes inherit.
   arrowStyle: ArrowStyle;
   rectStyle: BoxStyle;
@@ -151,6 +158,8 @@ export const useAnnotationStore = create<AnnotationState>((set) => ({
   color: DEFAULT_SHAPE_COLOR,
   width: 3,
   selectedShapeIds: [],
+  pickedObject: null,
+  setPickedObject: (pickedObject) => set({ pickedObject }),
   arrowStyle: DEFAULT_ARROW,
   rectStyle: DEFAULT_RECT,
   ellipseStyle: DEFAULT_ELLIPSE,

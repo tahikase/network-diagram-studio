@@ -530,7 +530,7 @@ async function verify(entry) {
     await page.mouse.dblclick(caption.paragraphs[0].x + 20, caption.paragraphs[0].y + caption.lineHeight / 2, { delay: 65 });
     await editor(page).waitFor();
     await editor(page).press('Escape');
-    const icon = page.locator('.react-flow__node[data-id="under-caption"] svg').first();
+    const icon = page.locator('.react-flow__node[data-id="under-caption"] .rounded-full svg').first();
     await icon.click();
     assert.equal(await page.evaluate(() => window.__nds_diagramStore.getState().selectedNodeId), 'under-caption',
       'Bare caption-frame space still allows the underlying resource to be selected');

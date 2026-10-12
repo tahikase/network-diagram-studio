@@ -13,7 +13,7 @@
 // When a shape TOOL is active (arrow / rect / ellipse / callout) or the
 // user is actively dragging a shape / handle, we flip the root to
 // `pointer-events: auto` so click-drag lands on empty canvas too.
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { jsx } from 'react/jsx-runtime';
 import { runtimeExtensions } from '../runtime/extensions';
 import {
@@ -83,6 +83,8 @@ import { CANVAS_PLACEMENT_FEEDBACK } from '../env';
 import { clearPlacementFeedback, feedbackBox, isPreviewArrow, rotatePoint, unionBoxes, usePlacementFeedback } from './placement-feedback';
 import { PlacementGuides } from './PlacementGuides';
 import { SvgViewport } from '../canvas/SvgViewport';
+import { ExcludeHitRegions, ExcludeStrokeHitRegions } from '../canvas/ExcludeHitRegions';
+import { boxHitPath, minimumHitBox, rotatedShapeBounds, shapeHitsAt, subtractHitBoxes } from '../canvas/shape-hit-test';
 
 const MIN_SHAPE_SIZE = 10;
 
@@ -297,27 +299,10 @@ export function buildArrowPathD(a: ShapeArrow): string {
 /** An axis-aligned box in world space. */
 type HoleBox = { x: number; y: number; w: number; h: number };
 
-function boxPathD(b: HoleBox): string {
-  return `M ${b.x} ${b.y} H ${b.x + b.w} V ${b.y + b.h} H ${b.x} Z`;
-}
-
-/**
- * v0.9.50 — the outline of a shape's body as a single closed path, in world
- * space, for hit-testing only.
- *
- * Returns null for anything the hole-punching below cannot handle, and the
- * caller then keeps the pre-v0.9.50 code path untouched. Rotated shapes are
- * excluded on purpose: the holes are computed in world space but the shape's
- * group carries a `rotate()` transform, so a rotated body would punch its
- * holes in the wrong place. Containers are never rotated, which is the case
- * this feature exists for.
- */
 function shapeBodyPathD(shape: Shape): string | null {
-  if (shape.rotation) return null;
-  if (shape.kind === 'rect') {
-    const r = shape as ShapeRect;
-    return geomPath(r.geom, r.x, r.y, r.w, r.h) ?? boxPathD({ x: r.x, y: r.y, w: r.w, h: r.h });
-  }
+  // Geometry detail (Actor limbs, cloud lobes, open brackets) must not define
+  // the grab target. Every rect-backed shape has the same complete body box.
+  if (shape.kind === 'rect' || shape.kind === 'callout') return boxHitPath(shape);
   if (shape.kind === 'ellipse') {
     const e = shape as ShapeEllipse;
     const { cx, cy, rx, ry } = e;
@@ -327,33 +312,21 @@ function shapeBodyPathD(shape: Shape): string | null {
   return null;
 }
 
-/**
- * v0.9.50 — an invisible hit region with node-shaped holes in it.
- *
- * The reported problem: draw a filled rectangle over two resource cards and
- * the cards can no longer be clicked. The shape's own body is an SVG element
- * with `pointer-events: auto`, so it swallows the press before React Flow
- * ever sees it.
- *
- * A pointer event cannot "fall through" after the fact and CSS hit-testing is
- * per element, not per position — so the only way to route an interior click
- * to the node underneath is for the shape to genuinely not be there at that
- * position. An `evenodd` fill with a sub-path per covered node does exactly
- * that, and because native hit-testing then lands on the React Flow node the
- * user gets real selection AND real dragging, with no synthetic events.
- *
- * Two elements rather than one: `pointer-events: all` on a single holed path
- * would make the STROKE follow the hole outlines too, putting a band that
- * grabs the shape directly on top of every node's own edge. So the fill
- * carries the holes and a separate fat invisible stroke traces the body
- * outline, which is what keeps the shape's border grabbable everywhere.
- *
- * Rejected alternatives, recorded so they are not re-attempted:
- *   • `<clipPath>` — multiple children UNION, so holes cannot be subtracted.
- *   • `<mask>` — masks do not affect SVG hit-testing in Chromium.
- *   • flipping `pointerEvents` on a pointermove hit test — the shape stops
- *     receiving moves the instant it goes `none`, so it can never recover.
- */
+function rotatedBoxPath(box: HoleBox, center: Point, rotation: number): string {
+  if (!rotation) return boxHitPath(box);
+  const corners = [
+    { x: box.x, y: box.y }, { x: box.x + box.w, y: box.y },
+    { x: box.x + box.w, y: box.y + box.h }, { x: box.x, y: box.y + box.h },
+  ].map(point => rotatePoint(point, center, rotation));
+  return corners.map((point, i) => `${i ? 'L' : 'M'}${point.x},${point.y}`).join(' ') + 'Z';
+}
+
+function localHolePath(shape: Shape, hole: HoleBox): string {
+  const rotation = shape.rotation ?? 0;
+  if (!rotation) return boxHitPath(hole);
+  return rotatedBoxPath(hole, shapeCenter(shape), -rotation);
+}
+
 /**
  * v0.9.54 — the box the shape's own caption actually paints into.
  *
@@ -389,10 +362,11 @@ function textHitBox(
 }
 
 function captionHitBox(shape: Shape): HoleBox | null {
-  if (shape.kind !== 'rect' && shape.kind !== 'ellipse') return null;
+  if (shape.kind === 'arrow') return null;
+  if (shape.kind === 'rect' && shape.canvasImage !== undefined) return null;
   const text = shape.text;
   if (!text) return null;
-  const isRect = shape.kind === 'rect';
+  const isRect = shape.kind !== 'ellipse';
   const cx = isRect ? shape.x + shape.w / 2 : shape.cx;
   const cy = isRect ? shape.y + shape.h / 2 : shape.cy;
   const availW = isRect ? Math.max(10, shape.w - 12) : Math.max(10, shape.rx * 1.6);
@@ -408,6 +382,11 @@ function HoleHitRegion({
   strokeWidth,
   cursor,
   onPointerDown,
+  shape,
+  preferResource,
+  paddingD,
+  paddingHoles,
+  paddingBox,
 }: {
   bodyD: string;
   holes: HoleBox[];
@@ -415,31 +394,52 @@ function HoleHitRegion({
   strokeWidth: number;
   cursor: string;
   onPointerDown: (e: React.PointerEvent) => void;
+  shape: Shape;
+  preferResource: boolean;
+  paddingD: string | null;
+  paddingHoles: HoleBox[];
+  paddingBox: HoleBox;
 }) {
-  const fillD = bodyD + holes.map(boxPathD).join(' ');
+  const exclusions = holes.map(hole => localHolePath(shape, hole));
   return (
     <>
-      <path
-        d={fillD}
-        fillRule="evenodd"
-        fill="#000"
-        fillOpacity={0}
-        stroke="none"
-        onPointerDown={onPointerDown}
-        style={{ cursor, pointerEvents: 'fill' }}
-      />
-      <path
+      {paddingD && !shape.rotation && subtractHitBoxes(paddingBox, paddingHoles).map((box, index) =>
+        <path key={index} data-nds-selection-padding data-nds-shape-hit="fill" d={boxHitPath(box)}
+          fill="transparent" onPointerDown={onPointerDown}
+          style={{ cursor, pointerEvents: 'fill' }} />)}
+      {paddingD && !!shape.rotation && <ExcludeHitRegions body={paddingD}
+        exclusions={paddingHoles.map(hole => localHolePath(shape, hole))}>
+        <path data-nds-selection-padding data-nds-shape-hit="fill" d={paddingD}
+          fill="transparent" onPointerDown={onPointerDown}
+          style={{ cursor, pointerEvents: 'fill' }} />
+      </ExcludeHitRegions>}
+      <ExcludeHitRegions body={bodyD} exclusions={exclusions}>
+        <path
+          data-nds-shape-hit="fill"
+          d={bodyD}
+          fill="transparent"
+          stroke="none"
+          onPointerDown={onPointerDown}
+          style={{ cursor, pointerEvents: 'fill' }}
+        />
+      </ExcludeHitRegions>
+      {!preferResource && <path
+        data-nds-shape-hit="stroke"
+        data-nds-selection-band
         d={bodyD}
         fill="none"
         stroke="#000"
         strokeOpacity={0}
         strokeWidth={strokeWidth}
+        vectorEffect="non-scaling-stroke"
         strokeLinejoin="round"
         onPointerDown={onPointerDown}
         style={{ cursor, pointerEvents: 'stroke' }}
-      />
-      {caption && (
+      />}
+      {caption && !preferResource && (
         <rect
+          data-nds-shape-caption-hit
+          data-nds-shape-hit="fill"
           x={caption.x}
           y={caption.y}
           width={caption.w}
@@ -455,13 +455,16 @@ function HoleHitRegion({
   );
 }
 
-function RenderShape({
+const RenderShape = memo(function RenderShape({
   shape,
   selected,
   onPointerDownBody,
   interactive,
   holes,
   hideText = false,
+  preferredNode,
+  zoom = 1,
+  paddingHoles = [],
 }: {
   shape: Shape;
   selected: boolean;
@@ -469,40 +472,46 @@ function RenderShape({
   interactive: boolean;
   holes?: HoleBox[];
   hideText?: boolean;
+  preferredNode?: HoleBox;
+  zoom?: number;
+  paddingHoles?: HoleBox[];
 }) {
   const t = useT();
-  if (shape.kind === 'rect' && shape.canvasImage !== undefined) {
-    const images = runtimeExtensions().ndsCanvasImages;
-    if (!images) throw new Error('Canvas image rendering requires the packaged editor extensions.');
-    return images.render(jsx, shape, selected, onPointerDownBody, interactive);
-  }
   const cursor = interactive ? (selected ? 'move' : 'pointer') : 'default';
-  // v0.9.50 — when the shape covers resource cards, its own body stops
-  // taking pointer events and a holed hit region takes over. `holedD` is
-  // null in every other case, so the pre-v0.9.50 path is bit-for-bit intact
-  // whenever there is nothing to punch.
-  const holedD = interactive && holes && holes.length > 0 ? shapeBodyPathD(shape) : null;
-  const pe: React.CSSProperties['pointerEvents'] = holedD ? 'none' : interactive ? 'auto' : 'none';
+  const bodyD = interactive ? shapeBodyPathD(shape) : null;
+  const pe: React.CSSProperties['pointerEvents'] = bodyD ? 'none' : interactive ? 'auto' : 'none';
   const commonProps = {
     onPointerDown: (e: React.PointerEvent) => onPointerDownBody(e, shape),
     style: { cursor, pointerEvents: pe },
   };
   const caption = captionHitBox(shape);
-  const captionRegion = caption && !holedD ? (
-    <rect data-nds-shape-caption-hit x={caption.x} y={caption.y} width={caption.w} height={caption.h}
-      fill="transparent" {...commonProps} />
-  ) : null;
-  const holeRegion =
-    holedD && holes ? (
+  const box = shapeBBox(shape);
+  const hitBox = minimumHitBox(box, zoom);
+  const paddingD = bodyD && (hitBox.w > box.w || hitBox.h > box.h) ? boxHitPath(hitBox) : null;
+  const paddingBounds = paddingD ? rotatedShapeBounds(shape.kind === 'ellipse'
+    ? { ...shape, rx: hitBox.w / 2, ry: hitBox.h / 2 }
+    : shape.kind === 'arrow' ? shape : { ...shape, ...hitBox }) : box;
+  const bodyRegion =
+    bodyD ? (
       <HoleHitRegion
-        bodyD={holedD}
-        holes={holes}
+        bodyD={bodyD}
+        holes={holes ?? []}
         caption={caption}
         strokeWidth={Math.max(10, shape.kind === 'arrow' ? 10 : (shape as ShapeRect).width ?? 2)}
         cursor={cursor}
         onPointerDown={(e) => onPointerDownBody(e, shape)}
+        shape={shape}
+        preferResource={!!preferredNode && boxesIntersect(rotatedShapeBounds(shape), preferredNode)}
+        paddingD={paddingD}
+        paddingHoles={paddingD ? paddingHoles.filter(hole => boxesIntersect(hole, paddingBounds)) : []}
+        paddingBox={hitBox}
       />
     ) : null;
+  if (shape.kind === 'rect' && shape.canvasImage !== undefined) {
+    const images = runtimeExtensions().ndsCanvasImages;
+    if (!images) throw new Error('Canvas image rendering requires the packaged editor extensions.');
+    return images.render(jsx, shape, selected, onPointerDownBody, false, bodyRegion);
+  }
   // v0.7.9: shape selection halo. Rendered UNDER the actual shape so the
   // shape itself is untouched but the user gets an obvious bright-blue
   // glow around whatever they've selected. Non-interactive.
@@ -531,6 +540,13 @@ function RenderShape({
     // in that frame).
     const rotDeg = a.rotation ?? 0;
     const rotXform = rotDeg ? `rotate(${rotDeg} ${mid.x} ${mid.y})` : undefined;
+    const hitStrokeWidth = Math.max(24, a.width + 10);
+    const hitRegion = <g>
+      <path data-nds-shape-hit="stroke" d={pathD} fill="none" stroke="transparent"
+        strokeWidth={hitStrokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...commonProps} />
+      {labelHit && <rect data-nds-shape-caption-hit data-nds-shape-hit="fill" x={labelHit.x - 6} y={labelHit.y - 1}
+        width={labelHit.w + 12} height={labelHit.h + 2} fill="transparent" {...commonProps} />}
+    </g>;
     return (
       <g data-nds-shape={a.id} data-nds-shape-kind="arrow" transform={rotXform}>
         <defs>
@@ -542,15 +558,8 @@ function RenderShape({
         {/* Invisible fat hit target. `non-scaling-stroke` makes the width
             SCREEN px, so the grab band stays comfortable at every zoom —
             a thin diagonal line is otherwise near-impossible to hit. */}
-        <path
-          d={pathD}
-          fill="none"
-          stroke="transparent"
-          strokeWidth={Math.max(24, a.width + 10)}
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-          {...commonProps}
-        />
+        {preferredNode ? <ExcludeStrokeHitRegions exclusions={[localHolePath(a, preferredNode)]}
+          strokeWidth={hitStrokeWidth}>{hitRegion}</ExcludeStrokeHitRegions> : hitRegion}
         {selected && (
           <path
             d={pathD}
@@ -575,10 +584,6 @@ function RenderShape({
           markerStart={head === 'both' ? `url(#${markerStartId})` : undefined}
           style={{ pointerEvents: 'none' }}
         />
-        {labelHit && (
-          <rect data-nds-shape-caption-hit x={labelHit.x - 6} y={labelHit.y - 1}
-            width={labelHit.w + 12} height={labelHit.h + 2} fill="transparent" {...commonProps} />
-        )}
         {label && !hideText && (
           <ShapeLabel
             cx={mid.x}
@@ -668,8 +673,7 @@ function RenderShape({
             {...commonProps}
           />
         )}
-        {holeRegion}
-        {captionRegion}
+        {bodyRegion}
         {r.text && !hideText && (
           <ShapeLabel
             cx={r.x + r.w / 2}
@@ -720,8 +724,7 @@ function RenderShape({
           strokeDasharray={dashArray}
           {...commonProps}
         />
-        {holeRegion}
-        {captionRegion}
+        {bodyRegion}
         {el.text && !hideText && (
           <ShapeLabel
             cx={el.cx}
@@ -766,8 +769,16 @@ function RenderShape({
     const boxRx = c.corner === 'sharp' ? 0 : 6;
     // Also let the box outline honor a solid/dashed/dotted dash (default 'solid').
     const boxDashArray = dashArrayFor(c.dash === 'solid' ? undefined : c.dash, c.width);
+    const leaderHit = <line data-nds-shape-hit="stroke"
+      x1={anchorSide.x} y1={anchorSide.y} x2={c.anchor.x} y2={c.anchor.y}
+      stroke="transparent" strokeWidth={18} vectorEffect="non-scaling-stroke"
+      style={{ cursor, pointerEvents: 'stroke' }}
+      onPointerDown={e => onPointerDownBody(e, shape)} />;
     return (
       <g data-nds-shape={c.id} data-nds-shape-kind="callout">
+        {interactive && (preferredNode
+          ? <ExcludeStrokeHitRegions exclusions={[boxHitPath(preferredNode)]} strokeWidth={18}>{leaderHit}</ExcludeStrokeHitRegions>
+          : leaderHit)}
         {/* Leader line + anchor circle stay in world space so a rotated
             note keeps pointing at the same on-canvas spot. */}
         <line
@@ -816,6 +827,7 @@ function RenderShape({
             rx={boxRx}
             {...commonProps}
           />
+          {bodyRegion}
           {!hideText && (
             <g transform={textFlipXform}>
               <ShapeLabel cx={rotCx} cy={rotCy} width={Math.max(10, c.w - 12)}
@@ -828,7 +840,17 @@ function RenderShape({
     );
   }
   return null;
-}
+}, (before, after) => {
+  const sameBox = (a: HoleBox | undefined, b: HoleBox | undefined) =>
+    a === b || (!!a && !!b && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h);
+  const sameBoxes = (a: HoleBox[] = [], b: HoleBox[] = []) =>
+    a === b || (a.length === b.length && a.every((box, index) => sameBox(box, b[index])));
+  return before.shape === after.shape && before.selected === after.selected &&
+    before.interactive === after.interactive && before.hideText === after.hideText &&
+    before.zoom === after.zoom && before.onPointerDownBody === after.onPointerDownBody &&
+    sameBox(before.preferredNode, after.preferredNode) && sameBoxes(before.holes, after.holes) &&
+    sameBoxes(before.paddingHoles, after.paddingHoles);
+});
 
 /**
  * A read-only label rendered inside/next to a shape via foreignObject so we
@@ -1927,36 +1949,15 @@ function boxesIntersect(a: BBox, b: BBox): boolean {
   return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
 }
 
-function boxContainsPoint(b: BBox, p: Point): boolean {
-  return p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
-}
-
-/**
- * v0.9.47 — resolve a click on a CONTAINER to the shape nested inside it.
- *
- * SVG hit-testing awards the click to whatever is painted last, so a big
- * box drawn after the boxes inside it swallows every click meant for its
- * contents — the user has to reorder the diagram just to select a child.
- *
- * The redirect is deliberately narrow: a candidate only wins if it is
- * WHOLLY INSIDE the shape that received the event. Shapes that merely
- * overlap keep normal topmost-wins semantics, so this cannot hijack a
- * click on two shapes that happen to cross.
- *
- * Arrows are never drill-in candidates. A diagonal arrow's bounding box is
- * mostly empty space, so it could "contain" a point nowhere near the line
- * and steal the click from the container it is drawn over.
- */
-function resolveNestedShapeAt(shapes: readonly Shape[], hit: Shape, p: Point): Shape {
+function resolveNestedShapeAt(shapes: readonly Shape[], hit: Shape, hits: ReadonlySet<string>): Shape {
   if (hit.kind === 'arrow') return hit;
-  const outer = shapeBBox(hit);
+  const outer = rotatedShapeBounds(hit);
   let best: Shape | null = null;
   let bestArea = Infinity;
-  for (const sh of shapes) {
-    if (sh.id === hit.id || sh.kind === 'arrow') continue;
-    const b = shapeBBox(sh);
+  for (const sh of [...shapes].reverse()) {
+    if (sh.id === hit.id || !hits.has(sh.id)) continue;
+    const b = rotatedShapeBounds(sh);
     if (!boxNestedIn(b, outer)) continue;
-    if (!boxContainsPoint(b, p)) continue;
     const area = b.w * b.h;
     if (area < bestArea) {
       bestArea = area;
@@ -2128,6 +2129,7 @@ function ConnectEndpointDot({
 
 export function ShapeOverlay() {
   const rf = useReactFlow();
+  const connectClipPrefix = useId();
   const zoom = useStore(s => s.transform[2]);
   const t = useT();
 
@@ -2135,6 +2137,10 @@ export function ShapeOverlay() {
   const color = useAnnotationStore((s) => s.color);
   const width = useAnnotationStore((s) => s.width);
   const selectedShapeIds = useAnnotationStore((s) => s.selectedShapeIds);
+  const pickedObject = useAnnotationStore(s => s.pickedObject);
+  const selectedNodeId = useDiagramStore(s => s.selectedNodeId);
+  const pickedShapeId = pickedObject?.kind === 'shape' && selectedShapeIds.includes(pickedObject.id) ? pickedObject.id : null;
+  const pickedNodeId = pickedObject?.kind === 'node' && selectedNodeId === pickedObject.id ? pickedObject.id : null;
   const setTool = useAnnotationStore((s) => s.setTool);
   const setSelectedShapes = useAnnotationStore((s) => s.setSelectedShapes);
   const clearShapeSelection = useAnnotationStore((s) => s.clearShapeSelection);
@@ -2307,6 +2313,10 @@ export function ShapeOverlay() {
   }, [syncs, syncArrowEnds]);
 
   const shapes = resolvedShapes;
+  const pickedNodeBox = pickedNodeId ? nodeBoxes.find(node => node.id === pickedNodeId) : undefined;
+  const paintedShapes = useMemo(() => pickedShapeId
+    ? [...shapes.filter(shape => shape.id !== pickedShapeId), ...shapes.filter(shape => shape.id === pickedShapeId)]
+    : shapes, [shapes, pickedShapeId]);
 
   /**
    * v0.9.29 — turn a completed connect gesture into a REAL diagram edge.
@@ -2450,18 +2460,18 @@ export function ShapeOverlay() {
     const out = new Map<string, HoleBox[]>();
     if (nodeBoxes.length === 0) return out;
     for (const sh of shapes) {
-      if (sh.kind !== 'rect' && sh.kind !== 'ellipse') continue;
-      if (sh.rotation) continue;
-      const box = shapeBBox(sh);
-      const area = box.w * box.h;
+      if (sh.kind === 'arrow' || sh.id === pickedShapeId) continue;
+      const box = rotatedShapeBounds(sh);
+      const size = shapeBBox(sh);
+      const area = size.w * size.h;
       if (!(area > 0)) continue;
       const hits = nodeBoxes.filter(
-        (n) => n.w * n.h < area && boxesIntersect(n, box),
+        (n) => (n.id === pickedNodeId || n.w * n.h < area) && boxesIntersect(n, box),
       );
       if (hits.length) out.set(sh.id, hits.map((n) => ({ x: n.x, y: n.y, w: n.w, h: n.h })));
     }
     return out;
-  }, [shapes, nodeBoxes]);
+  }, [shapes, nodeBoxes, pickedShapeId, pickedNodeId]);
 
   /**
    * v0.9.50 — reveal a shape's connect anchors when the pointer comes NEAR
@@ -2533,6 +2543,12 @@ export function ShapeOverlay() {
   const toFlow = (e: React.PointerEvent | React.MouseEvent | PointerEvent): Point => {
     const p = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
     return { x: p.x, y: p.y };
+  };
+  const resolveShapeHit = (hit: Shape, event: React.PointerEvent | React.MouseEvent) => {
+    if (hit.id === pickedShapeId || !svgRef.current) return hit;
+    const hits = shapeHitsAt(svgRef.current, { x: event.clientX, y: event.clientY });
+    const target = hits.has(hit.id) ? hit : [...paintedShapes].reverse().find(shape => hits.has(shape.id)) ?? hit;
+    return resolveNestedShapeAt(shapes, target, hits);
   };
 
   // ROOT captures pointer events when a shape tool is active, mid-drag on
@@ -2982,7 +2998,7 @@ export function ShapeOverlay() {
 
     // A click that lands on a container belongs to whatever is nested at
     // that point, not to the container that happens to be painted on top.
-    const shape = resolveNestedShapeAt(shapes, hitShape, toFlow(e));
+    const shape = resolveShapeHit(hitShape, e);
 
     // Selection semantics:
     //   plain click on unselected → replace with just this one
@@ -3052,6 +3068,11 @@ export function ShapeOverlay() {
       nodeCargo,
     });
   };
+
+  const shapeBodyHandler = useRef(onShapeBodyPointerDown);
+  useLayoutEffect(() => { shapeBodyHandler.current = onShapeBodyPointerDown; });
+  const onStableShapeBodyPointerDown = useCallback((event: React.PointerEvent, shape: Shape) =>
+    shapeBodyHandler.current(event, shape), []);
 
   const onHandlePointerDown = (
     e: React.PointerEvent,
@@ -3170,6 +3191,7 @@ export function ShapeOverlay() {
   // Double-click any shape → open inline text editor. Works for ALL shape
   // kinds (arrow / rect / ellipse / callout). No modal prompt.
   const onShapeDoubleClick = (shape: Shape) => {
+    if (shape.kind === 'rect' && shape.canvasImage !== undefined) return;
     setEditingShapeId(shape.id);
   };
 
@@ -3289,13 +3311,13 @@ export function ShapeOverlay() {
       }}
     >
       <SvgViewport>
-        {shapes.map((sh) => (
+        {paintedShapes.map((sh) => (
           <g
             key={sh.id}
             data-nds-preview-hidden={previewIds.has(sh.id) ? '1' : undefined}
             style={previewIds.has(sh.id) ? { visibility: 'hidden' } : undefined}
             onDoubleClick={(e) =>
-              onShapeDoubleClick(resolveNestedShapeAt(shapes, sh, toFlow(e)))
+              onShapeDoubleClick(resolveShapeHit(sh, e))
             }
             onPointerEnter={
               tool !== 'move' ? undefined : () => setHoveredShapeId(sh.id)
@@ -3309,9 +3331,12 @@ export function ShapeOverlay() {
             <RenderShape
               shape={sh}
               selected={selectedIdSet.has(sh.id)}
-              onPointerDownBody={onShapeBodyPointerDown}
+              onPointerDownBody={onStableShapeBodyPointerDown}
               interactive={tool === 'move'}
               holes={holesByShape.get(sh.id)}
+              preferredNode={pickedNodeBox}
+              zoom={zoom}
+              paddingHoles={nodeBoxes.filter(node => !node.container || node.id === pickedNodeId)}
               hideText={editingShapeId === sh.id}
             />
             {tool === 'move' &&
@@ -3368,6 +3393,7 @@ export function ShapeOverlay() {
             something that can never be connected was the affordance half
             of this bug. */}
         {tool === 'move' &&
+         (!pickedNodeId || rfConnecting) &&
          (!drag || drag.mode === 'connecting' || drag.mode === 'rebinding') &&
           (() => {
             const anchorShapes: Shape[] = [];
@@ -3441,15 +3467,31 @@ export function ShapeOverlay() {
             // anchor is the target of a precision drag, so it gets the
             // largest hit area the affordance can carry without the four
             // anchors of a small shape overlapping each other.
-            const anchorR = 6 / Math.max(0.2, zoom);
             const anchorStrokeInv = 1 / Math.max(0.2, zoom);
             return (
               <g data-nds-connect-anchors="1">
                 {anchorShapes.map((sh) => {
                   const anchors = shapeConnectAnchors(sh);
                   const dots = shapeConnectDots(sh);
+                  const box = shapeBBox(sh);
+                  const shortSide = Math.min(box.w, box.h);
+                  const anchorR = Math.min(6 / zoom, shortSide / 8);
+                  const anchorHitR = Math.min(18 / zoom, shortSide / 8);
+                  const dotHitR = Math.min(11.4 / zoom, shortSide / 8);
+                  const clipId = `${connectClipPrefix}-${encodeURIComponent(sh.id)}`;
+                  const bounds = rotatedShapeBounds(sh);
+                  const pad = 20 / zoom;
+                  const epsilon = Math.min(0.01 / zoom, shortSide / 1000);
+                  const interior = { x: box.x + epsilon, y: box.y + epsilon,
+                    w: box.w - 2 * epsilon, h: box.h - 2 * epsilon };
+                  const outsidePath = boxHitPath({ x: bounds.x - pad, y: bounds.y - pad,
+                    w: bounds.w + 2 * pad, h: bounds.h + 2 * pad }) +
+                    rotatedBoxPath(interior, shapeCenter(sh), sh.rotation ?? 0);
                   return (
                     <Fragment key={sh.id}>
+                      <defs><clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+                        <path d={outsidePath} clipRule="evenodd" />
+                      </clipPath></defs>
                       {anchors.map((a) => (
                     <g
                       key={`${sh.id}-${a.side}`}
@@ -3471,7 +3513,8 @@ export function ShapeOverlay() {
                       <circle
                         cx={a.x}
                         cy={a.y}
-                        r={anchorR * 3.0}
+                        r={anchorHitR}
+                        clipPath={`url(#${clipId})`}
                         fill="transparent"
                         style={{ cursor: 'crosshair', pointerEvents: 'all' }}
                         onPointerDown={(e) => onAnchorPointerDown(e, sh, a)}
@@ -3506,7 +3549,8 @@ export function ShapeOverlay() {
                           <circle
                             cx={a.x}
                             cy={a.y}
-                            r={anchorR * 1.9}
+                            r={dotHitR}
+                            clipPath={`url(#${clipId})`}
                             fill="transparent"
                             style={{ cursor: 'crosshair', pointerEvents: 'all' }}
                             onPointerDown={(e) => onAnchorPointerDown(e, sh, a)}
@@ -3803,7 +3847,13 @@ function SelectionUI({
   handleSize: number;
   onHandlePointerDown: (e: React.PointerEvent, shape: Shape, handle: HandleId) => void;
 }) {
-  const handles = handlesFor(shape);
+  const shapeMid = shapeCenter(shape);
+  const handles = handlesFor(shape).map(handle => {
+    if (handle.id !== 'rotate') return handle;
+    const dx = handle.x - shapeMid.x, dy = handle.y - shapeMid.y;
+    const scale = Math.max(1, handleSize * 2 / Math.hypot(dx, dy));
+    return { ...handle, x: shapeMid.x + dx * scale, y: shapeMid.y + dy * scale };
+  });
   // Bounding rectangle for the visual selection outline.
   let bx = 0, by = 0, bw = 0, bh = 0;
   if (shape.kind === 'arrow') {
@@ -3817,7 +3867,8 @@ function SelectionUI({
     bx = shape.cx - shape.rx; by = shape.cy - shape.ry;
     bw = shape.rx * 2; bh = shape.ry * 2;
   }
-  const padHandle = handleSize / 2;
+  const resizeSize = shape.kind === 'arrow' ? handleSize : Math.min(handleSize, Math.min(bw, bh) / 4);
+  const padHandle = resizeSize / 2;
   // v0.7.15 — rotate the entire selection UI (border, resize handles,
   // AND the rotation handle) with the shape. Because handle positions
   // come from `handlesFor` in the shape's LOCAL (unrotated) frame,
@@ -3931,8 +3982,8 @@ function SelectionUI({
           // so the pad cannot steal a neighbouring handle's clicks.
           const isArrowEnd = shape.kind === 'arrow' && (h.id === 'start' || h.id === 'end');
           if (isArrowEnd) {
-            const vis = handleSize * 1.5;
-            const pad = handleSize * 3;
+            const vis = Math.min(handleSize * 1.5, Math.hypot(bw, bh) / 4);
+            const pad = Math.min(handleSize * 3, Math.hypot(bw, bh) / 3);
             return (
               <g
                 key={h.id}
@@ -3969,13 +4020,13 @@ function SelectionUI({
               data-nds-shape-handle={h.id}
               x={h.x - padHandle}
               y={h.y - padHandle}
-              width={handleSize}
-              height={handleSize}
+              width={resizeSize}
+              height={resizeSize}
               fill="#3b82f6"
               stroke="#ffffff"
               strokeWidth={1.5}
               vectorEffect="non-scaling-stroke"
-              style={{ cursor: h.cursor, pointerEvents: 'auto' }}
+              style={{ cursor: h.cursor, pointerEvents: 'fill' }}
               onPointerDown={(e) => onHandlePointerDown(e, shape, h.id)}
             />
           );

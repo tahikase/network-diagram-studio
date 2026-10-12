@@ -55,6 +55,13 @@ value hides its chip; the value remains available in Properties.
 Connectors inside imported groups can be selected and edited directly.
 Connected shapes remain selectable, movable and text-editable after arrow
 changes, including resized boxes. Click inside a shape to select it.
+Grab anywhere inside a shape's body to move it, including the Actor's limbs
+and the empty space between them. Smaller shapes and arrows inside a frame
+remain directly selectable even when the frame was added last.
+If objects completely cover one another, right-click > Select object, choose
+the desired shape, resource, container, image or connector, then drag the
+chosen object's body (or edit the connector). Saved stacking order does not
+change. Escape dismisses the list; right-drag still pans.
 Overlapping transparent cards do not block another resource's visible icon
 or name, regardless of the order in which resources were added.
 Only import and share images you have the legal right to use. This reminder

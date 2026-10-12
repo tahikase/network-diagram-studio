@@ -40,7 +40,7 @@ async function signature(page, selector) {
   return page.locator(selector).evaluate(element => {
     const root = element.matches('[data-nds-shape]') ? element : element.querySelector('[data-nds-shape]');
     return {
-      paths: [...root.querySelectorAll(':scope > path:not([stroke-opacity])')].map(p => p.getAttribute('d')),
+      paths: [...root.querySelectorAll(':scope > path:not([stroke-opacity]):not([data-nds-shape-hit])')].map(p => p.getAttribute('d')),
       rotation: root.getAttribute('transform'),
     };
   });

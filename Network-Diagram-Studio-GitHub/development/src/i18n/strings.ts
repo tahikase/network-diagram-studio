@@ -28,6 +28,12 @@ import { SHAPE_TEXT_DICT } from './strings-shape-text';
 export type Dict = Record<string, string>;
 
 const ja: Dict = {
+  'Select object': 'オブジェクトを選択',
+  Rectangle: '長方形',
+  'Select an object to move or edit.': '移動または編集するオブジェクトを選択します。',
+  Resource: 'リソース',
+  Connector: 'コネクター',
+  Image: '画像',
   // v0.9.51 — Learn diagrams: the non-prod catalog of Azure Networking
   // diagrams published on Microsoft Learn. Product names (Microsoft Learn,
   // Visio, ExpressRoute) stay untranslated — Microsoft ships them that way.
@@ -412,6 +418,12 @@ const ja: Dict = {
 };
 
 const zh: Dict = {
+  'Select object': '选择对象',
+  Rectangle: '矩形',
+  'Select an object to move or edit.': '选择要移动或编辑的对象。',
+  Resource: '资源',
+  Connector: '连接线',
+  Image: '图像',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Learn 关系图',
@@ -791,6 +803,12 @@ const zh: Dict = {
 };
 
 const es: Dict = {
+  'Select object': 'Seleccionar objeto',
+  Rectangle: 'Rectángulo',
+  'Select an object to move or edit.': 'Selecciona un objeto para moverlo o editarlo.',
+  Resource: 'Recurso',
+  Connector: 'Conector',
+  Image: 'Imagen',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Diagramas de Learn',
@@ -1172,6 +1190,12 @@ const es: Dict = {
 };
 
 const pt: Dict = {
+  'Select object': 'Selecionar objeto',
+  Rectangle: 'Retângulo',
+  'Select an object to move or edit.': 'Selecione um objeto para mover ou editar.',
+  Resource: 'Recurso',
+  Connector: 'Conector',
+  Image: 'Imagem',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Diagramas do Learn',
@@ -1553,6 +1577,12 @@ const pt: Dict = {
 };
 
 const fr: Dict = {
+  'Select object': "Sélectionner l’objet",
+  Rectangle: 'Rectangle',
+  'Select an object to move or edit.': "Sélectionnez un objet à déplacer ou à modifier.",
+  Resource: 'Ressource',
+  Connector: 'Connecteur',
+  Image: 'Image',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Schémas Learn',
@@ -1934,6 +1964,12 @@ const fr: Dict = {
 };
 
 const de: Dict = {
+  'Select object': 'Objekt auswählen',
+  Rectangle: 'Rechteck',
+  'Select an object to move or edit.': 'Wählen Sie ein Objekt zum Verschieben oder Bearbeiten aus.',
+  Resource: 'Ressource',
+  Connector: 'Verbinder',
+  Image: 'Bild',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Learn-Diagramme',
@@ -2315,6 +2351,12 @@ const de: Dict = {
 };
 
 const ko: Dict = {
+  'Select object': '개체 선택',
+  Rectangle: '직사각형',
+  'Select an object to move or edit.': '이동하거나 편집할 개체를 선택하세요.',
+  Resource: '리소스',
+  Connector: '연결선',
+  Image: '이미지',
   // v0.9.51 — Learn diagrams (see the ja block for why product names stay in
   // English).
   'Learn diagrams': 'Learn 다이어그램',

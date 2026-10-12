@@ -146,12 +146,16 @@ async function keyboardAndIdentity(page) {
   await editor.press('Backspace');
   await editor.press('Escape');
   assert.deepEqual(await content(page), before);
+  await page.waitForFunction(() =>
+    document.activeElement?.getAttribute('data-nds-group-field') === 'cidr');
   await field(page, 'subnet', 'NSG').focus();
   await page.keyboard.press('Enter');
   editor = input(page, 'subnet');
   await editor.waitFor();
   await editor.fill('nsg-keyboard');
   await editor.press('Tab');
+  await page.waitForFunction(() =>
+    window.__nds_diagramStore.getState().diagram.nodes.find(node => node.id === 'subnet').data.fields.NSG === 'nsg-keyboard');
   assert.equal(await value(page, 'subnet', 'NSG'), 'nsg-keyboard', 'Tab commits before moving focus.');
 
   await field(page, 'network', 'region').focus();

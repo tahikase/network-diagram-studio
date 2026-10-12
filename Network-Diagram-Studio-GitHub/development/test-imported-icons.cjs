@@ -368,13 +368,13 @@ async function workflow() {
     await page.waitForFunction(() => window.__nds_diagramStore.getState().diagram.nodes.length === 2);
     await page.waitForTimeout(500);
     const view = await page.locator('.react-flow').boundingBox();
-    await drag(page, node(page, second).locator('svg').first(), { x: view.x + view.width * .68, y: view.y + 340 });
-    await drag(page, node(page, first).locator('svg').first(), { x: view.x + view.width * .24, y: view.y + 340 });
+    await drag(page, node(page, second).locator('.rounded-full svg').first(), { x: view.x + view.width * .68, y: view.y + 340 });
+    await drag(page, node(page, first).locator('.rounded-full svg').first(), { x: view.x + view.width * .24, y: view.y + 340 });
     assert.ok((await graph(page)).nodes.every(n => n.type === 'custom'));
     await node(page, first).locator('[title$="double-click to rename"]').dblclick();
     await node(page, first).locator('input').fill('Branch Office');
     await page.keyboard.press('Enter');
-    await node(page, first).locator('svg').first().click();
+    await node(page, first).locator('.rounded-full svg').first().click();
     const box = await node(page, first).boundingBox();
     const beforeSize = (await graph(page)).nodes.find(n => n.id === first).size;
     await drag(page, node(page, first).locator('.react-flow__resize-control.handle.bottom.right'), { x: box.x + box.width + 45, y: box.y + box.height + 30 });
@@ -385,7 +385,7 @@ async function workflow() {
     await page.keyboard.press('Enter');
     assert.equal((await graph(page)).edges.length, 1);
 
-    await node(page, first).locator('svg').first().click();
+    await node(page, first).locator('.rounded-full svg').first().click();
     await page.waitForFunction(id => window.__nds_diagramStore.getState().selectedNodeId === id, first);
     await page.keyboard.press('Control+d');
     await page.waitForFunction(() => window.__nds_diagramStore.getState().diagram.nodes.length === 3);
@@ -397,7 +397,7 @@ async function workflow() {
     await page.keyboard.press('Control+y');
     await page.waitForFunction(() => window.__nds_diagramStore.getState().diagram.nodes.length === 3);
     await page.keyboard.press('Control+z');
-    await node(page, first).locator('svg').first().click();
+    await node(page, first).locator('.rounded-full svg').first().click();
     const token = await page.evaluate(() => {
       document.activeElement?.blur();
       const data = new DataTransfer();
@@ -431,7 +431,7 @@ async function workflow() {
       ['Show palette', 'Favorites', 'Shapes', 'Resources', 'Imported icons', 'All icons']);
     await page.locator('[data-nds-palette-rail]').getByRole('button', { name: 'Imported icons (4)', exact: true }).click();
 
-    await node(page, first).locator('svg').first().click();
+    await node(page, first).locator('.rounded-full svg').first().click();
     await page.getByRole('button', { name: 'Change icon…', exact: true }).click();
     const picker = page.getByRole('dialog').filter({ hasText: 'Choose an icon' });
     await picker.getByRole('searchbox').fill('Partner Cloud');

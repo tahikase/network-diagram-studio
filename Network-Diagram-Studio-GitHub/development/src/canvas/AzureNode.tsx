@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { NodeResizer, NodeToolbar, Position, type NodeProps, type Node } from '@xyflow/react';
+import { NodeResizer, NodeToolbar, Position, useStore, type NodeProps, type Node } from '@xyflow/react';
 import {
   ConnectHandles,
   RESIZE_HANDLE_STYLE,
@@ -20,6 +20,7 @@ import { customFieldLabel } from '../model/custom-fields';
 import { runtimeExtensions } from '../runtime/extensions';
 import type { BBox } from '../model/containment';
 import { ResourceHitRegion } from './ResourceHitRegion';
+import { MIN_SELECTION_PX } from './shape-hit-test';
 
 /**
  * Ceiling on how much dragging a card bigger scales its text. Without a cap,
@@ -49,6 +50,7 @@ export interface AzureNodeData extends Record<string, unknown> {
   multiSelected?: boolean;
   /** Render-only, node-local holes in the transparent card's background hit area. */
   hitExclusions?: BBox[];
+  hitPaddingExclusions?: BBox[];
 }
 
 type AzureFlowNode = Node<AzureNodeData, 'azure'>;
@@ -193,6 +195,12 @@ const AzureNodeInner = memo(function AzureNodeInner({
 
   const w = width ?? 180;
   const h = height ?? 150;
+  const zoom = useStore(state => state.transform[2]);
+  const gripSize = Math.min(18, Math.min(w, h) * zoom / 4);
+  const resizeHandleStyle = gripSize < 18 ? {
+    ...RESIZE_HANDLE_STYLE, width: gripSize, height: gripSize,
+    border: `${gripSize / 6}px solid #ffffff`, borderRadius: gripSize / 6,
+  } : RESIZE_HANDLE_STYLE;
 
   // Dragging a card bigger should make what's INSIDE it bigger — otherwise
   // enlarging a node just adds empty space around the same tiny text, which
@@ -255,7 +263,9 @@ const AzureNodeInner = memo(function AzureNodeInner({
 
   return (
     <>
-    {hitExclusions && <ResourceHitRegion width={w} height={h} exclusions={hitExclusions} />}
+    {(hitExclusions || Math.min(w, h) * zoom < MIN_SELECTION_PX) &&
+      <ResourceHitRegion width={w} height={h} exclusions={hitExclusions ?? []}
+        paddingExclusions={data.hitPaddingExclusions ?? []} />}
     {/* ⚠️ The card is `overflow-hidden` (to clip content to its rounded
         corners), so anything that must stick OUT past the border — the
         connect dots, which straddle it, and the resize grips — has to be a
@@ -537,7 +547,7 @@ const AzureNodeInner = memo(function AzureNodeInner({
       minWidth={minResizeW}
       minHeight={minResizeH}
       lineStyle={RESIZE_LINE_STYLE}
-      handleStyle={RESIZE_HANDLE_STYLE}
+      handleStyle={resizeHandleStyle}
     />
 
     {/* Live size readout while a grip is dragged; turns blue and names the

@@ -328,7 +328,7 @@
     }).finally(() => { pendingCount--; });
   }, true);
 
-  function render(jsx, shape, selected, onPointerDownBody, interactive) {
+  function render(jsx, shape, selected, onPointerDownBody, interactive, hitRegion) {
     const safe = validPng(shape.canvasImage);
     const rotation = shape.rotation || 0;
     const props = { x: shape.x, y: shape.y, width: shape.w, height: shape.h,
@@ -348,7 +348,8 @@
         safe ? jsx('image', { ...props, href: shape.canvasImage, preserveAspectRatio: 'xMidYMid meet', onError: failed }, 'image')
           : jsx('rect', { ...props, fill: '#fee2e2', stroke: '#dc2626' }, 'invalid'),
         selected ? jsx('rect', { x: shape.x - 3, y: shape.y - 3, width: shape.w + 6, height: shape.h + 6,
-          fill: 'none', stroke: '#3b82f6', strokeWidth: 2, style: { pointerEvents: 'none' } }, 'selection') : null
+          fill: 'none', stroke: '#3b82f6', strokeWidth: 2, style: { pointerEvents: 'none' } }, 'selection') : null,
+        hitRegion
       ]
     });
   }

@@ -31,7 +31,7 @@ function expectedPaths({ x, y, w, h }, legacy = false) {
 }
 
 async function geometry(page, shape, legacy = false) {
-  const paths = shapeNode(page, shape.id).locator(':scope > path');
+  const paths = shapeNode(page, shape.id).locator(':scope > path:not([data-nds-shape-hit])');
   assert.deepEqual(await paths.evaluateAll(elements => elements.map(el => el.getAttribute('d'))),
     expectedPaths(shape, legacy), 'Canvas uses the exact closed outline and curved, separate tier seams');
   assert.equal(await paths.nth(1).getAttribute('fill'), 'none', 'Tier details never become filled blobs');

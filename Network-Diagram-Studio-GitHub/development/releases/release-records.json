@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.9.129",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "reason": "Restore Move / Select body clicks and drags near shape edges, including the Actor head and feet. Connection-dot hit targets stay outside shape interiors at every size and rotation, without changing artwork or saved geometry."
+  },
+  {
+    "version": "0.9.128",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "reason": "Keep small shapes and resource icons selectable with minimum screen-space hit targets at every zoom, without changing their artwork or saved geometry. Preserve direct-object priority, overlap picking and a draggable centre between editing handles."
+  },
+  {
+    "version": "0.9.127",
+    "date": "2026-09-29",
+    "kind": "fix",
+    "reason": "Restore full-body shape selection and native dragging, including Actor limbs, nested and overlapping objects, rotated frames and small shapes. An object picker makes completely covered objects reachable without changing saved stacking order."
+  },
+  {
     "version": "0.9.126",
     "date": "2026-09-28",
     "kind": "internal",

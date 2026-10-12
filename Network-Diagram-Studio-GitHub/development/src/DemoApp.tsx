@@ -19,6 +19,7 @@ import { PaletteRail, type PaletteTab } from './demo/PaletteRail';
 import { PropertyPanel } from './panel/PropertyPanel';
 import { Canvas } from './canvas/Canvas';
 import { EmptyCanvasState } from './canvas/EmptyCanvasState';
+import { ObjectPicker } from './canvas/ObjectPicker';
 import { useKeyboardShortcuts } from './canvas/useKeyboardShortcuts';
 import { AnnotationToolbar } from './demo/AnnotationToolbar';
 import { AnnotationOverlay } from './demo/AnnotationOverlay';
@@ -94,6 +95,7 @@ function DemoApp() {
             <AnnotationOverlay />
             <AnnotationToolbar />
             <TabBar />
+            <ObjectPicker />
           </main>
           <PropertyPanel />
           {/* Notes — the outermost right-hand column, so the property panel

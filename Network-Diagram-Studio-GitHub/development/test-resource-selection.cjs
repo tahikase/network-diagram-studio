@@ -262,6 +262,7 @@ async function verify(entry, index) {
     const saved = JSON.parse(fs.readFileSync(json, 'utf8'));
     assert.deepEqual(saved.nodes, original.nodes, 'Hit regions are render-only, never saved in JSON');
     assert(!JSON.stringify(saved).includes('hitExclusions'));
+    assert(!JSON.stringify(saved).includes('hitPaddingExclusions'));
     await reset({ ...original, nodes: [], edges: [] });
     await load(json);
     const tab = await page.evaluate(() => window.__nds_tabsStore.getState().activeTabId);
@@ -282,6 +283,47 @@ async function verify(entry, index) {
     await click(storage, 'icon', 'browser restoration');
     await click(storage, 'name', 'browser restoration');
     assert.deepEqual((await graph()).nodes, original.nodes);
+
+    for (const type of ['storage', 'custom']) {
+      const tiny = resource('tiny-icon', type, 'Tiny icon', 300, 240, 8, 12,
+        type === 'custom' ? { iconId: 'integration--logic-apps', typeLabel: 'Logic Apps' } : {});
+      await reset({ ...original, nodes: [tiny], edges: [] });
+      for (let i = 0; i < 14; i++) {
+        if (!await page.locator('.react-flow__controls-zoomout').isEnabled()) break;
+        await page.locator('.react-flow__controls-zoomout').click(); await page.waitForTimeout(200);
+      }
+      await select(null);
+      const bounds = await node(tiny.id).boundingBox();
+      const p = { x: bounds.x + bounds.width / 2 - 10, y: bounds.y + bounds.height / 2 };
+      const target = node(tiny.id).locator('[data-nds-resource-padding]');
+      assert.equal(await target.count(), 1, 'Tiny resources have an invisible minimum selection target');
+      const hitBox = await target.boundingBox();
+      assert(hitBox.width >= 23.9 && hitBox.height >= 23.9, 'The target remains 24 screen pixels when zoomed out');
+      await page.mouse.click(p.x, p.y);
+      await settleSelection();
+      assert.deepEqual(await page.evaluate(() => window.__nds_diagramStore.getState().selectedNodeIds), [tiny.id]);
+      const dragBounds = await node(tiny.id).boundingBox();
+      const before = await graph();
+      await drag({ x: dragBounds.x + dragBounds.width / 2 - 10, y: dragBounds.y + dragBounds.height / 2 }, 35, 22);
+      assert.notDeepEqual((await graph()).nodes[0].position, before.nodes[0].position, 'Padding starts a native resource drag');
+      await shortcut('Control+z');
+      assert.deepEqual((await graph()).nodes, before.nodes, 'One undo restores the padding drag');
+      const pickBounds = await node(tiny.id).boundingBox();
+      await page.mouse.click(pickBounds.x + pickBounds.width / 2 - 10, pickBounds.y + pickBounds.height / 2, { button: 'right' });
+      await page.locator(`[data-nds-pick-id="${tiny.id}"][data-nds-pick-kind="node"]`).click();
+      assert.deepEqual(await page.evaluate(() => window.__nds_diagramStore.getState().selectedNodeIds), [tiny.id]);
+      const nearby = resource('neighbour-icon', 'vm', 'Neighbour', 160, 240, 140, 129);
+      await reset({ ...original, nodes: [nearby, tiny], edges: [] });
+      await select(null);
+      const nearBounds = await node(tiny.id).boundingBox();
+      const direct = { x: nearBounds.x + nearBounds.width / 2 - 10, y: nearBounds.y + nearBounds.height / 2 };
+      assert.equal(await page.evaluate(({ x, y }) =>
+        document.elementFromPoint(x, y)?.closest('.react-flow__node')?.getAttribute('data-id'), direct),
+      nearby.id, 'Resource padding must not intercept a direct hit on a neighbouring card');
+      await page.mouse.click(direct.x, direct.y);
+      await settleSelection();
+      assert.deepEqual(await page.evaluate(() => window.__nds_diagramStore.getState().selectedNodeIds), [nearby.id]);
+    }
     assert.deepEqual(errors, [], 'No browser runtime errors');
     assert.deepEqual(network, [], 'No network traffic');
     assert.equal(digest(entry), entryHash, 'The tested bundle is read-only');

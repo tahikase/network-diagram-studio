@@ -72,7 +72,8 @@ export interface RuntimeExtensions {
     validPng(value: string): boolean;
     render(
       create: typeof jsx, shape: ShapeRect, selected: boolean,
-      onPointerDown: (event: React.PointerEvent, shape: Shape) => void, interactive: boolean
+      onPointerDown: (event: React.PointerEvent, shape: Shape) => void, interactive: boolean,
+      hitRegion?: React.ReactNode
     ): React.ReactNode;
     blocked(target: EventTarget | null): boolean;
     installClipboard(copy: () => boolean, paste: () => void): () => void;

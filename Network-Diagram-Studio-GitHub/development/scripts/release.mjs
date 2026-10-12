@@ -20,12 +20,12 @@ const suite = [
   'test-release-history.cjs', 'test-release-workflow.cjs', 'test-runtime-build.cjs',
   'test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs',
   'test-all-icons-layout.cjs', 'test-settings-bounds.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs',
-  'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-tab-order.cjs',
+  'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-tab-order.cjs',
   'test-canvas-chrome.cjs', 'test-studiofile.cjs', 'test-screenshot-shapes.cjs',
   'test-demo-video.cjs', 'test-canvas-motion.cjs',
 ];
 export const releaseChecks = [...suite];
-const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs'];
+const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs'];
 
 function localPath(base, relative) {
   if (!relative || relative.includes('\\') || relative.split('/').some(part => !part || part === '.' || part === '..')) {

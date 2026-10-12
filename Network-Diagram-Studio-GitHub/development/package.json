@@ -20,6 +20,7 @@
     "test:shape-text-format": "node test-shape-text-format.cjs",
     "test:database-shape": "node test-database-shape.cjs",
     "test:shape-connector-selection": "node test-shape-connector-selection.cjs",
+    "test:object-selection": "node test-object-selection.cjs",
     "test:public": "node test-public-build.cjs",
     "test:release": "node test-release-history.cjs && node test-release-workflow.cjs",
     "test:imported-icons": "node test-imported-icons.cjs",

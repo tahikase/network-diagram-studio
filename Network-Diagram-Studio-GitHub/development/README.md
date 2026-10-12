@@ -56,6 +56,21 @@ IDs, so rounded helper measurements cannot cut selection holes or overwrite
 native shape binding geometry. Keep real-resource click-through holes and
 the invisible routing adapters themselves intact.
 
+All rect-backed shapes, including Actor, open geometry and pasted images,
+use a full-box native SVG hit target independently of their visible artwork.
+Nested selection tests the actual SVG hit regions, including rotated bodies
+and curved arrows, rather than treating an arrow's empty bounding box as ink.
+Resource holes use intersected clips so overlapping holes never cancel out;
+rotated shapes transform those holes into their local coordinates. Connection
+targets shrink with small shapes to leave a draggable centre.
+
+Right-click opens the object picker when an object is under the pointer.
+An explicit choice temporarily prioritizes its native hit target and selection
+without rewriting shape/node order, parenting, geometry or undo history.
+Changing selection, tool or tab clears that preference. Keep native body drags,
+container cargo, Ctrl/Cmd frame-only dragging and right-button panning intact.
+The picker also reaches completely covered connectors for editing.
+
 Shape text uses the same paragraph layout for editing, rendering, fitting and
 caption hit regions. Optional formatting fields preserve centered legacy text.
 Indent is 0-8 steps of 1.5 em; paragraph spacing is 0-48 pixels at the chosen
@@ -130,7 +145,7 @@ remove a genuine product update.
 
 `release:verify` runs release-history, runtime, launcher, offline app, history,
 All Icons, Settings, group header editing, shape text formatting, Database shapes,
-connected-shape selection, tab order, transparent controls, Save/Load JSON, screenshot,
+connected-shape and overlapping-object selection, tab order, transparent controls, Save/Load JSON, screenshot,
 walkthrough and canvas-motion checks. Logs and `accepted.json` stay beside the
 candidate. The individual `test:*` commands normally target the installed app;
 most test files also accept an explicit entry HTML argument.

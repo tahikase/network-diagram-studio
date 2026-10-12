@@ -51,6 +51,13 @@ is moved later, run the shortcut creator again.
 - Connectors inside imported groups can be selected and edited directly.
 - Connected shapes remain selectable, movable and text-editable after arrow
   changes, including resized boxes. Click inside a shape to select it.
+- Grab anywhere inside a shape's body to move it, including the Actor's limbs
+  and the empty space between them. Smaller shapes and arrows inside a frame
+  remain directly selectable even when the frame was added last.
+- If objects completely cover one another, **right-click > Select object**,
+  choose the desired shape, resource, container, image or connector, then
+  drag the chosen object's body (or edit the connector). This does not change
+  saved stacking order. **Escape** dismisses the list; right-drag still pans.
 - Overlapping transparent cards do not block another resource's visible icon
   or name, regardless of the order in which resources were added.
 - Hand panning and object dragging avoid unnecessary redraws and toolbar layout
@@ -165,7 +172,7 @@ and must not relabel bug fixes as features or enhancements.
 
 ## Version
 
-Network Diagram Studio v0.9.126
+Network Diagram Studio v0.9.129
 
 ## License
 
