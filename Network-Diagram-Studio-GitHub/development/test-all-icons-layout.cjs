@@ -18,6 +18,7 @@ async function open(browser, entry) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1200 }, locale: 'en-US' });
   context.setDefaultTimeout(10000);
   await context.addInitScript(() => localStorage.setItem('nds.paletteWidth', '460'));
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

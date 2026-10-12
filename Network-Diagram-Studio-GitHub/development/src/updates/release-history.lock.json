@@ -1,7 +1,13 @@
 {
   "format": 1,
-  "publishedThrough": "0.9.129",
+  "publishedThrough": "0.9.130",
   "releases": {
+    "0.9.130": {
+      "entry": "5202156279e78de87de823f42c6f193577610e2bf134b97070a481d7857eb154",
+      "before": "c20167a26f577b8847adafe03b09bef01635d8789d865006a9279e200c089574",
+      "after": "c1dd8c0ae4149c7cddab972fb38d031aeed03de9961638c838e473d7ca144ccb",
+      "source": "66a08e6d6482baa11a858793f9e7ec62eca18e55784e238f74b98ac3063caaea"
+    },
     "0.9.129": {
       "entry": "48023b0260c00968fc4576a47cbec55b912e5685097b67e3cd6ca8ca0d3a4658",
       "internal": true,

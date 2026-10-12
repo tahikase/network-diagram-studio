@@ -202,6 +202,7 @@ function readShapes(page) {
   const pageErrors = [];
   page.on('pageerror', (e) => pageErrors.push(e.message));
   await page.addInitScript(HOOK_SAVE);
+  await page.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   await page.goto('file:///' + BUNDLE.replace(/\\/g, '/'));
   await page.waitForSelector('.react-flow', { timeout: 15000 });
   await page.evaluate(() => window.__nds_i18nStore.getState().setLang('en'));

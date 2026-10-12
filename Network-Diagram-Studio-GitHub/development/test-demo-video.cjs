@@ -55,6 +55,7 @@ async function verify(entry, index) {
       args: [`--app=${pathToFileURL(entry).href}`],
     }) : await browser.newContext(options);
     await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+    await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
     await context.route(/^https?:/, route => {
       network.push(route.request().url());
       return route.abort();

@@ -227,4 +227,4 @@
 // 0.9.122 makes Enter insert shape text paragraphs; Ctrl/Cmd+Enter finishes editing.
 // 0.9.123 adds the editable tiered Database shape after the brick wall.
 // 0.9.124 adds 48-128px shape text presets without changing existing auto-fit.
-export const APP_VERSION = '0.9.129';
+export const APP_VERSION = '0.9.130';

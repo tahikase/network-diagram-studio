@@ -120,6 +120,7 @@ async function verify(entry) {
   });
   try {
     await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+    await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
     await page.goto(preview ? entry : pathToFileURL(path.resolve(entry)).href);
     await page.waitForFunction(() => window.__nds_tabsStore && window.__nds_diagramStore);
 

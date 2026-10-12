@@ -99,8 +99,17 @@ async function verify(browser, entry) {
   try {
     await page.goto(pathToFileURL(entry).href);
     await page.waitForFunction(() => window.__nds_tabsStore && document.querySelector('[data-nds-updates-open="palette"]'));
-    assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0, 'No automatic popup interrupts drawing.');
-    assert(await page.locator('[data-nds-updates-unread]').isVisible());
+    await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'visible' });
+    const openedAt = Date.now();
+    await page.waitForTimeout(800);
+    const automaticState = await snapshot(page);
+    await page.waitForTimeout(2200);
+    assert(await page.locator('[data-nds-updates-dialog]').isVisible(), 'The preview must not disappear before five seconds.');
+    await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'detached' });
+    assert(Date.now() - openedAt >= 4600 && Date.now() - openedAt < 8000, 'The idle preview closes after about five visible seconds.');
+    assert.equal(await snapshot(page), automaticState, 'Automatic preview and dismissal preserve the diagram and editing state.');
+    assert.equal(await page.locator('[data-nds-updates-unread]').count(), 0);
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), key), releases[0].version);
     await page.evaluate(file => {
       const loaded = window.__nds_tabsStore.getState().loadStudioFile(JSON.stringify(file));
       if (!loaded.ok || loaded.dropped) throw new Error(JSON.stringify(loaded));
@@ -206,10 +215,21 @@ async function verify(browser, entry) {
       await page.waitForFunction(expected => !!document.querySelector('[data-nds-updates-unread]') === expected, unread);
       assert.equal((await page.locator('[data-nds-updates-unread]').count()) > 0, unread,
         'Only a newer product release creates a badge, including after bug-fix and maintenance versions.');
+      assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0,
+        'A preference change during drawing never automatically interrupts the active session.');
       await page.reload(); await page.waitForSelector('[data-nds-updates-open="palette"]');
-      assert.equal((await page.locator('[data-nds-updates-unread]').count()) > 0, unread,
-        'Reload compares the last seen version with the newest public release, not the application build.');
-      if (!unread) {
+      if (unread) {
+        await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'visible' });
+        assert.equal(await page.evaluate(key => localStorage.getItem(key), key), releases[0].version,
+          'Opening a newer product release previews it once and remembers that version.');
+        await page.keyboard.press('Escape');
+        await page.reload(); await page.waitForSelector('[data-nds-updates-open="palette"]');
+        await settle(page);
+        assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0, 'Seen product updates do not reopen on reload.');
+      } else {
+        await settle(page);
+        assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0,
+          'Equal or newer seen versions never trigger an automatic announcement.');
         await page.locator('[data-nds-updates-open="palette"]').click();
         assert.equal(await page.evaluate(key => localStorage.getItem(key), key), seen,
           'Withdrawing a later bug-fix announcement never rolls back the remembered seen version');
@@ -217,7 +237,8 @@ async function verify(browser, entry) {
       }
     }
     await page.evaluate(key => localStorage.setItem(key, '0.9.114'), key);
-    await page.reload(); await page.waitForSelector('[data-nds-updates-unread]');
+    await page.reload(); await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
     await page.evaluate(key => localStorage.setItem(key, '99.0.0'), key);
     await page.reload(); await page.waitForSelector('[data-nds-updates-open="palette"]');
     assert.equal(await page.locator('[data-nds-updates-unread]').count(), 0, 'A downgrade does not announce an old release as new.');
@@ -254,6 +275,10 @@ async function storageFailure(browser, entry) {
   page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto(pathToFileURL(entry).href);
+    await page.waitForSelector('[data-nds-updates-open="palette"]');
+    await settle(page);
+    assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0,
+      'Unread preference failures must not create repeated automatic popups.');
     await page.locator('[data-nds-updates-open="palette"]').click();
     assert(await page.locator('.nds-updates-warning').isVisible());
     assert(warnings.some(message => message.includes('could not read the viewed release version')));
@@ -262,12 +287,104 @@ async function storageFailure(browser, entry) {
     console.log(`PASS ${path.basename(entry)}: blocked preference storage is reported without breaking history`);
   } finally { await context.close(); }
 }
+
+async function automaticInteractions(browser, entry) {
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, locale: 'en-US' });
+  await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+  const page = await context.newPage();
+  page.setDefaultTimeout(12000);
+  const dialog = page.locator('[data-nds-updates-dialog]');
+  try {
+    await page.goto(pathToFileURL(entry).href);
+    await dialog.waitFor({ state: 'visible' });
+    for (const action of ['keyboard', 'scroll', 'image']) {
+      if (action !== 'keyboard') {
+        await page.evaluate(([key, previous]) => localStorage.setItem(key, previous), [key, releases[1].version]);
+        await page.reload();
+        await dialog.waitFor({ state: 'visible' });
+      }
+      if (action === 'keyboard') await page.keyboard.press('Tab');
+      if (action === 'scroll') {
+        const box = await page.locator('[data-nds-updates-scroll]').boundingBox();
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.wheel(0, 160);
+      }
+      if (action === 'image') {
+        await page.locator('[data-nds-release-version]').first().locator('[data-nds-release-image="after"] button').click();
+        await page.locator('[data-nds-updates-image-preview]').waitFor({ state: 'visible' });
+      }
+      await page.waitForTimeout(5400);
+      assert(await dialog.isVisible(), `${action} interaction cancels auto-close for continued reading.`);
+      if (action === 'image') await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');
+      await dialog.waitFor({ state: 'detached' });
+    }
+    await page.locator('[data-nds-updates-open="palette"]').click();
+    await page.waitForTimeout(5400);
+    assert(await dialog.isVisible(), 'Manually opened history has no auto-close timer.');
+    await page.keyboard.press('Escape');
+    await page.evaluate(([key, previous]) => localStorage.setItem(key, previous), [key, releases[1].version]);
+    await page.reload();
+    await dialog.waitFor({ state: 'visible' });
+    await page.waitForTimeout(1800);
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForTimeout(5400);
+    assert(await dialog.isVisible(), 'Time in a hidden tab does not dismiss the preview.');
+    await page.evaluate(() => {
+      delete document.hidden;
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForTimeout(1500);
+    assert(await dialog.isVisible(), 'The remaining visible time continues after returning to the tab.');
+    await dialog.waitFor({ state: 'detached', timeout: 2300 });
+    console.log('PASS automatic updates: keyboard/scroll/image interaction, untimed manual viewing and visible-tab countdown');
+  } finally { await context.close(); }
+}
+
+async function occupiedStartup(browser, entry) {
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const dialog = document.createElement('dialog');
+      dialog.dataset.startupFixture = '1';
+      document.body.append(dialog);
+      dialog.showModal();
+    }, { once: true });
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(pathToFileURL(entry).href);
+    await page.waitForSelector('[data-nds-updates-open="palette"]');
+    await page.waitForTimeout(800);
+    assert.equal(await page.locator('[data-startup-fixture][open]').count(), 1);
+    assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0,
+      'Automatic history never interrupts another startup dialog.');
+    assert(await page.locator('[data-nds-updates-unread]').isVisible());
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), key), null,
+      'A skipped announcement is not marked as seen.');
+    await page.locator('[data-startup-fixture]').evaluate(dialog => { dialog.close(); dialog.remove(); });
+    await settle(page);
+    assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0,
+      'The startup offer is not retried while the user is already working.');
+    await page.locator('[data-nds-updates-open="palette"]').click();
+    assert(await page.locator('[data-nds-updates-dialog]').isVisible());
+    console.log('PASS automatic updates: occupied startup is not interrupted and unread history remains available');
+  } finally { await context.close(); }
+}
 async function main() {
   if (evidence) fs.mkdirSync(evidence, { recursive: true });
   const entries = process.argv.slice(2).length ? process.argv.slice(2).map(file => path.resolve(file))
     : [path.join(__dirname, '..', 'index.html')];
   const browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] });
-  try { for (const entry of entries) { await verify(browser, entry); await storageFailure(browser, entry); } }
+  try { for (const entry of entries) {
+    await verify(browser, entry);
+    await automaticInteractions(browser, entry);
+    await occupiedStartup(browser, entry);
+    await storageFailure(browser, entry);
+  } }
   finally { await browser.close(); }
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

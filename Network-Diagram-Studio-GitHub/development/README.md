@@ -135,6 +135,13 @@ The application's version may be newer than the latest public history entry.
 The dialog header, version selector and New badge follow product updates only;
 bug-fix-only and internal builds do not create a badge.
 
+At startup, an unread product update previews the existing What's new dialog
+once per browser for five visible seconds. Clicking, scrolling or using the
+keyboard keeps it open until dismissed; hidden-tab time does not count.
+Manual viewing has no timer. Preference-storage errors are reported, and
+another open dialog is never interrupted. Diagram data and editing state are
+unchanged by the preview.
+
 If the user explicitly authorizes withdrawing a previously published bug-fix or internal
 announcement, preserve its original `entry.json`, `strings.json` and PNGs under
 `releases\archive\<version>`. Change its classification to `fix` or `internal`,

@@ -337,6 +337,7 @@ async function main() {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 1920, height: 1150 }, locale: 'en-US' });
   await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const page = await context.newPage(), errors = [], network = [];
   page.setDefaultTimeout(10000);
   page.on('pageerror', error => errors.push(error.message));

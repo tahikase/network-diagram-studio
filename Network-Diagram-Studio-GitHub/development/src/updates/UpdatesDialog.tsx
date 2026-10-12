@@ -33,6 +33,8 @@ function HistoryDialog() {
   const hide = useUpdatesStore(state => state.hide);
   const returnTo = useUpdatesStore(state => state.returnTo);
   const storageError = useUpdatesStore(state => state.storageError);
+  const automatic = useUpdatesStore(state => state.automatic);
+  const keepOpen = useUpdatesStore(state => state.keepOpen);
   const dialog = useRef<HTMLDialogElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const scroll = useRef<HTMLDivElement>(null);
@@ -62,6 +64,31 @@ function HistoryDialog() {
       else document.querySelector<HTMLButtonElement>('[data-nds-settings-button]')?.focus({ preventScroll: true });
     };
   }, [returnTo]);
+
+  useEffect(() => {
+    if (!automatic) return;
+    let remaining = 5000;
+    let started = 0;
+    let timer: number | null = null;
+    const pause = () => {
+      if (timer === null) return;
+      remaining = Math.max(0, remaining - (performance.now() - started));
+      window.clearTimeout(timer);
+      timer = null;
+    };
+    const resume = () => {
+      if (document.hidden || timer !== null) return;
+      started = performance.now();
+      timer = window.setTimeout(hide, remaining);
+    };
+    const visibility = () => { if (document.hidden) pause(); else resume(); };
+    document.addEventListener('visibilitychange', visibility);
+    resume();
+    return () => {
+      pause();
+      document.removeEventListener('visibilitychange', visibility);
+    };
+  }, [automatic, hide]);
 
   const readPosition = () => {
     const body = scroll.current;
@@ -96,7 +123,12 @@ function HistoryDialog() {
     <dialog ref={dialog} id="nds-update-history" className="nds-modal nds-updates-dialog"
       role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={subtitleId}
       data-nds-updates-dialog="1"
+      onPointerDownCapture={keepOpen}
+      onClickCapture={keepOpen}
+      onWheelCapture={keepOpen}
+      onScrollCapture={keepOpen}
       onKeyDown={event => {
+        keepOpen();
         event.stopPropagation();
         if (event.key !== 'Tab') return;
         const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
@@ -203,5 +235,13 @@ function HistoryDialog() {
 }
 
 export function UpdatesDialog() {
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (document.querySelector('dialog[open], [data-nds-settings-panel]')) return;
+      const opener = document.querySelector<HTMLElement>('[data-nds-updates-open="palette"]');
+      if (opener) useUpdatesStore.getState().showAutomatic(opener);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
   return useUpdatesStore(state => state.open) ? <HistoryDialog /> : null;
 }

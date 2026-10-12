@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.9.130",
+    "date": "2026-10-11",
+    "category": "Usability",
+    "title": "See new product updates when you open the studio.",
+    "description": "What's new now opens once for each unread product update, using the same release history and before/after images.",
+    "before": {
+      "file": "0.9.130-before.png",
+      "version": "0.9.129",
+      "caption": "Updates were available only through the What's new link"
+    },
+    "after": {
+      "file": "0.9.130-after.png",
+      "version": "0.9.130",
+      "caption": "The existing What's new dialog appears automatically"
+    },
+    "note": "The preview closes after five seconds in a visible tab. Click, scroll or use the keyboard to keep reading. Open What's new manually whenever you like; manual viewing has no timer. Bug-fix-only builds do not trigger announcements."
+  },
+  {
     "version": "0.9.124",
     "date": "2026-09-26",
     "category": "New feature",

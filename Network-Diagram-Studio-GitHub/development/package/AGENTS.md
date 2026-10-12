@@ -79,7 +79,10 @@ renderer/style. Future releases add data, not custom HTML/CSS.
   with its existing small-screen adaptation.
 - Keep fixed header/footer, newest-first scrolling, version selection,
   before/after pairs, image enlargement, all eight languages and light/dark UI.
-- Preserve keyboard focus and the quiet unread badge. Never auto-open history.
+- Preserve keyboard focus and the quiet unread badge. At startup, preview an
+  unread product update once per browser for five visible seconds. User clicks,
+  scrolling or keyboard use cancel auto-close; manually opened history stays open.
+  Never announce bug-fix/internal builds or interrupt another open dialog.
 - History must not change diagram content, selection, viewport, tabs, undo or
   Save JSON. Keep editing shortcuts out of open dialogs.
 - Change presentation only when the user requests a design change.

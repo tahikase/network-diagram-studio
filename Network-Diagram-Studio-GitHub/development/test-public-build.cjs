@@ -96,6 +96,7 @@ const FINGERPRINT = () => {
 
 async function open(browser, file) {
   const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'en-US' })).newPage();
+  await page.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const errors = [];
   const requests = [];
   page.on('pageerror', (e) => errors.push(e.message));

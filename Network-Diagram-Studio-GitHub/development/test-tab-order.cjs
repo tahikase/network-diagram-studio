@@ -129,6 +129,7 @@ async function seed(page) {
 
 async function verify(browser, entry, edition) {
   const context = await browser.newContext({ viewport: { width: 1700, height: 1050 }, locale: 'en-US', acceptDownloads: true });
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   await context.addInitScript(() => {
     localStorage.setItem('nds.lang', 'en');
     window.__tabEvents = [];

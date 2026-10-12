@@ -1,4 +1,49 @@
 {
+  "See new product updates when you open the studio.": {
+    "ja": "Studio を開いたときに、新しい製品アップデートを確認できます。",
+    "zh": "打开 Studio 时即可查看新的产品更新。",
+    "es": "Descubre las novedades del producto al abrir Studio.",
+    "pt": "Veja as novidades do produto ao abrir o Studio.",
+    "fr": "Découvrez les nouveautés du produit à l'ouverture de Studio.",
+    "de": "Sehen Sie neue Produktupdates beim Öffnen von Studio.",
+    "ko": "Studio를 열 때 새로운 제품 업데이트를 확인하세요."
+  },
+  "What's new now opens once for each unread product update, using the same release history and before/after images.": {
+    "ja": "未確認の製品アップデートがあると、What's new が一度だけ自動で開きます。更新履歴と変更前・変更後の画像は、これまでと同じ形式で表示されます。",
+    "zh": "每次有未读的产品更新时，What's new 会自动打开一次，沿用原有的更新历史和前后对比图片。",
+    "es": "What's new se abre una vez por cada actualización del producto no vista, con el mismo historial y las imágenes de antes y después.",
+    "pt": "What's new abre uma vez para cada atualização do produto ainda não vista, com o mesmo histórico e as imagens de antes e depois.",
+    "fr": "What's new s'ouvre une fois pour chaque mise à jour du produit non consultée, avec le même historique et les images avant/après.",
+    "de": "What's new öffnet sich einmal für jedes noch nicht angesehene Produktupdate, mit demselben Versionsverlauf und denselben Vorher-/Nachher-Bildern.",
+    "ko": "아직 확인하지 않은 제품 업데이트마다 What's new가 한 번 자동으로 열립니다. 기존 업데이트 기록과 변경 전후 이미지를 그대로 사용합니다."
+  },
+  "Updates were available only through the What's new link": {
+    "ja": "What's new のリンクからのみ更新を確認",
+    "zh": "以前只能通过 What's new 链接查看更新",
+    "es": "Las novedades solo se veían desde el enlace What's new",
+    "pt": "As novidades só eram acessíveis pelo link What's new",
+    "fr": "Les nouveautés étaient accessibles uniquement via le lien What's new",
+    "de": "Updates waren nur über den Link What's new zugänglich",
+    "ko": "기존에는 What's new 링크로만 업데이트 확인 가능"
+  },
+  "The existing What's new dialog appears automatically": {
+    "ja": "既存の What's new ダイアログを自動で表示",
+    "zh": "现有的 What's new 对话框会自动显示",
+    "es": "El diálogo existente de What's new aparece automáticamente",
+    "pt": "A janela existente de What's new aparece automaticamente",
+    "fr": "La boîte de dialogue What's new existante apparaît automatiquement",
+    "de": "Der vorhandene Dialog What's new erscheint automatisch",
+    "ko": "기존 What's new 대화 상자가 자동으로 표시됨"
+  },
+  "The preview closes after five seconds in a visible tab. Click, scroll or use the keyboard to keep reading. Open What's new manually whenever you like; manual viewing has no timer. Bug-fix-only builds do not trigger announcements.": {
+    "ja": "プレビューは、タブが表示されている状態で 5 秒後に閉じます。クリック、スクロール、キーボード操作をすると、そのまま読み続けられます。What's new はいつでも手動で開けます。手動で開いた場合は自動で閉じません。不具合修正のみのビルドでは通知されません。",
+    "zh": "预览在可见标签页中显示五秒后关闭。点击、滚动或使用键盘可继续阅读。可随时手动打开 What's new，手动查看时没有计时器。仅包含错误修复的版本不会触发通知。",
+    "es": "La vista previa se cierra tras cinco segundos en una pestaña visible. Haz clic, desplázate o usa el teclado para seguir leyendo. Abre What's new manualmente cuando quieras; no tendrá temporizador. Las versiones que solo corrigen errores no generan anuncios.",
+    "pt": "A prévia fecha após cinco segundos em uma aba visível. Clique, role ou use o teclado para continuar lendo. Abra What's new manualmente quando quiser; a visualização manual não tem temporizador. Versões apenas com correções não geram anúncios.",
+    "fr": "L'aperçu se ferme après cinq secondes dans un onglet visible. Cliquez, faites défiler ou utilisez le clavier pour continuer à lire. Ouvrez What's new manuellement à tout moment, sans minuterie. Les versions contenant uniquement des corrections ne déclenchent pas d'annonce.",
+    "de": "Die Vorschau schließt nach fünf Sekunden in einem sichtbaren Tab. Klicken, scrollen oder die Tastatur verwenden, um weiterzulesen. What's new kann jederzeit manuell ohne Zeitlimit geöffnet werden. Reine Fehlerbehebungen lösen keine Ankündigung aus.",
+    "ko": "미리보기는 탭이 표시된 상태에서 5초 후에 닫힙니다. 클릭하거나 스크롤하거나 키보드를 사용하면 계속 읽을 수 있습니다. What's new는 언제든 수동으로 열 수 있으며, 수동으로 열면 시간 제한이 없습니다. 버그 수정만 포함된 빌드는 알림을 표시하지 않습니다."
+  },
   "Shape text sizes now go up to 128px.": {
     "ja": "図形内の文字サイズを最大 128px まで選べます。",
     "zh": "形状文本现可选择最大 128px 的字号。",

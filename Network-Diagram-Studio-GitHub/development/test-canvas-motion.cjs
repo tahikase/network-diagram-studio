@@ -55,6 +55,7 @@ async function verify(entry, index) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 1600, height: 1050 }, locale: 'en-US' });
   await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const page = await context.newPage();
   page.setDefaultTimeout(15000);
   const errors = [], requests = [], reports = [], files = [];

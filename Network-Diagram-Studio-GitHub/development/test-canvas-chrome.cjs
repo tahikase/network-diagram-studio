@@ -149,6 +149,7 @@ async function verify(browser, entry, index) {
   const originalHash = hash(entry), label = `${path.basename(entry).startsWith('non_') ? 'non-production' : 'production'}-${index}`;
   const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, locale: 'en-US', acceptDownloads: true });
   await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const errors = [], network = [], page = await context.newPage();
   page.setDefaultTimeout(12000);
   page.on('pageerror', error => errors.push(error.message));

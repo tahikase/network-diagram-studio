@@ -228,6 +228,7 @@ async function main() {
       const edition = development ? 'development' : path.basename(entry).startsWith('non_') ? 'non-production' : 'production';
       const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US' });
       context.setDefaultTimeout(12000);
+      await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
       await context.addInitScript(() => {
         localStorage.setItem('nds.lang', 'en');
         localStorage.setItem('nds.paletteWidth', '300');

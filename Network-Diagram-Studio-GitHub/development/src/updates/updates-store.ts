@@ -31,17 +31,21 @@ interface UpdatesState {
   unread: boolean;
   storageError: string;
   returnTo: HTMLElement | null;
-  show: (returnTo: HTMLElement) => void;
+  automatic: boolean;
+  show: (returnTo: HTMLElement, automatic?: boolean) => void;
+  showAutomatic: (returnTo: HTMLElement) => void;
+  keepOpen: () => void;
   hide: () => void;
 }
 
 const stored = readSeen();
-export const useUpdatesStore = create<UpdatesState>((set) => ({
+export const useUpdatesStore = create<UpdatesState>((set, get) => ({
   open: false,
   unread: isNewer(latestPublicVersion, stored.version),
   storageError: stored.error,
   returnTo: null,
-  show: (returnTo) => {
+  automatic: false,
+  show: (returnTo, automatic = false) => {
     let storageError = '';
     try {
       const previous = localStorage.getItem(UPDATES_SEEN_KEY);
@@ -52,9 +56,14 @@ export const useUpdatesStore = create<UpdatesState>((set) => ({
       console.warn('Network Diagram Studio could not save the viewed release version.', error);
       storageError = storageMessage;
     }
-    set({ open: true, unread: false, storageError, returnTo });
+    set({ open: true, unread: false, storageError, returnTo, automatic: automatic && !storageError });
   },
-  hide: () => set({ open: false }),
+  showAutomatic: (returnTo) => {
+    const state = get();
+    if (state.unread && !state.open && !state.storageError) state.show(returnTo, true);
+  },
+  keepOpen: () => { if (get().automatic) set({ automatic: false }); },
+  hide: () => set({ open: false, automatic: false }),
 }));
 
 window.addEventListener('storage', event => {

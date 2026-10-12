@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.9.130",
+    "date": "2026-10-11",
+    "kind": "ui",
+    "userImpact": "Users see the existing What's new dialog once when opening an unread product update. It closes after five visible seconds unless they click, scroll or use the keyboard, and manual viewing remains untimed."
+  },
+  {
     "version": "0.9.129",
     "date": "2026-10-11",
     "kind": "fix",
