@@ -21,7 +21,7 @@ const entrySchema = z.strictObject({
 });
 const archivedEntrySchema = entrySchema.extend({ category: z.enum([...productCategories, 'Fix']) });
 const classificationSchema = z.union([
-  z.strictObject({ version, date, kind: z.enum(['ui', 'functionality']), userImpact: text }),
+  z.strictObject({ version, date, kind: z.enum(['ui', 'functionality']), userImpact: text, correctedIn: version.optional() }),
   z.strictObject({ version, date, kind: z.enum(['fix', 'internal']), reason: text, withdrawnIn: version.optional() }),
 ]);
 const isProductUpdate = record => record.kind === 'ui' || record.kind === 'functionality';
@@ -30,7 +30,11 @@ const lockSchema = z.strictObject({
   format: z.literal(1),
   publishedThrough: version.nullable(),
   releases: z.record(version, z.union([
-    z.strictObject({ entry: hashSchema, before: hashSchema, after: hashSchema, source: hashSchema.optional() }),
+    z.strictObject({
+      entry: hashSchema, before: hashSchema, after: hashSchema,
+      correction: z.strictObject({ version, entry: hashSchema, before: hashSchema, after: hashSchema, translations: hashSchema }).optional(),
+      source: hashSchema.optional(),
+    }),
     z.strictObject({ entry: hashSchema, internal: z.literal(true), source: hashSchema.optional() }),
   ])),
 });
@@ -75,6 +79,12 @@ function readAudience(root) {
     if (record.withdrawnIn && (compare(record.withdrawnIn, record.version) <= 0 || !classified.has(record.withdrawnIn))) {
       fail(`v${record.version} must identify the later release that authorized its withdrawal.`);
     }
+    if (record.correctedIn) {
+      const correction = classified.get(record.correctedIn);
+      if (compare(record.correctedIn, record.version) <= 0 || !correction || isProductUpdate(correction)) {
+        fail(`v${record.version} must identify a later fix/internal release for its authorized announcement correction.`);
+      }
+    }
   }
   return { appVersion, ledger, entries, visible };
 }
@@ -116,12 +126,13 @@ function validateDictionary(dictionary) {
   }
 }
 
-function entryRecord(entry, dictionary, directory, assets) {
+function entryRecord(entry, dictionary, directory, assets, afterThrough = entry.version) {
   for (const copy of copies(entry)) {
     if (!Object.hasOwn(dictionary, copy)) fail(`v${entry.version} is missing translations: ${copy}`);
   }
-  if (compare(entry.before.version, entry.version) >= 0 || entry.after.version !== entry.version) {
-    fail(`v${entry.version} must identify an earlier before version and its own after version.`);
+  if (compare(entry.before.version, entry.version) >= 0 || compare(entry.after.version, entry.version) < 0 ||
+      compare(entry.after.version, afterThrough) > 0) {
+    fail(`v${entry.version} must identify an earlier before version and an after version within its reviewed release.`);
   }
   const record = { entry: hash(JSON.stringify(entry)), before: '', after: '' };
   for (const phase of ['before', 'after']) {
@@ -159,18 +170,8 @@ function collect(root) {
       fail(`nonpublic or unreferenced image in public release-images: ${file}`);
     }
   }
-  for (const classification of ledger) {
+  function archivedRecord(classification) {
     const entryVersion = classification.version;
-    if (isProductUpdate(classification)) {
-      records[entryVersion] = entryRecord(visible.get(entryVersion), dictionary, path.join(updates, 'release-images'), assets);
-      continue;
-    }
-    privateStrings.add(classification.reason);
-    if (!classification.withdrawnIn) {
-      // The existing lock's internal marker denotes a nonpublic history record.
-      records[entryVersion] = { entry: hash(JSON.stringify(classification)), internal: true };
-      continue;
-    }
     const sealed = lock.releases[entryVersion];
     if (!sealed?.before || !sealed.after || !lock.publishedThrough || compare(entryVersion, lock.publishedThrough) > 0) {
       fail(`only a previously published public entry can be archived: v${entryVersion}`);
@@ -180,16 +181,37 @@ function collect(root) {
     if (archived.version !== entryVersion || archived.date !== classification.date) fail(`archive identity mismatch: v${entryVersion}`);
     const translations = readJson(path.join(directory, 'strings.json'));
     validateDictionary(translations);
-    records[entryVersion] = entryRecord(archived, translations, directory, privateAssets);
+    const record = entryRecord(archived, translations, directory, privateAssets);
     for (const copy of copies(archived)) {
       if (publicCopies.has(copy)) continue;
       if (Object.hasOwn(dictionary, copy)) fail(`nonpublic release copy remains in public translations: ${copy}`);
-      // Generic category words may occur elsewhere in the editor. The public
-      // schema rejects Fix; only unique announcement copy is checked in bundles.
       if (copy === archived.category) continue;
       privateStrings.add(copy);
       for (const translation of Object.values(translations[copy])) privateStrings.add(translation);
     }
+    return record;
+  }
+  for (const classification of ledger) {
+    const entryVersion = classification.version;
+    if (isProductUpdate(classification)) {
+      const entry = visible.get(entryVersion);
+      const record = entryRecord(entry, dictionary, path.join(updates, 'release-images'), assets, classification.correctedIn);
+      records[entryVersion] = classification.correctedIn ? {
+        ...archivedRecord(classification),
+        correction: {
+          version: classification.correctedIn, ...record,
+          translations: hash(JSON.stringify(Object.fromEntries(copies(entry).map(copy => [copy, dictionary[copy]])))),
+        },
+      } : record;
+      continue;
+    }
+    privateStrings.add(classification.reason);
+    if (!classification.withdrawnIn) {
+      // The existing lock's internal marker denotes a nonpublic history record.
+      records[entryVersion] = { entry: hash(JSON.stringify(classification)), internal: true };
+      continue;
+    }
+    records[entryVersion] = archivedRecord(classification);
   }
   for (const [copy, row] of Object.entries(dictionary)) {
     privateStrings.delete(copy);
@@ -200,6 +222,12 @@ function collect(root) {
     if (!records[lockedVersion]) fail(`previously sealed v${lockedVersion} was removed.`);
     if (['entry', 'before', 'after', 'internal'].some(key => records[lockedVersion][key] !== record[key])) {
       fail(`previously sealed v${lockedVersion} or its images changed. Do not rewrite released history.`);
+    }
+    if (JSON.stringify(records[lockedVersion].correction) !== JSON.stringify(record.correction)) {
+      const correction = records[lockedVersion].correction;
+      if (!correction || compare(correction.version, lock.publishedThrough) <= 0) {
+        fail(`previously published correction for v${lockedVersion} changed. Authorize it in a newer fix/internal release.`);
+      }
     }
   }
   if (Object.keys(lock.releases).length && lock.publishedThrough &&

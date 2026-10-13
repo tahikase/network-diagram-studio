@@ -1,48 +1,48 @@
 {
-  "Find the ARM template selection at a glance.": {
-    "ja": "ARM テンプレートの選択場所がひと目でわかります。",
-    "zh": "一眼找到 ARM 模板的选择位置。",
-    "es": "Encuentra de un vistazo dónde seleccionar la plantilla ARM.",
-    "pt": "Encontre rapidamente onde selecionar o modelo ARM.",
-    "fr": "Repérez immédiatement où sélectionner le modèle ARM.",
-    "de": "Finden Sie die ARM-Vorlagenauswahl auf einen Blick.",
-    "ko": "ARM 템플릿을 선택할 위치를 한눈에 확인하세요."
+  "A clearer template chooser in Import ARM.": {
+    "ja": "Import ARM のテンプレート選択がわかりやすくなりました。",
+    "zh": "ARM 导入中的模板选择更清晰。",
+    "es": "Una selección de plantilla más clara en Importar ARM.",
+    "pt": "Uma seleção de modelo mais clara em Importar ARM.",
+    "fr": "Une sélection de modèle plus claire dans Importer ARM.",
+    "de": "Eine übersichtlichere Vorlagenauswahl beim ARM-Import.",
+    "ko": "ARM 가져오기의 템플릿 선택이 더 명확해졌습니다."
   },
-  "Import ARM highlights file selection with a larger blue Choose template.json button, folder icon, clear guidance and filename status.": {
-    "ja": "Import ARM では、大きな青い template.json 選択ボタン、フォルダーアイコン、わかりやすい説明、ファイル名の表示により、ファイルの選択場所を強調します。",
-    "zh": "ARM 导入通过更大的蓝色 template.json 选择按钮、文件夹图标、清晰说明和文件名状态突出文件选择。",
-    "es": "Importar ARM destaca la selección de archivos con un botón azul más grande para elegir template.json, un icono de carpeta, instrucciones claras y el estado del nombre de archivo.",
-    "pt": "Importar ARM destaca a seleção de arquivos com um botão azul maior para escolher template.json, ícone de pasta, orientação clara e indicação do nome do arquivo.",
-    "fr": "Importer ARM met en évidence la sélection de fichiers avec un bouton bleu plus grand pour choisir template.json, une icône de dossier, des indications claires et le nom du fichier.",
-    "de": "ARM importieren hebt die Dateiauswahl durch eine größere blaue Schaltfläche für template.json, ein Ordnersymbol, klare Hinweise und eine Dateinamensanzeige hervor.",
-    "ko": "ARM 가져오기에서 더 큰 파란색 template.json 선택 버튼, 폴더 아이콘, 명확한 안내 및 파일 이름 표시로 파일 선택 영역을 강조합니다."
+  "A highlighted selection panel, larger blue button, folder icon and filename status make template selection easier to find.": {
+    "ja": "強調した選択パネル、大きな青いボタン、フォルダーアイコン、ファイル名の表示により、テンプレートの選択場所が見つけやすくなりました。",
+    "zh": "突出显示的选择面板、更大的蓝色按钮、文件夹图标和文件名状态让模板选择位置更容易找到。",
+    "es": "Un panel destacado, un botón azul más grande, un icono de carpeta y el nombre del archivo facilitan encontrar dónde seleccionar la plantilla.",
+    "pt": "Um painel destacado, um botão azul maior, um ícone de pasta e o nome do arquivo facilitam encontrar onde selecionar o modelo.",
+    "fr": "Un panneau mis en évidence, un bouton bleu plus grand, une icône de dossier et le nom du fichier facilitent le repérage de la sélection du modèle.",
+    "de": "Ein hervorgehobener Auswahlbereich, eine größere blaue Schaltfläche, ein Ordnersymbol und die Dateinamensanzeige machen die Vorlagenauswahl leichter auffindbar.",
+    "ko": "강조된 선택 패널, 더 큰 파란색 버튼, 폴더 아이콘 및 파일 이름 표시로 템플릿 선택 위치를 쉽게 찾을 수 있습니다."
   },
-  "Template selection used a small outline button": {
-    "ja": "テンプレートの選択には小さな枠線付きボタンを使用",
-    "zh": "模板选择以前使用小型描边按钮",
-    "es": "La selección de plantilla usaba un botón pequeño con borde",
-    "pt": "A seleção do modelo usava um pequeno botão com contorno",
-    "fr": "La sélection du modèle utilisait un petit bouton à bordure",
-    "de": "Die Vorlagenauswahl verwendete eine kleine umrandete Schaltfläche",
-    "ko": "템플릿 선택에 작은 테두리 버튼을 사용했습니다"
+  "Small outline file-selection button": {
+    "ja": "小さな枠線付きのファイル選択ボタン",
+    "zh": "小型描边文件选择按钮",
+    "es": "Botón pequeño con borde para seleccionar archivos",
+    "pt": "Pequeno botão com contorno para selecionar arquivos",
+    "fr": "Petit bouton à bordure pour sélectionner un fichier",
+    "de": "Kleine umrandete Schaltfläche zur Dateiauswahl",
+    "ko": "작은 테두리 파일 선택 버튼"
   },
-  "A highlighted panel makes template selection clear": {
-    "ja": "強調したパネルでテンプレートの選択場所を明確に表示",
-    "zh": "突出显示的面板让模板选择更清晰",
-    "es": "Un panel destacado hace clara la selección de plantilla",
-    "pt": "Um painel destacado torna clara a seleção do modelo",
-    "fr": "Un panneau mis en évidence clarifie la sélection du modèle",
-    "de": "Ein hervorgehobener Bereich macht die Vorlagenauswahl deutlich",
-    "ko": "강조된 패널로 템플릿 선택 위치가 명확해졌습니다"
+  "Highlighted panel with a larger blue button": {
+    "ja": "大きな青いボタンのある強調したパネル",
+    "zh": "带有更大蓝色按钮的突出显示面板",
+    "es": "Panel destacado con un botón azul más grande",
+    "pt": "Painel destacado com um botão azul maior",
+    "fr": "Panneau mis en évidence avec un bouton bleu plus grand",
+    "de": "Hervorgehobener Bereich mit einer größeren blauen Schaltfläche",
+    "ko": "더 큰 파란색 버튼이 있는 강조된 패널"
   },
-  "The Steps and demo panels start at the same height on desktop. The selection panel supports all eight languages, both themes and narrow screens. Only Choose template.json opens the file picker; the silent demo and local import workflow are unchanged.": {
-    "ja": "デスクトップでは、手順とデモのパネルの上端を揃えています。選択パネルは全 8 言語、ライト・ダークテーマ、幅の狭い画面に対応します。ファイル選択画面は template.json 選択ボタンを押したときだけ開きます。音声なしのデモとローカルでのインポート手順は変わりません。",
-    "zh": "桌面上，步骤和演示面板的顶部对齐。选择面板支持全部八种语言、两种主题和窄屏。只有点击 template.json 选择按钮才会打开文件选择器；无声演示和本地导入流程保持不变。",
-    "es": "En escritorio, los paneles de pasos y demostración empiezan a la misma altura. El panel de selección admite los ocho idiomas, ambos temas y pantallas estrechas. Solo Elegir template.json abre el selector de archivos; la demostración sin audio y la importación local no cambian.",
-    "pt": "No desktop, os painéis de etapas e demonstração começam na mesma altura. O painel de seleção oferece suporte aos oito idiomas, aos dois temas e a telas estreitas. Apenas Escolher template.json abre o seletor de arquivos; a demonstração sem áudio e a importação local permanecem iguais.",
-    "fr": "Sur ordinateur, les panneaux des étapes et de la démonstration commencent à la même hauteur. Le panneau de sélection prend en charge les huit langues, les deux thèmes et les écrans étroits. Seul Choisir template.json ouvre le sélecteur de fichiers ; la démonstration sans audio et l’importation locale restent inchangées.",
-    "de": "Auf dem Desktop beginnen die Schritte und die Demo auf gleicher Höhe. Der Auswahlbereich unterstützt alle acht Sprachen, beide Designs und schmale Bildschirme. Nur template.json auswählen öffnet die Dateiauswahl; die Demo ohne Ton und der lokale Import bleiben unverändert.",
-    "ko": "데스크톱에서 단계와 데모 패널의 위쪽 가장자리가 정렬됩니다. 선택 패널은 8개 언어, 두 테마 및 좁은 화면을 지원합니다. template.json 선택 버튼을 눌러야 파일 선택 창이 열리며 무음 데모와 로컬 가져오기 과정은 그대로 유지됩니다."
+  "Choose template.json opens the file picker only when clicked. Import remains local.": {
+    "ja": "template.json 選択ボタンを押したときだけファイル選択画面が開きます。インポートは引き続きローカルで処理します。",
+    "zh": "只有点击 template.json 选择按钮才会打开文件选择器。导入仍在本地处理。",
+    "es": "Elegir template.json abre el selector de archivos solo al hacer clic. La importación sigue siendo local.",
+    "pt": "Escolher template.json abre o seletor de arquivos apenas ao clicar. A importação continua sendo local.",
+    "fr": "Choisir template.json ouvre le sélecteur de fichiers uniquement lorsque vous cliquez dessus. L’importation reste locale.",
+    "de": "template.json auswählen öffnet die Dateiauswahl nur beim Anklicken. Der Import erfolgt weiterhin lokal.",
+    "ko": "template.json 선택 버튼을 클릭해야 파일 선택 창이 열립니다. 가져오기는 계속 로컬에서 처리됩니다."
   },
   "Keep group properties to the right of the resource name.": {
     "ja": "グループのプロパティをリソース名の右側に表示します。",

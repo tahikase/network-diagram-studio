@@ -175,12 +175,53 @@ async function main() {
     write(path.join(production, 'README.txt'), `Production v${appVersion}`);
     assert.equal(markReleasePublished(root).version, appVersion);
     assert.equal(JSON.parse(fs.readFileSync(lockFile)).publishedThrough, appVersion);
+    const publishedLock = JSON.parse(fs.readFileSync(lockFile));
+    originalLock = publishedLock;
+    for (const corrected of ledger.filter(record => record.correctedIn)) {
+      const entry = entries.find(entry => entry.version === corrected.version);
+      const archive = path.join(root, 'releases', 'archive', corrected.version);
+      rejected(() => {
+        const changed = structuredClone(entries);
+        changed.find(item => item.version === corrected.version).note = entries[1].note;
+        json(manifestFile, changed);
+      }, /previously published correction.*changed/, sealReleaseHistory);
+      rejected(() => {
+        const image = path.join(root, 'src', 'updates', 'release-images', entry.after.file);
+        const bytes = fs.readFileSync(image); bytes[bytes.length - 1] ^= 1; write(image, bytes);
+      }, /previously published correction.*changed/, sealReleaseHistory);
+      rejected(() => {
+        const changed = structuredClone(dictionary); changed[entry.title].ja = 'changed translation';
+        json(dictionaryFile, changed);
+      }, /previously published correction.*changed/, sealReleaseHistory);
+      rejected(() => {
+        const archived = JSON.parse(fs.readFileSync(path.join(archive, 'entry.json')));
+        const image = path.join(archive, archived.before.file);
+        const bytes = fs.readFileSync(image); bytes[bytes.length - 1] ^= 1; write(image, bytes);
+      }, /previously sealed.*changed/, sealReleaseHistory);
+      rejected(() => {
+        const changed = structuredClone(ledger);
+        changed.find(item => item.version === corrected.version).correctedIn = corrected.version;
+        json(ledgerFile, changed);
+      }, /later fix\/internal release/, checkReleaseAudience);
+      restore();
+      const archived = JSON.parse(fs.readFileSync(path.join(archive, 'entry.json')));
+      assert.throws(() => verifyReleaseBundle(bundle() + archived.title, root), /contains nonpublic release communication/);
+      assert.throws(() => verifyReleaseBundle(bundle() + 'data:image/png;base64,' +
+        fs.readFileSync(path.join(archive, archived.after.file)).toString('base64'), root), /nonpublic release image/);
+      assert.equal(checkReleaseHistory(root).count, entries.length, 'Correction preserves the public product count');
+      for (const key of ['entry', 'before', 'after']) {
+        assert.equal(publishedLock.releases[corrected.version][key], fixture.lock.releases[corrected.version][key],
+          'Original published entry and image hashes remain protected');
+      }
+    }
+    restore();
     write(path.join(root, 'src', 'component.ts'), 'export const appearance = "unversioned change";');
     assert.throws(() => checkReleaseHistory(root), /code changed after publication/);
     assert.throws(() => sealReleaseHistory(root), /Bump APP_VERSION/);
     console.log('PASS release entries, dates, translations, placeholders, PNGs, version ordering and immutable published history');
     console.log('PASS offline bundle stamps/images, sealed runtime assets, independent publication and mandatory version bumps');
     console.log('PASS product-only categories, excluded fixes/maintenance, immutable archives, bundle-leak rejection and future fix/internal/product builds');
+    console.log('PASS authorized announcement corrections, immutable originals/corrected content/translations and no new product announcement');
   } finally {
     for (const file of files) if (fs.existsSync(file)) fs.unlinkSync(file);
     for (const dir of [...directories].sort((a, b) => b.length - a.length)) if (fs.existsSync(dir)) fs.rmdirSync(dir);

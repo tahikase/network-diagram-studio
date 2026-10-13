@@ -179,6 +179,10 @@ async function verify(target) {
     assert.equal(await page.locator('[data-nds-release-version="0.9.133"]').count(), 0, 'Demo announcement is withdrawn');
     assert.equal(await page.locator('[data-nds-release-version="0.9.136"]').count(), 0, 'Removal and correction create no announcement');
     assert.equal(await page.locator('[data-nds-release-version="0.9.135"]').count(), 1, 'Other genuine updates are preserved');
+    assert(!/video|demo/i.test(await page.locator('[data-nds-release-version="0.9.135"]').textContent()),
+      'The corrected ARM selection announcement contains no retired video wording');
+    assert.equal(await page.locator('[data-nds-release-version="0.9.137"]').count(), 0,
+      'Correcting an announcement does not advertise a maintenance release as a new feature');
     await page.locator('[data-nds-updates-close]').click();
     assert.deepEqual(errors, []);
     assert.deepEqual(requests, [], 'Import remains offline');

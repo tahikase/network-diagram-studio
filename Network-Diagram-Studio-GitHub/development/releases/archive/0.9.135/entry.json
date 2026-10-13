@@ -1,0 +1,18 @@
+{
+  "version": "0.9.135",
+  "date": "2026-10-12",
+  "category": "Usability",
+  "title": "Find the ARM template selection at a glance.",
+  "description": "Import ARM highlights file selection with a larger blue Choose template.json button, folder icon, clear guidance and filename status.",
+  "before": {
+    "file": "0.9.135-before.png",
+    "version": "0.9.134",
+    "caption": "Template selection used a small outline button"
+  },
+  "after": {
+    "file": "0.9.135-after.png",
+    "version": "0.9.135",
+    "caption": "A highlighted panel makes template selection clear"
+  },
+  "note": "The Steps and demo panels start at the same height on desktop. The selection panel supports all eight languages, both themes and narrow screens. Only Choose template.json opens the file picker; the silent demo and local import workflow are unchanged."
+}

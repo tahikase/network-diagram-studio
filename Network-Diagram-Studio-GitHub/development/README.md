@@ -167,6 +167,16 @@ its public entry and unshared translations/images, not the application fix.
 Original entry/image hashes remain sealed; never edit the lock or silently
 remove a genuine product update.
 
+For an explicitly authorized correction to a genuine product announcement,
+preserve its original `entry.json`, `strings.json` and PNGs under
+`releases\archive\<version>` and set `correctedIn` on its product classification
+to a newer fix/internal release. Keep the public product version/category and
+correct only its approved copy/images. The release tool preserves the original
+published hashes and separately seals the corrected entry, images and
+translations. Corrected after images can identify an actual later app version
+up to the correction release. This maintenance creates no new feature
+announcement or unread badge; do not hand-edit the lock.
+
 `release:verify` runs release-history, runtime, launcher, offline app, history,
 All Icons, Settings, group header editing, shape text formatting, Database shapes,
 connected-shape and overlapping-object selection, tab order, transparent controls, Save/Load JSON, screenshot,

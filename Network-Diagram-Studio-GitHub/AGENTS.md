@@ -70,6 +70,14 @@ as appropriate, with `withdrawnIn` identifying the authorized correction release
 The original published hashes remain protected. Never delete or hand-edit the
 history lock. Withdrawing an announcement must not undo the application fix.
 
+An explicitly authorized correction to a genuine product announcement retains
+its product version/category and uses `correctedIn` to identify a newer
+fix/internal release. Archive the exact original entry, translations and PNGs;
+the release tool preserves their hashes and separately seals the correction.
+Corrected after images may identify an actual later app version up to the
+correction release. Do not invent a new feature announcement or unread badge
+for this maintenance, and never hand-edit the lock.
+
 ## Keep the approved What's new presentation
 
 `development\src\updates\UpdatesDialog.tsx` and `updates.css` are the single
