@@ -219,10 +219,11 @@ async function verify(browser, entry) {
         'A preference change during drawing never automatically interrupts the active session.');
       await page.reload(); await page.waitForSelector('[data-nds-updates-open="palette"]');
       if (unread) {
-        await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'visible' });
+        await page.waitForSelector('[data-nds-updates-dialog][open]');
         assert.equal(await page.evaluate(key => localStorage.getItem(key), key), releases[0].version,
           'Opening a newer product release previews it once and remembers that version.');
         await page.keyboard.press('Escape');
+        await page.locator('[data-nds-updates-dialog]').waitFor({ state: 'detached' });
         await page.reload(); await page.waitForSelector('[data-nds-updates-open="palette"]');
         await settle(page);
         assert.equal(await page.locator('[data-nds-updates-dialog]').count(), 0, 'Seen product updates do not reopen on reload.');

@@ -1,5 +1,42 @@
 [
   {
+    "version": "0.9.136",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "reason": "Apply the approved ARM dialog correction: remove the demo and its packaged media, keep the other text and import controls unchanged in a compact single column, and set Step 5 to template.json in every language. The user authorized withdrawing the demo announcement. This removal and correction create no new public announcement."
+  },
+  {
+    "version": "0.9.135",
+    "date": "2026-10-12",
+    "kind": "ui",
+    "userImpact": "The approved ARM import design highlights template selection with a larger blue Choose template.json button, folder icon, localized guidance and filename status. Aligned Steps/demo top edges and responsive, theme-aware styling make the next action easier to discover without changing manual file selection, demo playback or import behavior."
+  },
+  {
+    "version": "0.9.134",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "reason": "Keep the Import ARM instructions and video usable before file selection. Open the native file picker only from Choose template.json, and leave the dialog open when file selection is cancelled. Existing template selection, offline playback and import behavior are preserved."
+  },
+  {
+    "version": "0.9.133",
+    "date": "2026-10-12",
+    "kind": "internal",
+    "reason": "The user authorized removal of the ARM demo and withdrawal of its announcement in v0.9.136. Preserve the original published entry, translations and images only in the development archive.",
+    "withdrawnIn": "0.9.136"
+  },
+  {
+    "version": "0.9.132",
+    "date": "2026-10-12",
+    "kind": "ui",
+    "userImpact": "Group headers keep the full wrapped name on the left and IP/custom property chips on the right, matching the approved preview. Narrow boxes wrap property chips within the right-hand area; notes remain below the header."
+  },
+  {
+    "version": "0.9.131",
+    "date": "2026-10-12",
+    "kind": "ui",
+    "userImpact": "Long resource names wrap onto additional lines instead of showing an ellipsis, including VNets and all other group resources. Header property chips reflow and notes stay below the wrapped header."
+  },
+  {
     "version": "0.9.130",
     "date": "2026-10-11",
     "kind": "ui",

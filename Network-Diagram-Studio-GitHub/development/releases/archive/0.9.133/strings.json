@@ -1,0 +1,56 @@
+{
+  "Usability": {
+    "ja": "使いやすさ",
+    "zh": "易用性",
+    "es": "Usabilidad",
+    "pt": "Usabilidade",
+    "fr": "Ergonomie",
+    "de": "Bedienbarkeit",
+    "ko": "사용성"
+  },
+  "Watch an ARM import walkthrough beside the instructions.": {
+    "ja": "手順の横で ARM インポートのデモを確認できます。",
+    "zh": "在操作说明旁观看 ARM 导入演示。",
+    "es": "Mira una guía de importación ARM junto a las instrucciones.",
+    "pt": "Veja uma demonstração de importação ARM ao lado das instruções.",
+    "fr": "Regardez une démonstration d’importation ARM à côté des instructions.",
+    "de": "Sehen Sie eine ARM-Importanleitung neben den Anweisungen.",
+    "ko": "안내 옆에서 ARM 가져오기 데모를 볼 수 있습니다."
+  },
+  "Import ARM now includes a silent 30-second video with numbered callouts, showing Azure Portal export steps and the Studio import workflow.": {
+    "ja": "Import ARM に、番号付きの吹き出しで Azure Portal のエクスポートと Studio のインポート手順を示す、音声なしの 30 秒動画を追加しました。",
+    "zh": "ARM 导入现在包含带编号标注的 30 秒无声视频，展示 Azure Portal 导出步骤和 Studio 导入流程。",
+    "es": "Importar ARM ahora incluye un vídeo de 30 segundos sin audio con indicaciones numeradas sobre la exportación desde Azure Portal y la importación en Studio.",
+    "pt": "Importar ARM agora inclui um vídeo de 30 segundos sem áudio com anotações numeradas, mostrando a exportação no Azure Portal e a importação no Studio.",
+    "fr": "Importer ARM inclut désormais une vidéo de 30 secondes sans audio avec des bulles numérotées présentant l’exportation depuis Azure Portal et l’importation dans Studio.",
+    "de": "ARM importieren enthält jetzt ein 30-sekündiges Video ohne Ton mit nummerierten Hinweisen zum Export im Azure Portal und Import in Studio.",
+    "ko": "ARM 가져오기에 Azure Portal 내보내기와 Studio 가져오기 과정을 번호가 있는 설명으로 보여주는 30초 무음 동영상이 추가되었습니다."
+  },
+  "The file picker still opens immediately. The local video plays only when you press Play, includes fullscreen controls, and pauses when importing or closing the dialog. Callouts are in English.": {
+    "ja": "ファイル選択画面は引き続きすぐに開きます。ローカルの動画は再生ボタンを押したときだけ再生され、全画面表示に対応します。インポートの開始時や画面を閉じたときに一時停止します。吹き出しは英語です。",
+    "zh": "文件选择器仍会立即打开。本地视频仅在您点击播放后开始，支持全屏，并在导入或关闭对话框时暂停。标注使用英文。",
+    "es": "El selector de archivos sigue abriéndose inmediatamente. El vídeo local solo se reproduce al pulsar Reproducir, permite pantalla completa y se pausa al importar o cerrar el diálogo. Las indicaciones están en inglés.",
+    "pt": "O seletor de arquivos continua abrindo imediatamente. O vídeo local só é reproduzido ao pressionar Reproduzir, permite tela cheia e pausa ao importar ou fechar a janela. As anotações estão em inglês.",
+    "fr": "Le sélecteur de fichiers s’ouvre toujours immédiatement. La vidéo locale démarre uniquement lorsque vous appuyez sur Lecture, permet le plein écran et se met en pause lors de l’importation ou de la fermeture. Les bulles sont en anglais.",
+    "de": "Die Dateiauswahl öffnet sich weiterhin sofort. Das lokale Video startet nur über Wiedergabe, unterstützt Vollbild und pausiert beim Importieren oder Schließen des Dialogs. Die Hinweise sind auf Englisch.",
+    "ko": "파일 선택 창은 계속 즉시 열립니다. 로컬 동영상은 재생을 누를 때만 시작하며 전체 화면을 지원하고 가져오기 또는 대화 상자를 닫을 때 일시 정지합니다. 설명은 영어입니다."
+  },
+  "Import ARM showed written instructions only": {
+    "ja": "Import ARM では文章の手順のみを表示",
+    "zh": "ARM 导入以前仅显示文字说明",
+    "es": "Importar ARM solo mostraba instrucciones escritas",
+    "pt": "Importar ARM mostrava apenas instruções escritas",
+    "fr": "Importer ARM affichait uniquement des instructions écrites",
+    "de": "ARM importieren zeigte nur schriftliche Anweisungen",
+    "ko": "ARM 가져오기에 텍스트 안내만 표시되었습니다"
+  },
+  "Watch the silent ARM walkthrough beside the instructions": {
+    "ja": "手順の横で音声なしの ARM デモを再生",
+    "zh": "在操作说明旁观看无声 ARM 演示",
+    "es": "Mira la guía ARM sin audio junto a las instrucciones",
+    "pt": "Veja a demonstração ARM sem áudio ao lado das instruções",
+    "fr": "Regardez la démonstration ARM sans audio à côté des instructions",
+    "de": "Sehen Sie die ARM-Anleitung ohne Ton neben den Anweisungen",
+    "ko": "안내 옆에서 무음 ARM 데모를 볼 수 있습니다"
+  }
+}

@@ -15,6 +15,7 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
 const jsonBytes = value => JSON.stringify(value, null, 2) + '\n';
 const templates = new Set(['README.md', 'README.txt', 'Network Diagram Studio.bat']);
+const retiredPackageFiles = new Set(['production_arm/import-demo.mp4', 'production_arm/import-demo.jpg']);
 const allowed = /^(?:index\.html|AGENTS\.md|README\.(?:md|txt)|Network Diagram Studio\.bat|LICENSE|THIRD-PARTY-NOTICES\.txt|(?:production_(?:arm|demo|editor|vendor)|desktop|licenses)\/.+)$/;
 const suite = [
   'test-release-history.cjs', 'test-release-workflow.cjs', 'test-runtime-build.cjs',
@@ -22,10 +23,10 @@ const suite = [
   'test-all-icons-layout.cjs', 'test-settings-bounds.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs',
   'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-tab-order.cjs',
   'test-canvas-chrome.cjs', 'test-studiofile.cjs', 'test-screenshot-shapes.cjs',
-  'test-demo-video.cjs', 'test-canvas-motion.cjs',
+  'test-demo-video.cjs', 'test-arm-import.cjs', 'test-canvas-motion.cjs',
 ];
 export const releaseChecks = [...suite];
-const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs'];
+const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-arm-import.cjs'];
 
 function localPath(base, relative) {
   if (!relative || relative.includes('\\') || relative.split('/').some(part => !part || part === '.' || part === '..')) {
@@ -103,8 +104,9 @@ export function recordCandidate(root, directory, id) {
   const files = inventory(path.join(directory, 'package'));
   assertPackageFiles(files);
   const installed = path.resolve(root, '..');
-  const baseline = Object.fromEntries(Object.keys(files).map(file => [file, digestFile(localPath(installed, file))]));
-  const manifest = { format: 1, id, version: checked.version, releaseDigest: checked.digest, files, baseline };
+  const removed = [...retiredPackageFiles].filter(file => !Object.hasOwn(files, file) && digestFile(localPath(installed, file)) !== null);
+  const baseline = Object.fromEntries([...Object.keys(files), ...removed].map(file => [file, digestFile(localPath(installed, file))]));
+  const manifest = { format: 1, id, version: checked.version, releaseDigest: checked.digest, files, removed, baseline };
   atomicWrite(path.join(directory, 'manifest.json'), jsonBytes(manifest));
   atomicWrite(localPath(root, '.release/latest.json'), jsonBytes({ id }));
   return manifest;
@@ -118,7 +120,12 @@ export function verifyCandidate(root = defaultRoot) {
     throw new Error('Candidate inputs changed. Review, seal and build again.');
   }
   assertPackageFiles(manifest.files);
-  same(Object.keys(manifest.baseline), Object.keys(manifest.files), 'Candidate baseline is incomplete.');
+  if (!Array.isArray(manifest.removed) || new Set(manifest.removed).size !== manifest.removed.length ||
+      manifest.removed.some(file => !retiredPackageFiles.has(file) || Object.hasOwn(manifest.files, file) ||
+        typeof manifest.baseline[file] !== 'string' || !/^[a-f0-9]{64}$/.test(manifest.baseline[file]))) {
+    throw new Error('Candidate contains unreviewed package removals. Build a new candidate.');
+  }
+  same(Object.keys(manifest.baseline), [...Object.keys(manifest.files), ...manifest.removed], 'Candidate baseline is incomplete.');
   same(inventory(path.join(directory, 'package')), manifest.files, 'Candidate package changed after building.');
   const packaged = path.join(directory, 'package');
   const html = readFileSync(path.join(packaged, 'index.html'), 'utf8');
@@ -231,8 +238,9 @@ export async function publishCandidate(root = defaultRoot, verifyInstalled = run
   if (existsSync(backup)) throw new Error('This candidate already has a publication attempt. Build a new candidate.');
   mkdirSync(backup);
   const changed = [];
+  const expectedFiles = { ...manifest.files, ...Object.fromEntries(manifest.removed.map(file => [file, null])) };
   try {
-    for (const [file, after] of Object.entries(manifest.files)) {
+    for (const [file, after] of Object.entries(expectedFiles)) {
       const before = manifest.baseline[file];
       if (before === after) continue;
       const destination = localPath(installed, file);
@@ -243,10 +251,11 @@ export async function publishCandidate(root = defaultRoot, verifyInstalled = run
         copyFileSync(destination, copy);
         if (digestFile(copy) !== before) throw new Error(`Backup changed while copying: ${file}`);
       }
-      atomicWrite(destination, readFileSync(localPath(path.join(directory, 'package'), file)));
+      if (after === null) unlinkSync(destination);
+      else atomicWrite(destination, readFileSync(localPath(path.join(directory, 'package'), file)));
       changed.push(file);
     }
-    for (const [file, expected] of Object.entries(manifest.files)) {
+    for (const [file, expected] of Object.entries(expectedFiles)) {
       if (digestFile(localPath(installed, file)) !== expected) throw new Error(`Installed package mismatch: ${file}`);
     }
     await verifyInstalled(root, directory, installed, installedSuite);
@@ -254,7 +263,7 @@ export async function publishCandidate(root = defaultRoot, verifyInstalled = run
     markReleasePublished(root);
     atomicWrite(path.join(directory, 'published.json'), jsonBytes({
       version: manifest.version, releaseDigest: manifest.releaseDigest, files: manifest.files,
-      changed, completedAt: new Date().toISOString(),
+      removed: manifest.removed, changed, completedAt: new Date().toISOString(),
     }));
   } catch (error) {
     const conflicts = [];
@@ -264,7 +273,7 @@ export async function publishCandidate(root = defaultRoot, verifyInstalled = run
     }
     for (const file of changed.reverse()) {
       const destination = localPath(installed, file);
-      if (digestFile(destination) !== manifest.files[file]) { conflicts.push(file); continue; }
+      if (digestFile(destination) !== expectedFiles[file]) { conflicts.push(file); continue; }
       if (manifest.baseline[file] === null) unlinkSync(destination);
       else atomicWrite(destination, readFileSync(localPath(backup, file)));
     }

@@ -44,6 +44,12 @@ The publisher preserves BAT CRLF, launch paths and unchanged asset bytes.
 
 ## Shape geometry and text
 
+Resource names, including group headers, wrap without an ellipsis or a line
+limit. Unbroken identifiers wrap within the available width. Group property
+chips stay to the right of the name and wrap within that area when necessary;
+notes and layout clearance use
+the same header measurements. Double-click renaming and stored names are unchanged.
+
 The Shapes catalogue has 24 tiles. Database is the last tile, after the brick
 wall. Its native `kind: 'rect', geom: 'database'` uses a closed cylinder outline
 and separate stroke-only tier seams, shared by the thumbnail and canvas.
@@ -85,6 +91,17 @@ Enter and Shift+Enter insert a paragraph without committing the draft.
 Ctrl/Cmd+Enter or clicking outside finishes editing; Escape cancels text edits.
 Single-line resource names, group properties and spacing inputs keep their
 existing Enter behavior.
+
+## ARM import help
+
+Import ARM opens a compact, single-column instructions dialog. Step 5 reads
+`template.json` in every language. Only Choose template.json opens the native
+file picker; cancelling file selection leaves the instructions open.
+A highlighted selection panel provides
+a larger Choose template.json button, folder icon, localized guidance and
+an announced filename status. It supports all eight languages, narrow screens
+and both themes. The ARM demo and its packaged media have been removed at the
+user's request; the import engine and the other dialog text are unchanged.
 
 ## Release workflow
 

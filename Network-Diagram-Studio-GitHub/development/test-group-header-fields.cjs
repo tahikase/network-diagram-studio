@@ -51,7 +51,25 @@ async function load(page, file = fixture()) {
   await page.waitForTimeout(400);
 }
 
+async function frameField(page, id, key) {
+  await settle(page);
+  const visible = await field(page, id, key).evaluate(element => {
+    const box = element.getBoundingClientRect();
+    const canvas = element.closest('.react-flow').getBoundingClientRect();
+    return box.left >= canvas.left + 8 && box.right <= canvas.right - 8 &&
+      box.top >= canvas.top + 8 && box.bottom <= canvas.bottom - 8;
+  });
+  if (!visible) {
+    await page.locator('.react-flow__controls-fitview').click();
+    await page.waitForTimeout(400);
+  }
+}
+
 async function openField(page, id, key) {
+  await frameField(page, id, key);
+  // Selecting a wide group opens the inspector and can obscure its right-hand fields.
+  await field(page, id, key).click();
+  await frameField(page, id, key);
   const before = await camera(page);
   await field(page, id, key).dblclick({ delay: 60 });
   const editor = input(page, id);
@@ -201,6 +219,7 @@ async function gesturesAndAppearance(page) {
   await field(page, 'network', 'region').click();
   assert.equal(await input(page, 'network').count(), 0, 'Single-click still selects without opening an editor.');
   assert.equal(await page.evaluate(() => window.__nds_diagramStore.getState().selectedNodeId), 'network');
+  await frameField(page, 'network', 'region');
   const before = await content(page), originalCamera = await camera(page);
   const box = await field(page, 'network', 'region').boundingBox();
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
@@ -328,6 +347,130 @@ async function persistence(page) {
   console.log('PASS group properties: Save JSON, Load JSON, browser auto-save/reload and tab switching');
 }
 
+function wrappingFixture() {
+  const file = fixture();
+  file.meta.title = 'Full resource names';
+  file.nodes = [
+    { id: 'wrap-network', type: 'group-vnet', position: { x: 20, y: 80 }, size: { w: 330, h: 410 },
+      data: { name: 'vnet' + 'a'.repeat(80), notes: 'Notes stay below the full name.', fields: {} } },
+    { id: 'wrap-subnet', type: 'group-subnet', position: { x: 400, y: 80 }, size: { w: 330, h: 410 },
+      data: { name: 'subnet-production-application-services-for-the-primary-business-workload',
+        notes: 'Property values remain editable.', fields: { cidr: '10.40.1.0/24', NSG: 'nsg-workload' } } },
+    { id: 'wrap-rg', type: 'group-rg', position: { x: 20, y: 530 }, size: { w: 330, h: 410 },
+      data: { name: 'Production resource group for networking and application integration services', fields: {} } },
+    { id: 'wrap-region', type: 'group-region', position: { x: 400, y: 530 }, size: { w: 330, h: 410 },
+      data: { name: 'ネットワークアプリケーションサービスのリソース'.repeat(3), fields: {} } },
+    { id: 'wrap-server', type: 'vm', position: { x: 830, y: 80 }, size: { w: 270, h: 400 },
+      data: { name: 'server' + 'b'.repeat(90), fields: {} } },
+    { id: 'wrap-storage', type: 'storage', position: { x: 830, y: 530 }, size: { w: 270, h: 400 },
+      data: { name: 'Storage for production application data and long term business records in the primary region', fields: {} } },
+  ];
+  return file;
+}
+
+async function assertWrappedNames(page, file) {
+  for (const resource of file.nodes) {
+    const name = node(page, resource.id).locator('[data-nds-resource-name]');
+    assert.equal(await name.textContent(), resource.data.name);
+    const measurement = await name.evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const lines = [...range.getClientRects()].filter(rect => rect.width > 0);
+      const label = element.getBoundingClientRect(), box = element.closest('.react-flow__node').getBoundingClientRect();
+      const css = getComputedStyle(element);
+      return { lines: lines.length, allInside: lines.every(rect =>
+        rect.left >= label.left - 1 && rect.right <= label.right + 1 &&
+        rect.left >= box.left - 1 && rect.right <= box.right + 1),
+      clipped: element.scrollHeight > element.clientHeight + 1,
+      ellipsis: css.textOverflow === 'ellipsis',
+      clamp: css.webkitLineClamp };
+    });
+    assert(measurement.lines >= 3, `${resource.id}: full names wrap beyond two lines`);
+    assert(measurement.allInside && !measurement.clipped && !measurement.ellipsis &&
+      (!measurement.clamp || ['none', 'unset'].includes(measurement.clamp)), `${resource.id}: ${JSON.stringify(measurement)}`);
+    if (resource.data.notes) {
+      const header = await node(page, resource.id).locator('[data-nds-group-header]').first().boundingBox();
+      const notes = await node(page, resource.id).locator('[data-nds-group-notes]').boundingBox();
+      assert(notes.y >= header.y + header.height + 1, `${resource.id}: notes clear the wrapped header`);
+    }
+    if (resource.type.startsWith('group-') && Object.values(resource.data.fields).some(Boolean)) {
+      const nameBox = await name.boundingBox();
+      const header = await node(page, resource.id).locator('[data-nds-group-header]').first().boundingBox();
+      for (const chip of await node(page, resource.id).locator('[data-nds-group-field]').all()) {
+        const box = await chip.boundingBox();
+        assert(box.x >= nameBox.x + nameBox.width - 1, `${resource.id}: fields remain to the right of the wrapped name`);
+        assert(box.x + box.width <= header.x + header.width + 1, `${resource.id}: fields stay inside the header`);
+      }
+    }
+  }
+}
+
+async function wrapping(page) {
+  const file = wrappingFixture();
+  await load(page, file);
+  const before = await content(page);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(value => window.__nds_themeStore.getState().setPref(value), theme);
+    await settle(page);
+    await assertWrappedNames(page, file);
+  }
+  assert.deepEqual(await content(page), before, 'Rendering full names does not rewrite names or diagram geometry.');
+  await page.evaluate(() => window.__nds_themeStore.getState().setPref('light'));
+  await page.evaluate(() => window.__nds_diagramStore.getState().updateNodeSize('wrap-network', { w: 180, h: 600 }));
+  await settle(page);
+  await assertWrappedNames(page, file);
+  await page.evaluate(() => window.__nds_diagramStore.getState().updateNodeTextScale('wrap-network', 1.8));
+  await settle(page);
+  await assertWrappedNames(page, file);
+  await load(page, file);
+  const name = node(page, 'wrap-network').locator('[data-nds-resource-name]');
+  const box = await name.boundingBox();
+  await page.mouse.dblclick(box.x + 20, box.y + 8, { delay: 60 });
+  const editor = name.locator('input');
+  await editor.waitFor();
+  const renamed = 'renamed-vnet-' + 'c'.repeat(84);
+  await editor.fill(renamed);
+  await editor.press('Enter');
+  await editor.waitFor({ state: 'detached' });
+  file.nodes[0].data.name = renamed;
+  await assertWrappedNames(page, file);
+  await undo(page);
+  assert.deepEqual(await content(page), before, 'Renaming wrapped names remains one reversible edit.');
+  await load(page);
+  console.log('PASS resource names: full unbroken, hyphenated, spaced and Japanese names; group notes, themes, rename and undo');
+}
+
+async function rightAlignedProperties(page) {
+  const file = wrappingFixture();
+  file.nodes = [file.nodes.find(resource => resource.id === 'wrap-subnet')];
+  file.nodes[0].position = { x: 50, y: 80 };
+  for (const width of [700, 330, 160]) {
+    file.nodes[0].size = { w: width, h: 600 };
+    await load(page, file);
+    const original = await content(page);
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(value => window.__nds_themeStore.getState().setPref(value), theme);
+      await settle(page);
+      await assertWrappedNames(page, file);
+    }
+    if (width === 700) {
+      const ip = await field(page, 'wrap-subnet', 'cidr').boundingBox();
+      const custom = await field(page, 'wrap-subnet', 'NSG').boundingBox();
+      assert(Math.abs(ip.y - custom.y) < 1, 'Wide headers match the approved side-by-side property preview.');
+      assert(custom.x >= ip.x + ip.width, 'IP and custom value do not overlap.');
+    }
+    assert.deepEqual(await content(page), original, 'Right-hand layout preserves stored resource sizes, names and values.');
+    const editor = await openField(page, 'wrap-subnet', 'NSG');
+    await editor.fill('nsg-editing-on-the-right');
+    await editor.press('Escape');
+    await editor.waitFor({ state: 'detached' });
+    await assertWrappedNames(page, file);
+    assert.deepEqual(await content(page), original, 'Cancelling a right-hand field edit preserves the resource.');
+  }
+  await load(page);
+  console.log('PASS group headers: approved right-hand IP/custom layout, narrow boxes, themes, editing and unchanged data');
+}
+
 async function main() {
   const target = process.argv[2] || path.join(__dirname, '..', 'index.html');
   const url = /^https?:/.test(target) ? target : pathToFileURL(path.resolve(target)).href;
@@ -365,6 +508,8 @@ async function main() {
       await keyboardAndIdentity(page);
       await gesturesAndAppearance(page);
       await persistence(page);
+      await wrapping(page);
+      await rightAlignedProperties(page);
     }
     assert.deepEqual(errors, [], 'No browser errors or duplicate React keys.');
     assert.deepEqual(network, [], 'Header editing remains completely offline.');
@@ -372,5 +517,5 @@ async function main() {
   } finally { await context.close(); await browser.close(); }
 }
 
-module.exports = { fixture, load, node, field, openField, capture };
+module.exports = { fixture, wrappingFixture, load, node, field, openField, capture };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,5 +1,59 @@
 [
   {
+    "version": "0.9.135",
+    "date": "2026-10-12",
+    "category": "Usability",
+    "title": "Find the ARM template selection at a glance.",
+    "description": "Import ARM highlights file selection with a larger blue Choose template.json button, folder icon, clear guidance and filename status.",
+    "before": {
+      "file": "0.9.135-before.png",
+      "version": "0.9.134",
+      "caption": "Template selection used a small outline button"
+    },
+    "after": {
+      "file": "0.9.135-after.png",
+      "version": "0.9.135",
+      "caption": "A highlighted panel makes template selection clear"
+    },
+    "note": "The Steps and demo panels start at the same height on desktop. The selection panel supports all eight languages, both themes and narrow screens. Only Choose template.json opens the file picker; the silent demo and local import workflow are unchanged."
+  },
+  {
+    "version": "0.9.132",
+    "date": "2026-10-12",
+    "category": "Appearance",
+    "title": "Keep group properties to the right of the resource name.",
+    "description": "Group headers show the full wrapped name on the left, with IP addresses and custom property chips together on the right.",
+    "before": {
+      "file": "0.9.132-before.png",
+      "version": "0.9.131",
+      "caption": "Property chips appeared below long names"
+    },
+    "after": {
+      "file": "0.9.132-after.png",
+      "version": "0.9.132",
+      "caption": "Names stay on the left and properties stay on the right"
+    },
+    "note": "In narrow boxes, property chips wrap within the right-hand area. Notes remain underneath. Existing diagram sizes, names, field values and double-click editing are preserved."
+  },
+  {
+    "version": "0.9.131",
+    "date": "2026-10-12",
+    "category": "Usability",
+    "title": "Read long resource names without an ellipsis.",
+    "description": "Resource names wrap onto additional lines, including VNets and other groups. Long identifiers without spaces wrap too.",
+    "before": {
+      "file": "0.9.131-before.png",
+      "version": "0.9.130",
+      "caption": "Long group names ended with an ellipsis"
+    },
+    "after": {
+      "file": "0.9.131-after.png",
+      "version": "0.9.131",
+      "caption": "The full resource name wraps onto additional lines"
+    },
+    "note": "Group property chips move to another row when needed, and notes stay below the header. Names remain editable by double-clicking; the stored name is unchanged by wrapping."
+  },
+  {
     "version": "0.9.130",
     "date": "2026-10-11",
     "category": "Usability",

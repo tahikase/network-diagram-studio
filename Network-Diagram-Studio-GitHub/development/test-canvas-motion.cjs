@@ -151,6 +151,7 @@ async function verify(entry, index) {
     assert(await page.locator('#nds-arm-open').evaluate(el => el.previousElementSibling.textContent.includes('Save')));
     const choosing = page.waitForEvent('filechooser');
     await page.locator('#nds-arm-open').click();
+    await page.locator('#nds-arm-choose').click();
     const chooser = await choosing;
     assert(await page.locator('#nds-arm-dialog').evaluate(el => el.open));
     await chooser.setFiles([]);

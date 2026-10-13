@@ -172,7 +172,7 @@ and must not relabel bug fixes as features or enhancements.
 
 ## Version
 
-Network Diagram Studio v0.9.130
+Network Diagram Studio v0.9.136
 
 ## License
 

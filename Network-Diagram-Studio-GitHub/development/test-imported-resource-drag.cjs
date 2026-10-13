@@ -115,6 +115,7 @@ async function verify(entry, index) {
     await page.goto(pathToFileURL(path.resolve(entry)).href);
     const choose = page.waitForEvent('filechooser');
     await page.locator('#nds-arm-open').click();
+    await page.locator('#nds-arm-choose').click();
     await (await choose).setFiles({ name: 'template.json', mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(template)) });
     await page.locator('#nds-arm-group').fill('diagram-demo');

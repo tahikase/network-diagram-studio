@@ -1,4 +1,139 @@
 {
+  "Find the ARM template selection at a glance.": {
+    "ja": "ARM テンプレートの選択場所がひと目でわかります。",
+    "zh": "一眼找到 ARM 模板的选择位置。",
+    "es": "Encuentra de un vistazo dónde seleccionar la plantilla ARM.",
+    "pt": "Encontre rapidamente onde selecionar o modelo ARM.",
+    "fr": "Repérez immédiatement où sélectionner le modèle ARM.",
+    "de": "Finden Sie die ARM-Vorlagenauswahl auf einen Blick.",
+    "ko": "ARM 템플릿을 선택할 위치를 한눈에 확인하세요."
+  },
+  "Import ARM highlights file selection with a larger blue Choose template.json button, folder icon, clear guidance and filename status.": {
+    "ja": "Import ARM では、大きな青い template.json 選択ボタン、フォルダーアイコン、わかりやすい説明、ファイル名の表示により、ファイルの選択場所を強調します。",
+    "zh": "ARM 导入通过更大的蓝色 template.json 选择按钮、文件夹图标、清晰说明和文件名状态突出文件选择。",
+    "es": "Importar ARM destaca la selección de archivos con un botón azul más grande para elegir template.json, un icono de carpeta, instrucciones claras y el estado del nombre de archivo.",
+    "pt": "Importar ARM destaca a seleção de arquivos com um botão azul maior para escolher template.json, ícone de pasta, orientação clara e indicação do nome do arquivo.",
+    "fr": "Importer ARM met en évidence la sélection de fichiers avec un bouton bleu plus grand pour choisir template.json, une icône de dossier, des indications claires et le nom du fichier.",
+    "de": "ARM importieren hebt die Dateiauswahl durch eine größere blaue Schaltfläche für template.json, ein Ordnersymbol, klare Hinweise und eine Dateinamensanzeige hervor.",
+    "ko": "ARM 가져오기에서 더 큰 파란색 template.json 선택 버튼, 폴더 아이콘, 명확한 안내 및 파일 이름 표시로 파일 선택 영역을 강조합니다."
+  },
+  "Template selection used a small outline button": {
+    "ja": "テンプレートの選択には小さな枠線付きボタンを使用",
+    "zh": "模板选择以前使用小型描边按钮",
+    "es": "La selección de plantilla usaba un botón pequeño con borde",
+    "pt": "A seleção do modelo usava um pequeno botão com contorno",
+    "fr": "La sélection du modèle utilisait un petit bouton à bordure",
+    "de": "Die Vorlagenauswahl verwendete eine kleine umrandete Schaltfläche",
+    "ko": "템플릿 선택에 작은 테두리 버튼을 사용했습니다"
+  },
+  "A highlighted panel makes template selection clear": {
+    "ja": "強調したパネルでテンプレートの選択場所を明確に表示",
+    "zh": "突出显示的面板让模板选择更清晰",
+    "es": "Un panel destacado hace clara la selección de plantilla",
+    "pt": "Um painel destacado torna clara a seleção do modelo",
+    "fr": "Un panneau mis en évidence clarifie la sélection du modèle",
+    "de": "Ein hervorgehobener Bereich macht die Vorlagenauswahl deutlich",
+    "ko": "강조된 패널로 템플릿 선택 위치가 명확해졌습니다"
+  },
+  "The Steps and demo panels start at the same height on desktop. The selection panel supports all eight languages, both themes and narrow screens. Only Choose template.json opens the file picker; the silent demo and local import workflow are unchanged.": {
+    "ja": "デスクトップでは、手順とデモのパネルの上端を揃えています。選択パネルは全 8 言語、ライト・ダークテーマ、幅の狭い画面に対応します。ファイル選択画面は template.json 選択ボタンを押したときだけ開きます。音声なしのデモとローカルでのインポート手順は変わりません。",
+    "zh": "桌面上，步骤和演示面板的顶部对齐。选择面板支持全部八种语言、两种主题和窄屏。只有点击 template.json 选择按钮才会打开文件选择器；无声演示和本地导入流程保持不变。",
+    "es": "En escritorio, los paneles de pasos y demostración empiezan a la misma altura. El panel de selección admite los ocho idiomas, ambos temas y pantallas estrechas. Solo Elegir template.json abre el selector de archivos; la demostración sin audio y la importación local no cambian.",
+    "pt": "No desktop, os painéis de etapas e demonstração começam na mesma altura. O painel de seleção oferece suporte aos oito idiomas, aos dois temas e a telas estreitas. Apenas Escolher template.json abre o seletor de arquivos; a demonstração sem áudio e a importação local permanecem iguais.",
+    "fr": "Sur ordinateur, les panneaux des étapes et de la démonstration commencent à la même hauteur. Le panneau de sélection prend en charge les huit langues, les deux thèmes et les écrans étroits. Seul Choisir template.json ouvre le sélecteur de fichiers ; la démonstration sans audio et l’importation locale restent inchangées.",
+    "de": "Auf dem Desktop beginnen die Schritte und die Demo auf gleicher Höhe. Der Auswahlbereich unterstützt alle acht Sprachen, beide Designs und schmale Bildschirme. Nur template.json auswählen öffnet die Dateiauswahl; die Demo ohne Ton und der lokale Import bleiben unverändert.",
+    "ko": "데스크톱에서 단계와 데모 패널의 위쪽 가장자리가 정렬됩니다. 선택 패널은 8개 언어, 두 테마 및 좁은 화면을 지원합니다. template.json 선택 버튼을 눌러야 파일 선택 창이 열리며 무음 데모와 로컬 가져오기 과정은 그대로 유지됩니다."
+  },
+  "Keep group properties to the right of the resource name.": {
+    "ja": "グループのプロパティをリソース名の右側に表示します。",
+    "zh": "将组属性显示在资源名称右侧。",
+    "es": "Mantén las propiedades del grupo a la derecha del nombre del recurso.",
+    "pt": "Mantenha as propriedades do grupo à direita do nome do recurso.",
+    "fr": "Gardez les propriétés du groupe à droite du nom de la ressource.",
+    "de": "Gruppeneigenschaften bleiben rechts vom Ressourcennamen.",
+    "ko": "그룹 속성을 리소스 이름 오른쪽에 표시합니다."
+  },
+  "Group headers show the full wrapped name on the left, with IP addresses and custom property chips together on the right.": {
+    "ja": "グループのヘッダーでは、左側にリソース名全体を折り返して表示し、右側に IP アドレスとカスタムプロパティをまとめて表示します。",
+    "zh": "组标题左侧完整显示自动换行的名称，右侧集中显示 IP 地址和自定义属性标签。",
+    "es": "Los encabezados de grupo muestran el nombre completo en varias líneas a la izquierda y las direcciones IP y propiedades personalizadas juntas a la derecha.",
+    "pt": "Os cabeçalhos de grupo mostram o nome completo em várias linhas à esquerda, com os endereços IP e propriedades personalizadas juntos à direita.",
+    "fr": "Les en-têtes de groupe affichent le nom complet sur plusieurs lignes à gauche et regroupent les adresses IP et propriétés personnalisées à droite.",
+    "de": "Gruppenkopfzeilen zeigen den vollständig umgebrochenen Namen links und IP-Adressen sowie benutzerdefinierte Eigenschaften gemeinsam rechts.",
+    "ko": "그룹 헤더 왼쪽에 전체 이름을 줄바꿈하여 표시하고 오른쪽에 IP 주소와 사용자 지정 속성을 함께 표시합니다."
+  },
+  "Property chips appeared below long names": {
+    "ja": "長い名前の下にプロパティが表示されていました",
+    "zh": "属性标签曾显示在较长名称下方",
+    "es": "Las propiedades aparecían debajo de los nombres largos",
+    "pt": "As propriedades apareciam abaixo de nomes longos",
+    "fr": "Les propriétés apparaissaient sous les noms longs",
+    "de": "Eigenschaften erschienen unter langen Namen",
+    "ko": "긴 이름 아래에 속성이 표시되었습니다"
+  },
+  "Names stay on the left and properties stay on the right": {
+    "ja": "名前は左側、プロパティは右側に表示",
+    "zh": "名称位于左侧，属性位于右侧",
+    "es": "Los nombres quedan a la izquierda y las propiedades a la derecha",
+    "pt": "Os nomes ficam à esquerda e as propriedades à direita",
+    "fr": "Les noms restent à gauche et les propriétés à droite",
+    "de": "Namen bleiben links und Eigenschaften rechts",
+    "ko": "이름은 왼쪽에, 속성은 오른쪽에 표시됩니다"
+  },
+  "In narrow boxes, property chips wrap within the right-hand area. Notes remain underneath. Existing diagram sizes, names, field values and double-click editing are preserved.": {
+    "ja": "幅の狭いボックスでは、プロパティが右側の領域内で折り返されます。メモはその下に表示されます。既存の図のサイズ、名前、プロパティ値、ダブルクリックによる編集は変更されません。",
+    "zh": "在较窄的框中，属性标签会在右侧区域内换行。备注保留在下方。现有图表尺寸、名称、字段值和双击编辑功能保持不变。",
+    "es": "En cuadros estrechos, las propiedades se ajustan dentro del área derecha. Las notas quedan debajo. Se conservan los tamaños, nombres, valores y la edición con doble clic.",
+    "pt": "Em caixas estreitas, as propriedades passam para outras linhas na área direita. As notas ficam abaixo. Os tamanhos, nomes, valores e a edição com clique duplo são preservados.",
+    "fr": "Dans les cadres étroits, les propriétés passent à la ligne dans la zone de droite. Les notes restent dessous. Les dimensions, noms, valeurs et la modification par double-clic sont conservés.",
+    "de": "In schmalen Kästen werden Eigenschaften innerhalb des rechten Bereichs umgebrochen. Notizen bleiben darunter. Größen, Namen, Feldwerte und die Bearbeitung per Doppelklick bleiben erhalten.",
+    "ko": "좁은 상자에서는 속성이 오른쪽 영역 안에서 줄바꿈됩니다. 메모는 아래에 유지됩니다. 기존 다이어그램 크기, 이름, 필드 값 및 두 번 클릭 편집 기능은 그대로 유지됩니다."
+  },
+  "Read long resource names without an ellipsis.": {
+    "ja": "長いリソース名を省略せずに表示します。",
+    "zh": "完整显示较长的资源名称，不再使用省略号。",
+    "es": "Lee los nombres largos de recursos sin puntos suspensivos.",
+    "pt": "Leia nomes longos de recursos sem reticências.",
+    "fr": "Lisez les noms de ressources longs sans points de suspension.",
+    "de": "Lesen Sie lange Ressourcennamen ohne Auslassungspunkte.",
+    "ko": "긴 리소스 이름을 말줄임표 없이 읽을 수 있습니다."
+  },
+  "Resource names wrap onto additional lines, including VNets and other groups. Long identifiers without spaces wrap too.": {
+    "ja": "VNet やその他のグループを含むリソース名は、複数行に折り返して表示されます。スペースのない長い識別子も折り返されます。",
+    "zh": "资源名称会自动换行，包括 VNet 和其他组。不含空格的长标识符也会换行。",
+    "es": "Los nombres de recursos se ajustan a varias líneas, incluidos los de VNet y otros grupos. También se ajustan los identificadores largos sin espacios.",
+    "pt": "Os nomes dos recursos passam para linhas adicionais, incluindo VNets e outros grupos. Identificadores longos sem espaços também são quebrados.",
+    "fr": "Les noms de ressources passent sur plusieurs lignes, y compris ceux des VNet et autres groupes. Les identifiants longs sans espaces sont également répartis.",
+    "de": "Ressourcennamen werden auf weitere Zeilen umgebrochen, auch bei VNets und anderen Gruppen. Lange Bezeichner ohne Leerzeichen werden ebenfalls umgebrochen.",
+    "ko": "VNet과 다른 그룹을 포함한 리소스 이름이 여러 줄로 자동 줄바꿈됩니다. 공백이 없는 긴 식별자도 줄바꿈됩니다."
+  },
+  "Long group names ended with an ellipsis": {
+    "ja": "長いグループ名の末尾が省略されていました",
+    "zh": "较长的组名称末尾显示省略号",
+    "es": "Los nombres largos de grupos terminaban con puntos suspensivos",
+    "pt": "Nomes longos de grupos terminavam com reticências",
+    "fr": "Les noms de groupes longs se terminaient par des points de suspension",
+    "de": "Lange Gruppennamen endeten mit Auslassungspunkten",
+    "ko": "긴 그룹 이름 끝에 말줄임표가 표시되었습니다"
+  },
+  "The full resource name wraps onto additional lines": {
+    "ja": "リソース名全体を複数行に折り返して表示",
+    "zh": "完整资源名称自动换行显示",
+    "es": "El nombre completo del recurso se ajusta a varias líneas",
+    "pt": "O nome completo do recurso passa para linhas adicionais",
+    "fr": "Le nom complet de la ressource passe sur plusieurs lignes",
+    "de": "Der vollständige Ressourcenname wird auf weitere Zeilen umgebrochen",
+    "ko": "전체 리소스 이름이 여러 줄로 줄바꿈됩니다"
+  },
+  "Group property chips move to another row when needed, and notes stay below the header. Names remain editable by double-clicking; the stored name is unchanged by wrapping.": {
+    "ja": "グループのプロパティは必要に応じて次の行に移動し、メモはヘッダーの下に表示されます。名前は引き続きダブルクリックで編集できます。折り返しによって保存されている名前が変わることはありません。",
+    "zh": "组属性标签会按需移至下一行，备注保留在标题下方。仍可双击编辑名称；换行不会更改存储的名称。",
+    "es": "Las etiquetas de propiedades del grupo pasan a otra fila cuando es necesario y las notas quedan debajo del encabezado. Los nombres se editan con doble clic; el ajuste no cambia el nombre guardado.",
+    "pt": "As etiquetas de propriedades do grupo passam para outra linha quando necessário, e as notas ficam abaixo do cabeçalho. Os nomes continuam editáveis com clique duplo; a quebra de linha não altera o nome salvo.",
+    "fr": "Les étiquettes de propriétés du groupe passent à la ligne si nécessaire, et les notes restent sous l'en-tête. Les noms restent modifiables par double-clic ; le retour à la ligne ne change pas le nom enregistré.",
+    "de": "Eigenschaftsmarkierungen der Gruppe wechseln bei Bedarf in eine neue Zeile, und Notizen bleiben unter der Kopfzeile. Namen lassen sich weiterhin per Doppelklick bearbeiten; der Umbruch ändert den gespeicherten Namen nicht.",
+    "ko": "필요하면 그룹 속성 표시가 다음 행으로 이동하고 메모는 헤더 아래에 유지됩니다. 이름은 계속 두 번 클릭하여 편집할 수 있으며 줄바꿈으로 저장된 이름이 변경되지는 않습니다."
+  },
   "See new product updates when you open the studio.": {
     "ja": "Studio を開いたときに、新しい製品アップデートを確認できます。",
     "zh": "打开 Studio 时即可查看新的产品更新。",

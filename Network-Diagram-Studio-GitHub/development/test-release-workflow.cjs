@@ -51,8 +51,9 @@ async function main() {
     write(path.join(inputs, 'Network Diagram Studio.bat'), '@echo off\r\nrem v{{VERSION}}\r\nstart "" "%~dp0index.html"\r\n');
     for (const name of ['AGENTS.md', 'LICENSE', 'THIRD-PARTY-NOTICES.txt']) write(path.join(inputs, name), 'fixture ' + name);
     gate.sealReleaseHistory(root);
-    for (const name of ['index.html', ...Object.keys(api.inventory(inputs))]) write(path.join(project, name), 'previous ' + name);
-    const before = Object.fromEntries(['index.html', ...Object.keys(api.inventory(inputs))]
+    const retiredMedia = ['production_arm/import-demo.mp4', 'production_arm/import-demo.jpg'];
+    for (const name of ['index.html', ...Object.keys(api.inventory(inputs)), ...retiredMedia]) write(path.join(project, name), 'previous ' + name);
+    const before = Object.fromEntries(['index.html', ...Object.keys(api.inventory(inputs)), ...retiredMedia]
       .map(name => [name, fs.readFileSync(path.join(project, name))]));
     const assertIntact = () => {
       for (const [name, bytes] of Object.entries(before)) assert.deepEqual(fs.readFileSync(path.join(project, name)), bytes, name);
@@ -130,6 +131,14 @@ async function main() {
     assert.equal(fs.readFileSync(path.join(project, 'index.html'), 'utf8'), 'concurrent installed edit');
     write(path.join(project, 'index.html'), before['index.html']);
 
+    current = candidate();
+    assert.deepEqual(current.manifest.removed, retiredMedia, 'Only the explicitly retired ARM media is scheduled for removal');
+    write(path.join(project, retiredMedia[0]), 'concurrent media edit');
+    await assert.rejects(api.publishCandidate(root, () => {}), /Installed file changed since build/);
+    assert.equal(fs.readFileSync(path.join(project, retiredMedia[0]), 'utf8'), 'concurrent media edit');
+    write(path.join(project, retiredMedia[0]), before[retiredMedia[0]]);
+    assertIntact();
+
     candidate();
     await assert.rejects(api.publishCandidate(root, () => { throw new Error('Injected installed check failure'); }),
       /Injected installed check failure[\s\S]*Publication rolled back/);
@@ -150,6 +159,7 @@ async function main() {
     for (const [name, expected] of Object.entries(current.manifest.files)) {
       assert.equal(sha(fs.readFileSync(path.join(project, name))), expected);
     }
+    for (const name of retiredMedia) assert.equal(fs.existsSync(path.join(project, name)), false, 'Successful publication removes retired media');
     assert.equal(JSON.parse(fs.readFileSync(lock)).publishedThrough, version);
     assert(fs.existsSync(path.join(current.directory, 'published.json')));
     assert.deepEqual(fs.readdirSync(base), ['A renamed shared project'], 'no second project or named sibling was needed or created');
@@ -157,6 +167,7 @@ async function main() {
     assert.throws(() => gate.sealReleaseHistory(root), /Bump APP_VERSION/);
     console.log('PASS independent relative paths, failed-build preservation, sealed runtime assets, stale/unaccepted candidates');
     console.log('PASS concurrency refusal, owned-write rollback, retained external edits and finalized production-only history');
+    console.log('PASS retired ARM media removal, concurrency refusal and rollback restoration');
     console.log('PASS product-only history blocks bug-fix announcements before building or publishing');
   } finally { cleanup(base); }
 }

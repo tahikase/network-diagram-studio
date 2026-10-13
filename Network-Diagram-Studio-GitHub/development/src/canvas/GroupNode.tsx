@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { NodeResizer, NodeToolbar, Position, type NodeProps, type Node } from '@xyflow/react';
 import {
   ConnectHandles,
@@ -15,6 +15,7 @@ import {
   GROUP_MIN_H,
   groupHeaderScale,
   groupNotesTop,
+  GROUP_FIELDS_MAX_FRACTION,
 } from '../model/professional-layout';
 import {
   GROUP_RESIZE_MIN_H,
@@ -90,6 +91,9 @@ function GroupFieldChip({
     fontSize,
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
     pointerEvents: 'auto',
+    maxWidth: '100%',
+    overflowWrap: 'anywhere',
+    lineHeight: 1.5,
   };
 
   if (draft !== null) {
@@ -197,6 +201,8 @@ const GroupNodeInner = memo(function GroupNodeInner({
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(data.name);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
   useEffect(() => {
     if (editingName) {
       const el = inputRef.current;
@@ -264,7 +270,9 @@ const GroupNodeInner = memo(function GroupNodeInner({
   // has to clear whatever height the pill actually takes at the current
   // scale. `groupNotesTop` owns that arithmetic and is the same helper the
   // layout uses to reserve room above the first child.
-  const notesTopPx = groupNotesTop(globalFactor * textScale, boxScale);
+  const headerContent = { name: data.name, fields: data.fields, boxW: width ?? GROUP_MIN_W };
+  const notesTopPx = headerHeight > 0 ? 6 + headerHeight + 3 :
+    groupNotesTop(globalFactor * textScale, boxScale, headerContent);
 
   // Inline the group's non-empty properties (CIDR, region, RG name, etc.)
   // right in the header pill so containers show their scope at a glance —
@@ -292,6 +300,15 @@ const GroupNodeInner = memo(function GroupNodeInner({
     }
   }
   const hasNotes = !!(data.notes && data.notes.trim() !== '');
+  useLayoutEffect(() => {
+    if (!hasNotes) return;
+    const header = headerRef.current!;
+    const measure = () => setHeaderHeight(header.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [hasNotes]);
 
   return (
     <div
@@ -497,20 +514,26 @@ const GroupNodeInner = memo(function GroupNodeInner({
       </NodeToolbar>
 
       <div
+        ref={headerRef}
         data-nds-group-header="1"
-        className="absolute top-1.5 left-2 flex items-center gap-1.5 rounded px-1.5 py-0.5 pointer-events-none max-w-[calc(100%-1rem)]"
-        style={{ background: 'var(--nds-pill-bg)' }}
+        className="absolute top-1.5 left-2 flex items-start gap-1.5 rounded px-1.5 py-0.5 pointer-events-none max-w-[calc(100%-1rem)]"
+        style={{ background: 'var(--nds-pill-bg)', width: 'calc(100% - 1rem)' }}
       >
+        <div className="flex flex-1 items-start gap-1.5 min-w-0">
         <svg width={iconPx} height={iconPx} className="shrink-0" aria-hidden="true">
           <use href={`#ic-${iconId}`} />
         </svg>
         <span
-          className="font-semibold truncate"
+          data-nds-resource-name={id}
+          className="font-semibold min-w-0 flex-1"
           style={{
             color: 'var(--color-slate-900)',
             pointerEvents: 'auto',
             cursor: editingName ? 'text' : 'pointer',
             fontSize: nameFontPx,
+            lineHeight: 1.4,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
           }}
           title={editingName ? t('Editing…') : `${data.name} — ${t('double-click to rename')}`}
           onDoubleClick={(e) => {
@@ -535,12 +558,16 @@ const GroupNodeInner = memo(function GroupNodeInner({
               onMouseDown={(e) => e.stopPropagation()}
               onBlur={commitName}
               className="font-semibold leading-tight bg-white border border-blue-400 rounded px-1 outline-none focus:ring-2 focus:ring-blue-500"
-              style={{ color: 'var(--color-slate-900)', minWidth: 80, fontSize: nameFontPx }}
+              style={{ color: 'var(--color-slate-900)', width: '100%', minWidth: 0, fontSize: nameFontPx }}
             />
           ) : (
             data.name
           )}
         </span>
+        </div>
+        {filledFields.length > 0 && <div data-nds-group-fields
+          className="flex flex-wrap justify-end gap-1.5 min-w-0 shrink-0"
+          style={{ maxWidth: `min(${GROUP_FIELDS_MAX_FRACTION * 100}%, max(0px, calc(100% - ${iconPx + nameFontPx + 12}px)))`, marginTop: 2 }}>
         {filledFields.map((f) => (
           <GroupFieldChip
             key={f.key}
@@ -551,6 +578,7 @@ const GroupNodeInner = memo(function GroupNodeInner({
             fontSize={px(DIAGRAM_TYPE_SCALE.groupChip)}
           />
         ))}
+        </div>}
       </div>
 
       {hasNotes && (

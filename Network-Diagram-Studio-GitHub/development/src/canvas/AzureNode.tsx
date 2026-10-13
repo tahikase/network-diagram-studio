@@ -7,7 +7,7 @@ import {
   RESIZE_TAIL_MS,
 } from './handles';
 import { CATEGORIES_ORDER, RESOURCE_TYPES, getResourceType } from '../model/resource-types';
-import { leafFootprint, NAME_MAX_LINES } from '../model/professional-layout';
+import { leafFootprint } from '../model/professional-layout';
 import { leafAppearance } from '../model/leaf-appearance';
 import { LEAF_RESIZE_MIN_H, LEAF_RESIZE_MIN_W } from '../model/size-match';
 import { useDiagramStore } from '../store/diagram-store';
@@ -415,20 +415,14 @@ const AzureNodeInner = memo(function AzureNodeInner({
             )}
           </div>)}
           <div
-            className="font-semibold leading-tight break-words"
+            data-nds-resource-name={id}
+            className="font-semibold leading-tight"
             style={{
               color: 'var(--color-slate-900)',
               cursor: editingName ? 'text' : 'pointer',
               fontSize: nameFontPx,
-              // The card was sized to fit this name (see `leafFootprint`),
-              // so it normally renders whole. The clamp is the backstop for
-              // a name past LEAF_MAX_W, or a card the user dragged narrower
-              // than its content — and it MUST agree with `nameLines`, which
-              // bought the height for the second line.
-              display: editingName ? undefined : '-webkit-box',
-              WebkitLineClamp: NAME_MAX_LINES,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
+              whiteSpace: 'normal',
+              overflowWrap: 'anywhere',
             }}
             title={editingName ? t('Editing…') : `${data.name} — ${t('double-click to rename')}`}
             onDoubleClick={(e) => {

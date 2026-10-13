@@ -72,7 +72,8 @@ function resolveParentPadTop(
   if (!parent) return ROOT_START_Y;
   const notes = parent.data?.notes;
   const hasNotes = !!notes && String(notes).trim() !== '';
-  const factor = currentTextFactor();
+  const factor = currentTextFactor() *
+    (typeof parent.data.textScale === 'number' ? parent.data.textScale : 1);
   const cur = parent.size ?? { w: DEFAULT_GROUP_W, h: DEFAULT_GROUP_H };
   const floorW = stackedAtOrigin ? DEFAULT_GROUP_W : cur.w;
   const floorH = stackedAtOrigin ? DEFAULT_GROUP_H : cur.h;
@@ -81,6 +82,8 @@ function resolveParentPadTop(
   let pad = groupHeaderClearance(factor, hasNotes, 1, {
     notes: notes ? String(notes) : undefined,
     boxW: needW,
+    name: parent.data.name,
+    fields: parent.data.fields,
   });
   for (let i = 0; i < 4; i++) {
     const needH = Math.max(floorH, totalH + pad + PARENT_PAD_BOT);
@@ -88,7 +91,7 @@ function resolveParentPadTop(
       factor,
       hasNotes,
       groupHeaderScale(needW, needH),
-      { notes: notes ? String(notes) : undefined, boxW: needW }
+      { notes: notes ? String(notes) : undefined, boxW: needW, name: parent.data.name, fields: parent.data.fields }
     );
     if (next <= pad) return pad;
     pad = next;
@@ -96,6 +99,8 @@ function resolveParentPadTop(
   return groupHeaderClearance(factor, hasNotes, GROUP_HEADER_MAX_SCALE, {
     notes: notes ? String(notes) : undefined,
     boxW: needW,
+    name: parent.data.name,
+    fields: parent.data.fields,
   });
 }
 const ROOT_START_X = 48;

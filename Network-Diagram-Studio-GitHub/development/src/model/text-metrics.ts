@@ -110,13 +110,14 @@ export function wrappedLineCount(
   text: string,
   fontPx: number,
   avail: number,
-  weight: 400 | 500 | 600 = 400
+  weight: 400 | 500 | 600 = 400,
+  breakLongWords = false
 ): number {
   if (!text || avail <= 0) return 1;
   if (measureTextPx(text, fontPx, weight) <= avail) return 1;
   // A string with no spaces or hyphens cannot break at all, so it will
   // overflow one line no matter how many notional lines it "needs".
-  if (!/[\s\-_/.]/.test(text)) return 1;
+  if (!breakLongWords && !/[\s\-_/.]/.test(text)) return 1;
 
   const spaceW = measureTextPx(' ', fontPx, weight);
   let lines = 1;
@@ -133,6 +134,24 @@ export function wrappedLineCount(
       // A space only precedes the first piece of a word; the pieces inside a
       // word butt up against each other.
       const gap = lineW > 0 && first ? spaceW : 0;
+      if (breakLongWords && pw > avail) {
+        if (lineW > 0) { lines++; lineW = 0; }
+        let fragment = '';
+        for (const character of piece) {
+          const next = fragment + character;
+          const width = measureTextPx(next, fontPx, weight);
+          if (fragment && width > avail) {
+            lines++;
+            fragment = character;
+            lineW = measureTextPx(character, fontPx, weight);
+          } else {
+            fragment = next;
+            lineW = width;
+          }
+        }
+        first = false;
+        continue;
+      }
       if (lineW > 0 && lineW + gap + pw > avail) {
         lines += 1;
         lineW = pw;

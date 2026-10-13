@@ -196,10 +196,8 @@ export const LEAF_DETAIL_BASE_H = 124;
  * A card is allowed to grow to fit its own label, but not without limit: one
  * 80-character FQDN must not stretch a card to 900px and drag the whole
  * diagram's scale down with it. At the 1.3 text factor this is ~440px
- * rendered, which fits a ~38-character name on one line and ~76 across the
- * two lines the name is allowed to wrap onto — and a ~50-character FQDN in a
- * property row. Real Azure resource names sit inside that; anything past it
- * still ellipsizes, with the full value in the hover tooltip.
+ * rendered. Longer names wrap onto as many lines as needed instead of
+ * stretching a card across the diagram.
  */
 export const LEAF_MAX_W = 340;
 export const GROUP_MIN_W = 300;
@@ -292,18 +290,51 @@ export function groupHeaderScale(w: number, h: number): number {
   return Math.min(GROUP_HEADER_MAX_SCALE, Math.pow(raw, GROUP_HEADER_DAMP));
 }
 
-/** Height of the header pill alone. */
-function groupPillHeight(factor: number, scale: number): number {
+interface GroupHeaderContent {
+  name?: string;
+  fields?: Record<string, string>;
+  notes?: string;
+  boxW?: number;
+}
+
+export const GROUP_FIELDS_MAX_FRACTION = 0.6;
+
+/** Shared sizing for the name on the left and field chips on the right. */
+export function groupPillLayout(factor: number, scale: number, content?: GroupHeaderContent) {
   const f = factor * scale;
-  return (
-    PILL_PAD_Y +
-    Math.max(GROUP_ICON_PX * f, DIAGRAM_TYPE_SCALE.groupName * f * PILL_LINE)
-  );
+  const avail = Math.max(1, (content?.boxW ?? GROUP_MIN_W) - 31);
+  const icon = Math.round(GROUP_ICON_PX * f);
+  const font = DIAGRAM_TYPE_SCALE.groupName * f;
+  const chipFont = DIAGRAM_TYPE_SCALE.groupChip * f;
+  const chipWidths = Object.values(content?.fields ?? {})
+    .filter(value => value && String(value).trim())
+    .map(value => String(value).length * chipFont * 0.61);
+  const fieldsWidth = Math.min(avail * GROUP_FIELDS_MAX_FRACTION,
+    Math.max(0, avail - icon - font - 12),
+    chipWidths.reduce((total, width) => total + Math.ceil(width + 10), 0) +
+      Math.max(0, chipWidths.length - 1) * 6);
+  const nameWidth = Math.max(1, avail - icon - 6 - (fieldsWidth > 0 ? fieldsWidth + 6 : 0));
+  const lines = wrappedLineCount(content?.name ?? '', font, nameWidth, 600, true);
+  const nameHeight = Math.max(icon, lines * font * PILL_LINE);
+  let rowWidth = 0, rowHeight = 0, fieldsHeight = chipWidths.length ? 2 : 0;
+  for (const textWidth of chipWidths) {
+    const width = Math.min(fieldsWidth, Math.ceil(textWidth + 10));
+    const chipHeight = 2 + Math.max(1, Math.ceil(textWidth / Math.max(1, width - 10))) * chipFont * 1.5;
+    if (rowWidth > 0 && rowWidth + 6 + width > fieldsWidth) {
+      fieldsHeight += rowHeight + 6;
+      rowWidth = width;
+      rowHeight = chipHeight;
+    } else {
+      rowWidth += (rowWidth > 0 ? 6 : 0) + width;
+      rowHeight = Math.max(rowHeight, chipHeight);
+    }
+  }
+  return { height: PILL_PAD_Y + Math.max(nameHeight, fieldsHeight + rowHeight) };
 }
 
 /** Y offset where the notes preview starts, measured from the box top. */
-export function groupNotesTop(factor: number, scale: number): number {
-  return Math.round(PILL_TOP + groupPillHeight(factor, scale) + NOTES_GAP);
+export function groupNotesTop(factor: number, scale: number, content?: GroupHeaderContent): number {
+  return Math.ceil(PILL_TOP + groupPillLayout(factor, scale, content).height + NOTES_GAP);
 }
 
 /**
@@ -319,9 +350,9 @@ export function groupHeaderClearance(
   factor: number,
   hasNotes: boolean,
   scale: number,
-  opts?: { notes?: string; boxW?: number }
+  opts?: GroupHeaderContent
 ): number {
-  let h = PILL_TOP + groupPillHeight(factor, scale);
+  let h = PILL_TOP + groupPillLayout(factor, scale, opts).height;
   if (hasNotes) {
     const fontPx = DIAGRAM_TYPE_SCALE.groupNotes * factor * scale;
     const avail =
@@ -373,9 +404,7 @@ const H_TYPE_LINE = 14;
  * `DIAGRAM_TYPE_SCALE.nodeName` (17) at `leading-tight` (1.25). Added before
  * the factor multiply, like every other constant in this block.
  */
-const H_NAME_LINE = 21;
-/** The name is allowed to wrap onto at most this many lines. */
-export const NAME_MAX_LINES = 2;
+const H_NAME_LINE = DIAGRAM_TYPE_SCALE.nodeName * 1.25;
 
 /**
  * Horizontal chrome between the card's outer box and its text.
@@ -454,8 +483,7 @@ function contentWidth(node: DiagramNode, factor: number): number {
 /**
  * How many lines the uppercase type caption will wrap onto.
  *
- * The caption is the one label on a card that is allowed to wrap (the
- * name truncates, field values truncate). A long one like "NETWORK
+ * Like the name, the caption can wrap. A long one like "NETWORK
  * VIRTUAL APPLIANCE" takes two lines and pushes everything below it down,
  * so the footprint has to know about it or the card clips.
  *
@@ -509,7 +537,7 @@ function countFilledFields(node: DiagramNode): number {
 }
 
 /**
- * Minimum container width for its own header pill to render un-truncated.
+ * Preferred container width for its header, bounded so long names wrap.
  *
  * The pill is `icon + name + one chip per filled field`, and only the name is
  * allowed to shrink — everything else is `shrink-0`. So a VNet called
@@ -522,8 +550,9 @@ function countFilledFields(node: DiagramNode): number {
  * container for text it no longer draws — the same bug this function exists
  * to fix, only inverted.
  *
- * Returns the box width the pill needs, laid out at `scale`. Callers take the
- * max of this and the packed-children width.
+ * Returns the preferred width at `scale`, capped at the normal group width.
+ * Callers take the max of this and the packed-children width; names and chips
+ * wrap into the available space rather than forcing unlimited widening.
  */
 export function groupHeaderWidth(
   node: DiagramNode,
@@ -569,11 +598,12 @@ export function groupHeaderWidth(
     }
   }
 
-  return Math.ceil(w + (items - 1) * GAP + PILL_PAD_X + PILL_OUTSIDE);
+  return Math.min(Math.ceil(GROUP_MIN_W * factor),
+    Math.ceil(w + (items - 1) * GAP + PILL_PAD_X + PILL_OUTSIDE));
 }
 
 /**
- * Smallest box width at which `node`'s header pill renders un-truncated.
+ * Content-driven group width, bounded by the wrapping header policy.
  *
  * Solving this needs an iteration, because the two quantities feed each
  * other: `groupHeaderScale` grows the header's type size with the box, so
@@ -616,19 +646,13 @@ export function groupBoxWidthForHeader(
 }
 
 /**
- * How many lines the NAME will wrap onto, capped at `NAME_MAX_LINES`.
- *
- * Exported because AzureNode needs the same answer to set its line clamp —
- * if the two disagreed the card would either clip the second line or reserve
- * height for one it never draws.
+ * How many lines the full name needs, including unbroken resource identifiers.
  */
 export function nameLines(node: DiagramNode, boxW: number, factor: number): number {
   const name = node.data.name;
   if (!name) return 1;
-  return Math.min(
-    NAME_MAX_LINES,
-    wrappedLineCount(name, DIAGRAM_TYPE_SCALE.nodeName * factor, boxW - CARD_CHROME_X, 600)
-  );
+  return wrappedLineCount(name, DIAGRAM_TYPE_SCALE.nodeName * factor,
+    Math.max(1, boxW - CARD_CHROME_X), 600, true);
 }
 
 /**
@@ -640,8 +664,7 @@ export function nameLines(node: DiagramNode, boxW: number, factor: number): numb
  * which meant a card was exactly as tall as its data but never as wide as
  * it, and every long name truncated to an ellipsis. The card now grows to
  * fit its name, subtitle and property rows, bounded by `LEAF_MAX_W`; past
- * that bound the name wraps to a second line before it is allowed to
- * ellipsize.
+ * that bound the full name wraps onto additional lines.
  */
 export function leafFootprint(
   node: DiagramNode,

@@ -5,7 +5,7 @@
     en: {
       title: 'Import ARM template', short: 'Import ARM',
       intro: 'Turn an Azure Portal template.json export into an editable network diagram in a new tab.',
-      stepsTitle: 'Steps', exportSteps: ['Azure Portal', 'Resource groups', 'Select a resource group', 'Automation → Export template → ARM Template → Download', 'Extract the ZIP, then choose template.json'],
+      stepsTitle: 'Steps', exportSteps: ['Azure Portal', 'Resource groups', 'Select a resource group', 'Automation → Export template → ARM Template → Download', 'template.json'],
       choose: 'Choose template.json', none: 'No file selected', group: 'Resource Group Name',
       subscription: 'Subscription ID (optional)',
       groupRequired: 'Enter a Resource Group Name.',
@@ -26,7 +26,7 @@
     ja: {
       title: 'ARM テンプレートのインポート', short: 'ARM インポート',
       intro: 'Azure Portal の template.json を、新しいタブの編集可能なネットワーク図に変換します。',
-      stepsTitle: '手順', exportSteps: ['Azure Portal', 'Resource groups', 'リソースグループを選択', 'Automation → Export template → ARM Template → Download', 'ZIP を展開し、template.json を選択'],
+      stepsTitle: '手順', exportSteps: ['Azure Portal', 'Resource groups', 'リソースグループを選択', 'Automation → Export template → ARM Template → Download', 'template.json'],
       choose: 'template.json を選択', none: 'ファイル未選択', group: 'リソースグループ名',
       subscription: 'サブスクリプション ID (任意)',
       groupRequired: 'リソースグループ名を入力してください。',
@@ -50,8 +50,18 @@
     ko: { title: 'ARM 템플릿 가져오기', short: 'ARM 가져오기', intro: 'Azure Portal의 template.json을 새 탭에서 편집 가능한 네트워크 다이어그램으로 변환합니다.', choose: 'template.json 선택', none: '선택한 파일 없음', group: '리소스 그룹 이름', start: '가져오기', cancel: '취소', close: '다이어그램 보기', retry: '다른 파일 선택', progress: '가져오기 진행률', read: '파일 읽는 중', parse: 'ARM 구조 읽는 중', resolve: '리소스 참조 확인 중', topology: '네트워크 토폴로지 생성 중', layout: '리소스 배치 중', verify: '다이어그램 준비 중', ready: '다이어그램 준비 완료', elapsed: '경과 시간', report: '가져오기 요약', details: 'Notes에 세부 정보 저장됨(영어)', counts: '내보낸 리소스 {resources}개 / 개체 {nodes}개 / 연결 {edges}개' }
   };
   const guidance = {
+    en: {
+      fileTitle: 'Select your ARM template',
+      fileHelp: 'Choose the extracted template.json from your computer, not the ZIP.'
+    },
+    ja: {
+      fileTitle: 'ARM テンプレートを選択',
+      fileHelp: 'ZIP ではなく、展開した template.json をコンピューターから選択してください。'
+    },
     es: {
-      stepsTitle: 'Pasos', exportSteps: ['Azure Portal', 'Resource groups', 'Selecciona un grupo de recursos', 'Automation → Export template → ARM Template → Download', 'Extrae el ZIP y elige template.json'],
+      fileTitle: 'Selecciona tu plantilla ARM',
+      fileHelp: 'Elige el template.json extraído de tu equipo, no el ZIP.',
+      stepsTitle: 'Pasos', exportSteps: ['Azure Portal', 'Resource groups', 'Selecciona un grupo de recursos', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: 'Introduce un nombre de grupo de recursos.',
       subscription: 'ID de suscripción (opcional)',
       progressHelp: 'Las etapas completadas se muestran durante al menos 2,5 segundos; no es una estimación de tiempo.',
@@ -61,7 +71,9 @@
       timeout: 'Se superó el límite de procesamiento. Exporta una selección más pequeña.', reportFallback: 'No hay más detalles.'
     },
     fr: {
-      stepsTitle: 'Étapes', exportSteps: ['Azure Portal', 'Resource groups', 'Sélectionnez un groupe de ressources', 'Automation → Export template → ARM Template → Download', 'Extrayez le ZIP, puis choisissez template.json'],
+      fileTitle: 'Sélectionnez votre modèle ARM',
+      fileHelp: 'Choisissez le fichier template.json extrait sur votre ordinateur, pas le ZIP.',
+      stepsTitle: 'Étapes', exportSteps: ['Azure Portal', 'Resource groups', 'Sélectionnez un groupe de ressources', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: 'Saisissez un nom de groupe de ressources.',
       subscription: 'ID d’abonnement (facultatif)',
       progressHelp: 'Les étapes terminées sont affichées sur au moins 2,5 secondes ; ce n’est pas une estimation de durée.',
@@ -71,7 +83,9 @@
       timeout: 'La limite de traitement a été dépassée. Exportez moins de ressources.', reportFallback: 'Aucun détail supplémentaire.'
     },
     de: {
-      stepsTitle: 'Schritte', exportSteps: ['Azure Portal', 'Resource groups', 'Ressourcengruppe auswählen', 'Automation → Export template → ARM Template → Download', 'ZIP entpacken und template.json auswählen'],
+      fileTitle: 'ARM-Vorlage auswählen',
+      fileHelp: 'Wählen Sie die entpackte template.json auf Ihrem Computer, nicht die ZIP-Datei.',
+      stepsTitle: 'Schritte', exportSteps: ['Azure Portal', 'Resource groups', 'Ressourcengruppe auswählen', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: 'Geben Sie einen Ressourcengruppennamen ein.',
       subscription: 'Abonnement-ID (optional)',
       progressHelp: 'Abgeschlossene Schritte werden über mindestens 2,5 Sekunden angezeigt; dies ist keine Zeitschätzung.',
@@ -81,7 +95,9 @@
       timeout: 'Das Verarbeitungslimit wurde überschritten. Exportieren Sie weniger Ressourcen.', reportFallback: 'Keine weiteren Details.'
     },
     pt: {
-      stepsTitle: 'Etapas', exportSteps: ['Azure Portal', 'Resource groups', 'Selecione um grupo de recursos', 'Automation → Export template → ARM Template → Download', 'Extraia o ZIP e escolha template.json'],
+      fileTitle: 'Selecione seu modelo ARM',
+      fileHelp: 'Escolha o template.json extraído no seu computador, não o ZIP.',
+      stepsTitle: 'Etapas', exportSteps: ['Azure Portal', 'Resource groups', 'Selecione um grupo de recursos', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: 'Digite um nome de grupo de recursos.',
       subscription: 'ID da assinatura (opcional)',
       progressHelp: 'As etapas concluídas são mostradas por pelo menos 2,5 segundos; não é uma estimativa de tempo.',
@@ -91,7 +107,9 @@
       timeout: 'O limite de processamento foi excedido. Exporte menos recursos.', reportFallback: 'Nenhum detalhe adicional.'
     },
     zh: {
-      stepsTitle: '步骤', exportSteps: ['Azure Portal', 'Resource groups', '选择资源组', 'Automation → Export template → ARM Template → Download', '解压 ZIP 后选择 template.json'],
+      fileTitle: '选择 ARM 模板',
+      fileHelp: '请从计算机中选择解压后的 template.json，而不是 ZIP 文件。',
+      stepsTitle: '步骤', exportSteps: ['Azure Portal', 'Resource groups', '选择资源组', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: '请输入资源组名称。',
       subscription: '订阅 ID（可选）',
       progressHelp: '已完成的阶段会在至少 2.5 秒内显示；这不是时间估计。',
@@ -101,7 +119,9 @@
       timeout: '超出处理时间限制。请减少导出的资源数量。', reportFallback: '无其他详细信息。'
     },
     ko: {
-      stepsTitle: '단계', exportSteps: ['Azure Portal', 'Resource groups', '리소스 그룹 선택', 'Automation → Export template → ARM Template → Download', 'ZIP 압축을 풀고 template.json을 선택'],
+      fileTitle: 'ARM 템플릿 선택',
+      fileHelp: '컴퓨터에서 ZIP 파일이 아닌 압축을 푼 template.json을 선택하세요.',
+      stepsTitle: '단계', exportSteps: ['Azure Portal', 'Resource groups', '리소스 그룹 선택', 'Automation → Export template → ARM Template → Download', 'template.json'],
       groupRequired: '리소스 그룹 이름을 입력하세요.',
       subscription: '구독 ID (선택 사항)',
       progressHelp: '완료된 단계를 최소 2.5초 동안 표시합니다. 소요 시간 예측이 아닙니다.',
@@ -246,7 +266,6 @@
     groupTouched = false;
     resetView();
     dialog.showModal();
-    selectFile();
   }
   function close() {
     cancelOperation();
@@ -637,9 +656,19 @@
     dialog.innerHTML = `
       <h2 id="nds-arm-title" data-arm-text="title"></h2>
       <p id="nds-arm-intro" data-arm-text="intro"></p>
+      <div class="nds-arm-layout">
+      <div class="nds-arm-content">
       <div id="nds-arm-form">
         <div class="nds-arm-export"><p class="nds-arm-export-title" data-arm-text="stepsTitle"></p><ol id="nds-arm-export" class="nds-arm-export-list"></ol></div>
-        <div class="nds-arm-file"><button id="nds-arm-choose" type="button" data-arm-text="choose"></button><span id="nds-arm-filename"></span></div>
+        <section class="nds-arm-file" aria-labelledby="nds-arm-file-title">
+          <h3 id="nds-arm-file-title" data-arm-text="fileTitle"></h3>
+          <p id="nds-arm-file-help" data-arm-text="fileHelp"></p>
+          <button id="nds-arm-choose" class="nds-arm-primary" type="button" aria-describedby="nds-arm-file-help nds-arm-filename">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7V5a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v3"/><path d="M3 9h18l-2 11H5L3 9Z"/></svg>
+            <span data-arm-text="choose"></span>
+          </button>
+          <span id="nds-arm-filename" role="status" aria-live="polite"></span>
+        </section>
         <input id="nds-arm-file" type="file" accept=".json,application/json" hidden>
         <label for="nds-arm-group" data-arm-text="group"></label>
         <input id="nds-arm-group" type="text" maxlength="90" required aria-required="true" aria-describedby="nds-arm-group-error">
@@ -655,6 +684,8 @@
       <div id="nds-arm-result" hidden>
         <div id="nds-arm-report"><h3 data-arm-text="report"></h3><p id="nds-arm-counts" class="nds-arm-report-counts"></p><details><summary data-arm-text="details"></summary><ul id="nds-arm-warnings"></ul></details></div>
       </div>
+      </div>
+      </div>
       <div class="nds-arm-actions"><button id="nds-arm-cancel" type="button"></button><button id="nds-arm-start" class="nds-arm-primary" type="button" disabled></button></div>`;
     document.body.append(dialog);
     fileInput = byId('file');
@@ -665,7 +696,6 @@
       byId('filename').textContent = selectedFile ? selectedFile.name + ' (' + Math.ceil(selectedFile.size / 1024) + ' KiB)' : text('none');
       if (selectedFile) (validateGroup() ? byId('start') : byId('group')).focus();
     });
-    fileInput.addEventListener('cancel', () => { if (!selectedFile) close(); });
     byId('choose').addEventListener('click', selectFile);
     byId('start').addEventListener('click', start);
     byId('group').addEventListener('input', () => { groupTouched = true; validateGroup(); });
@@ -674,8 +704,15 @@
       if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); start(); }
     });
     byId('cancel').addEventListener('click', close);
-    dialog.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
-    dialog.addEventListener('close', () => { if (!dialog.open && busy) cancelOperation(); });
+    dialog.addEventListener('cancel', (event) => {
+      if (event.target === dialog) {
+        event.preventDefault();
+        close();
+      }
+    });
+    dialog.addEventListener('close', () => {
+      if (!dialog.open && busy) cancelOperation();
+    });
     // Bubble-phase isolation keeps native text editing intact while preventing
     // editor document shortcuts from copying/deleting resources behind the modal.
     dialog.addEventListener('keydown', (event) => event.stopPropagation());

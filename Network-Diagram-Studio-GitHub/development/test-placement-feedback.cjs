@@ -508,6 +508,7 @@ async function exportsAndHeader(page, context) {
   await page.evaluate(() => window.__nds_i18nStore.getState().setLang('en'));
   const choosing = page.waitForEvent('filechooser');
   await page.locator('#nds-arm-open').click();
+  await page.locator('#nds-arm-choose').click();
   const chooser = await choosing;
   assert.equal(await page.locator('#nds-arm-dialog').evaluate(el => el.open), true, 'Import ARM still opens its dialog');
   await chooser.setFiles([]);

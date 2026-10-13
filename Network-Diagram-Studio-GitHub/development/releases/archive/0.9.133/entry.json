@@ -1,0 +1,18 @@
+{
+  "version": "0.9.133",
+  "date": "2026-10-12",
+  "category": "Usability",
+  "title": "Watch an ARM import walkthrough beside the instructions.",
+  "description": "Import ARM now includes a silent 30-second video with numbered callouts, showing Azure Portal export steps and the Studio import workflow.",
+  "before": {
+    "file": "0.9.133-before.png",
+    "version": "0.9.132",
+    "caption": "Import ARM showed written instructions only"
+  },
+  "after": {
+    "file": "0.9.133-after.png",
+    "version": "0.9.133",
+    "caption": "Watch the silent ARM walkthrough beside the instructions"
+  },
+  "note": "The file picker still opens immediately. The local video plays only when you press Play, includes fullscreen controls, and pauses when importing or closing the dialog. Callouts are in English."
+}

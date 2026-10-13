@@ -94,14 +94,14 @@ function boxPath({ x, y, w, h }: LeafBox): string {
 function groupHeaderStrip(
   w: number,
   h: number,
-  data: { notes?: unknown } | undefined
+  data: { notes?: unknown; name?: string; fields?: Record<string, string>; textScale?: number } | undefined
 ): number {
   const hasNotes = !!(data?.notes && String(data.notes).trim() !== '');
   const clearance = groupHeaderClearance(
-    currentTextFactor(),
+    currentTextFactor() * (typeof data?.textScale === 'number' ? data.textScale : 1),
     hasNotes,
     groupHeaderScale(w, h),
-    { notes: data?.notes ? String(data.notes) : undefined, boxW: w }
+    { notes: data?.notes ? String(data.notes) : undefined, boxW: w, name: data?.name, fields: data?.fields }
   );
   // Never claim the whole container: an edge between two children of the
   // same small group would then have nowhere legal to put its label.
