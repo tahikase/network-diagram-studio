@@ -7,6 +7,7 @@
 
     // Fixed safety limits; options cannot increase them.
     const MAX_BYTES = 10 * 1024 * 1024;
+    const MAX_TEMPLATES = 10;
     const MAX_RESOURCES = 2000;
     const MAX_RENDERED_NODES = 300;
     const MAX_SUPPORT_ENTRIES = 12000;
@@ -50,9 +51,6 @@
       const indexes = new Map();
       const exactIds = new Map();
       const expressions = new Map();
-      const activeNames = new Set();
-      const valueCache = new Map();
-      const activeMembers = new WeakMap();
       const nodeByRecord = new Map();
       const nodeById = new Map();
       const sourceByNode = new Map();
@@ -97,365 +95,399 @@
       };
 
       progress(15, 'parse');
-      if (typeof rawString !== 'string') fail('Provide ARM template JSON as text.');
-      if (rawString.length > MAX_BYTES || new TextEncoder().encode(rawString).length > MAX_BYTES) {
-        throw new ArmError('Template exceeds the 10 MiB JSON limit. Export a smaller scope.', true);
-      }
-      let depth = 0;
-      let inString = false;
-      let escaped = false;
-      for (let i = 0; i < rawString.length; i++) {
-        const c = rawString[i];
-        if (inString) {
-          if (escaped) escaped = false;
-          else if (c === '\\') escaped = true;
-          else if (c === '"') inString = false;
-        } else if (c === '"') inString = true;
-        else if (c === '{' || c === '[') {
-          if (++depth > MAX_DEPTH) throw new ArmError('Template exceeds the maximum JSON depth of 64.', true);
-        } else if (c === '}' || c === ']') depth--;
-      }
-      let template;
-      try {
-        template = JSON.parse(rawString.charCodeAt(0) === 0xfeff ? rawString.slice(1) : rawString);
-      } catch (error) {
-        if (!(error instanceof SyntaxError)) throw error;
-        // Native JSON parse errors can include snippets of secret-bearing input.
-        fail('Invalid JSON. Select an ARM template JSON file, not a parameters file or deployment log.');
-      }
-      if (!isObject(template) || !own(template, 'resources')) fail('This JSON has no ARM resources collection. Select a template, not a parameters file.');
       if (!isObject(options)) fail('Import options must be an object.');
-      const groupName = options.resourceGroupName === undefined || (typeof options.resourceGroupName === 'string' && !options.resourceGroupName.trim())
-        ? '' : boundedText(options.resourceGroupName, 90, 'Resource group name').trim();
-      const subscription = options.subscriptionId === undefined || (typeof options.subscriptionId === 'string' && !options.subscriptionId.trim())
-        ? '' : boundedText(options.subscriptionId, 100, 'Subscription ID').trim();
       const title = options.title === undefined || options.title === '' ? 'ARM network diagram' : boundedText(options.title, 256, 'Diagram title');
-      const parameters = ci(template, 'parameters') || {};
-      const variables = ci(template, 'variables') || {};
-      if (!isObject(parameters) || !isObject(variables)) fail('ARM parameters and variables must be objects.');
-      const namedIndex = object => {
-        const result = new Map();
-        for (const key of Object.keys(object)) {
-          const lower = key.toLowerCase();
-          if (result.has(lower)) fail('Ambiguous case-insensitive ARM parameter or variable names. Use unique names.');
-          result.set(lower, key);
+      const inputs = Array.isArray(rawString) ? rawString : [{ ...options, raw: rawString }];
+      if (!inputs.length || inputs.length > MAX_TEMPLATES) fail('Choose between 1 and 10 ARM templates.');
+      let totalBytes = 0;
+      const documents = inputs.map((input, index) => {
+        if (!isObject(input)) fail('Each template must include JSON text and its scope options.');
+        try { return prepareDocument(input.raw, input, index); }
+        catch (error) {
+          if (!(error instanceof ArmError)) throw error;
+          throw new ArmError('Template ' + (index + 1) + ': ' + error.message, error.fatal);
         }
-        return result;
-      };
-      const parameterKeys = namedIndex(parameters);
-      const variableKeys = namedIndex(variables);
+      });
+      const multiple = documents.length > 1;
+      if (multiple) {
+        const scopes = new Set();
+        for (const document of documents) {
+          if (!document.groupName) fail('Every template requires its resource group name.');
+          if (!/^[\p{L}\p{N}_.()-]{1,90}$/u.test(document.groupName) || document.groupName.endsWith('.')
+            || document.subscription && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(document.subscription)) {
+            fail('Template ' + (document.index + 1) + ': supply a valid resource-group name and optional subscription GUID.');
+          }
+          const scope = document.subscription.toLowerCase() + '|' + document.groupName.toLowerCase();
+          if (scopes.has(scope)) fail('Duplicate resource group scope. Keep one export per group, or supply distinct subscription IDs.');
+          scopes.add(scope);
+        }
+      }
 
-      function parseExpression(text) {
-        if (text.length > MAX_EXPRESSION) throw new ArmError('ARM expression exceeds the 16,384-character limit.', true);
-        if (expressions.has(text)) return expressions.get(text);
-        let pos = 1;
-        let tokenCount = 0;
-        let nesting = 0;
-        const end = text.length - 1;
-        const skip = () => { while (pos < end && /\s/.test(text[pos])) pos++; };
-        const take = c => { skip(); if (text[pos] === c) { pos++; return true; } return false; };
-        const bad = () => fail('Unsupported or malformed ARM expression. Export resolved resource names and network properties.');
-        function expression() {
-          tick();
-          if (++tokenCount > MAX_TOKENS || ++nesting > MAX_DEPTH) throw new ArmError('ARM expression complexity exceeds the safety limit.', true);
-          skip();
-          let node;
-          if (text[pos] === "'") {
-            pos++;
-            let value = '';
-            let closed = false;
-            while (pos < end) {
-              const c = text[pos++];
-              if (c === "'") {
-                if (text[pos] === "'") { value += "'"; pos++; }
-                else { closed = true; break; }
-              } else value += c;
-            }
-            if (!closed) bad();
-            node = { kind: 'literal', value };
-          } else {
-            const number = text.slice(pos, end).match(/^-?\d+(?:\.\d+)?/);
-            if (number) {
-              pos += number[0].length;
-              const value = Number(number[0]);
-              if (!Number.isFinite(value)) bad();
+      function prepareDocument(rawString, options, index) {
+        const activeNames = new Set();
+        const valueCache = new Map();
+        const activeMembers = new WeakMap();
+        if (typeof rawString !== 'string') fail('Provide ARM template JSON as text.');
+        totalBytes += new TextEncoder().encode(rawString).length;
+        if (rawString.length > MAX_BYTES || totalBytes > MAX_BYTES) {
+          throw new ArmError('Import exceeds the combined 10 MiB JSON limit. Export a smaller scope.', true);
+        }
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+        for (let i = 0; i < rawString.length; i++) {
+          const c = rawString[i];
+          if (inString) {
+            if (escaped) escaped = false;
+            else if (c === '\\') escaped = true;
+            else if (c === '"') inString = false;
+          } else if (c === '"') inString = true;
+          else if (c === '{' || c === '[') {
+            if (++depth > MAX_DEPTH) throw new ArmError('Template exceeds the maximum JSON depth of 64.', true);
+          } else if (c === '}' || c === ']') depth--;
+        }
+        let template;
+        try {
+          template = JSON.parse(rawString.charCodeAt(0) === 0xfeff ? rawString.slice(1) : rawString);
+        } catch (error) {
+          if (!(error instanceof SyntaxError)) throw error;
+          // Native JSON parse errors can include snippets of secret-bearing input.
+          fail('Invalid JSON. Select an ARM template JSON file, not a parameters file or deployment log.');
+        }
+        if (!isObject(template) || !own(template, 'resources')) fail('This JSON has no ARM resources collection. Select a template, not a parameters file.');
+        const groupName = options.resourceGroupName === undefined || (typeof options.resourceGroupName === 'string' && !options.resourceGroupName.trim())
+          ? '' : boundedText(options.resourceGroupName, 90, 'Resource group name').trim();
+        const subscription = options.subscriptionId === undefined || (typeof options.subscriptionId === 'string' && !options.subscriptionId.trim())
+          ? '' : boundedText(options.subscriptionId, 100, 'Subscription ID').trim();
+        const parameters = ci(template, 'parameters') || {};
+        const variables = ci(template, 'variables') || {};
+        if (!isObject(parameters) || !isObject(variables)) fail('ARM parameters and variables must be objects.');
+        const namedIndex = object => {
+          const result = new Map();
+          for (const key of Object.keys(object)) {
+            const lower = key.toLowerCase();
+            if (result.has(lower)) fail('Ambiguous case-insensitive ARM parameter or variable names. Use unique names.');
+            result.set(lower, key);
+          }
+          return result;
+        };
+        const parameterKeys = namedIndex(parameters);
+        const variableKeys = namedIndex(variables);
+
+        function parseExpression(text) {
+          if (text.length > MAX_EXPRESSION) throw new ArmError('ARM expression exceeds the 16,384-character limit.', true);
+          if (expressions.has(text)) return expressions.get(text);
+          let pos = 1;
+          let tokenCount = 0;
+          let nesting = 0;
+          const end = text.length - 1;
+          const skip = () => { while (pos < end && /\s/.test(text[pos])) pos++; };
+          const take = c => { skip(); if (text[pos] === c) { pos++; return true; } return false; };
+          const bad = () => fail('Unsupported or malformed ARM expression. Export resolved resource names and network properties.');
+          function expression() {
+            tick();
+            if (++tokenCount > MAX_TOKENS || ++nesting > MAX_DEPTH) throw new ArmError('ARM expression complexity exceeds the safety limit.', true);
+            skip();
+            let node;
+            if (text[pos] === "'") {
+              pos++;
+              let value = '';
+              let closed = false;
+              while (pos < end) {
+                const c = text[pos++];
+                if (c === "'") {
+                  if (text[pos] === "'") { value += "'"; pos++; }
+                  else { closed = true; break; }
+                } else value += c;
+              }
+              if (!closed) bad();
               node = { kind: 'literal', value };
             } else {
-              const identifier = text.slice(pos, end).match(/^[A-Za-z_][A-Za-z0-9_]*/);
-              if (!identifier) bad();
-              const name = identifier[0].toLowerCase();
-              pos += identifier[0].length;
-              if (!take('(')) {
-                if (!['true', 'false', 'null'].includes(name)) bad();
-                node = { kind: 'literal', value: name === 'null' ? null : name === 'true' };
+              const number = text.slice(pos, end).match(/^-?\d+(?:\.\d+)?/);
+              if (number) {
+                pos += number[0].length;
+                const value = Number(number[0]);
+                if (!Number.isFinite(value)) bad();
+                node = { kind: 'literal', value };
               } else {
-                const args = [];
-                if (!take(')')) {
-                  do { args.push(expression()); } while (take(','));
-                  if (!take(')')) bad();
+                const identifier = text.slice(pos, end).match(/^[A-Za-z_][A-Za-z0-9_]*/);
+                if (!identifier) bad();
+                const name = identifier[0].toLowerCase();
+                pos += identifier[0].length;
+                if (!take('(')) {
+                  if (!['true', 'false', 'null'].includes(name)) bad();
+                  node = { kind: 'literal', value: name === 'null' ? null : name === 'true' };
+                } else {
+                  const args = [];
+                  if (!take(')')) {
+                    do { args.push(expression()); } while (take(','));
+                    if (!take(')')) bad();
+                  }
+                  node = { kind: 'call', name, args };
                 }
-                node = { kind: 'call', name, args };
               }
             }
-          }
-          while (true) {
-            if (take('.')) {
-              const key = text.slice(pos, end).match(/^[A-Za-z_][A-Za-z0-9_]*/);
-              if (!key) bad();
-              pos += key[0].length;
-              node = { kind: 'member', target: node, key: { kind: 'literal', value: key[0] } };
-            } else if (take('[')) {
-              const key = expression();
-              if (!take(']')) bad();
-              node = { kind: 'member', target: node, key };
-            } else break;
-            if (++tokenCount > MAX_TOKENS) throw new ArmError('ARM expression complexity exceeds the safety limit.', true);
-          }
-          nesting--;
-          return node;
-        }
-        if (!text.endsWith(']')) bad();
-        const ast = expression();
-        skip();
-        if (pos !== end) bad();
-        expressions.set(text, ast);
-        return ast;
-      }
-
-      function resolve(value) {
-        tick();
-        if (++evalDepth > MAX_DEPTH) { evalDepth--; throw new ArmError('ARM resolution depth exceeds 64; check recursive variables.', true); }
-        try {
-          if (typeof value !== 'string') return value;
-          if (value.length > MAX_VALUE) throw new ArmError('A requested ARM network value exceeds the 65,536-character limit.', true);
-          if (value.startsWith('[[')) return value.slice(1);
-          return value.startsWith('[') ? evaluate(parseExpression(value)) : value;
-        } finally { evalDepth--; }
-      }
-
-      function member(object, key) {
-        tick();
-        if (unsafeKeys.has(String(key).toLowerCase())) fail('Prototype-related ARM property access is not supported.');
-        if (Array.isArray(object)) {
-          if (!Number.isSafeInteger(key) || key < 0 || key >= object.length) fail('ARM array index is out of range.');
-        } else if (!isObject(object) || typeof key !== 'string') {
-          fail('ARM property access requires an object or an array.');
-        }
-        let actual = key;
-        if (!own(object, key) && !Array.isArray(object)) actual = Object.keys(object).find(k => k.toLowerCase() === key.toLowerCase());
-        if (actual === undefined || !own(object, actual)) fail('A requested ARM object property is unavailable; supply resolved network values or scope options.');
-        let active = activeMembers.get(object);
-        if (!active) { active = new Set(); activeMembers.set(object, active); }
-        if (active.has(actual)) fail('Cyclic ARM object or variable reference. Remove the cycle before importing.');
-        active.add(actual);
-        try { return resolve(object[actual]); }
-        finally { active.delete(actual); }
-      }
-
-      function named(kind, name) {
-        if (typeof name !== 'string') fail('ARM parameter and variable selectors must be strings.');
-        if (unsafeKeys.has(name.toLowerCase())) fail('Prototype-related ARM parameter or variable names are not supported.');
-        const keyMap = kind === 'parameters' ? parameterKeys : variableKeys;
-        const actual = keyMap.get(name.toLowerCase());
-        if (actual === undefined) fail('Missing ARM ' + (kind === 'parameters' ? 'parameter ' : 'variable ') + safeSymbol(name) + '. Supply a nonsensitive default or export resolved network values.');
-        const key = kind + ':' + actual.toLowerCase();
-        if (activeNames.has(key)) fail('Cyclic ARM parameter or variable reference. Remove the cycle before importing.');
-        if (valueCache.has(key)) return valueCache.get(key);
-        activeNames.add(key);
-        try {
-          let value;
-          if (kind === 'parameters') {
-            const definition = parameters[actual];
-            const type = ci(definition, 'type');
-            if (typeof type === 'string' && /^secure(string|object)$/i.test(type)) {
-              fail('Secure parameter ' + safeSymbol(actual) + ' is ignored. Export a resolved, nonsensitive name or network value.');
+            while (true) {
+              if (take('.')) {
+                const key = text.slice(pos, end).match(/^[A-Za-z_][A-Za-z0-9_]*/);
+                if (!key) bad();
+                pos += key[0].length;
+                node = { kind: 'member', target: node, key: { kind: 'literal', value: key[0] } };
+              } else if (take('[')) {
+                const key = expression();
+                if (!take(']')) bad();
+                node = { kind: 'member', target: node, key };
+              } else break;
+              if (++tokenCount > MAX_TOKENS) throw new ArmError('ARM expression complexity exceeds the safety limit.', true);
             }
-            if (!isObject(definition) || !own(definition, 'defaultValue')) {
-              fail('Missing default for ARM parameter ' + safeSymbol(actual) + '. Supply a nonsensitive default or export resolved network values.');
-            }
-            parameterDefaultsUsed = true;
-            value = resolve(definition.defaultValue);
-          } else value = resolve(variables[actual]);
-          valueCache.set(key, value);
-          return value;
-        } finally { activeNames.delete(key); }
-      }
-
-      function scalar(value) {
-        if (typeof value === 'string') return value;
-        if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-        if (typeof value === 'boolean') return String(value);
-        fail('ARM string conversion requires a scalar network value; object serialization is not supported.');
-      }
-      function arrayValues(value) {
-        if (!Array.isArray(value)) fail('The requested ARM value must be an array.');
-        if (value.length > MAX_RESOURCES) throw new ArmError('Requested ARM collection exceeds the 2,000-item safety limit.', true);
-        return value.map((_, index) => member(value, index));
-      }
-      function combine(values) {
-        const ids = values.filter(value => value instanceof ArmId);
-        if (ids.length) {
-          if (ids.length !== 1 || values[0] !== ids[0]) fail('Unsupported scoped resource ID composition.');
-          const id = ids[0];
-          const suffix = combine(values.slice(1));
-          if (id.path.length + suffix.length > MAX_VALUE) throw new ArmError('ARM result exceeds the value size limit.', true);
-          return new ArmId(id.path + suffix, id.group, id.subscription, id.level, id.local);
+            nesting--;
+            return node;
+          }
+          if (!text.endsWith(']')) bad();
+          const ast = expression();
+          skip();
+          if (pos !== end) bad();
+          expressions.set(text, ast);
+          return ast;
         }
-        let length = 0;
-        const strings = values.map(value => {
-          const text = scalar(value);
-          length += text.length;
-          if (length > MAX_VALUE) throw new ArmError('ARM result exceeds the value size limit.', true);
-          return text;
-        });
-        return strings.join('');
-      }
-      function makeResourceId(name, args) {
-        const strings = args.map(scalar);
-        const typeIndex = strings.findIndex(value => /^[A-Za-z0-9_-]+\.[A-Za-z0-9_.-]+\/[A-Za-z0-9_/-]+$/.test(value));
-        const subscriptionLevel = name === 'subscriptionresourceid';
-        if (typeIndex < 0 || typeIndex > (subscriptionLevel ? 1 : 2)) fail('Unsupported ARM resourceId scope or resource type.');
-        const type = strings[typeIndex].split('/');
-        const names = strings.slice(typeIndex + 1).join('/').split('/');
-        // oxlint-disable-next-line no-control-regex -- Reject control characters in resource identity segments.
-        if (type.length - 1 !== names.length || names.some(n => !n || /[\u0000-\u001f]/.test(n))) fail('ARM resourceId type and name segment counts do not match.');
-        let path = '/providers/' + type[0];
-        for (let i = 0; i < names.length; i++) path += '/' + type[i + 1] + '/' + names[i];
-        const group = subscriptionLevel ? '' : typeIndex === 0 ? '' : strings[typeIndex - 1];
-        const sub = subscriptionLevel ? (typeIndex === 1 ? strings[0] : subscription) : typeIndex === 2 ? strings[0] : subscription;
-        return new ArmId(path, group, sub, subscriptionLevel ? 'subscription' : 'group', !subscriptionLevel && typeIndex === 0);
-      }
-      function evaluate(ast) {
-        tick();
-        if (++evalDepth > MAX_DEPTH) { evalDepth--; throw new ArmError('ARM evaluation depth exceeds 64.', true); }
-        try {
-          if (ast.kind === 'literal') return ast.value;
-          if (ast.kind === 'member') return member(evaluate(ast.target), evaluate(ast.key));
-          const name = ast.name;
-          const arity = (min, max = min) => {
-            if (ast.args.length < min || ast.args.length > max) fail('Unsupported ARM function argument count.');
-          };
-          if (name === 'if') {
-            arity(3);
-            const test = evaluate(ast.args[0]);
-            if (typeof test !== 'boolean') fail('ARM if condition is not a known boolean.');
-            return evaluate(ast.args[test ? 1 : 2]);
+
+        function resolve(value) {
+          tick();
+          if (++evalDepth > MAX_DEPTH) { evalDepth--; throw new ArmError('ARM resolution depth exceeds 64; check recursive variables.', true); }
+          try {
+            if (typeof value !== 'string') return value;
+            if (value.length > MAX_VALUE) throw new ArmError('A requested ARM network value exceeds the 65,536-character limit.', true);
+            if (value.startsWith('[[')) return value.slice(1);
+            return value.startsWith('[') ? evaluate(parseExpression(value)) : value;
+          } finally { evalDepth--; }
+        }
+
+        function member(object, key) {
+          tick();
+          if (unsafeKeys.has(String(key).toLowerCase())) fail('Prototype-related ARM property access is not supported.');
+          if (Array.isArray(object)) {
+            if (!Number.isSafeInteger(key) || key < 0 || key >= object.length) fail('ARM array index is out of range.');
+          } else if (!isObject(object) || typeof key !== 'string') {
+            fail('ARM property access requires an object or an array.');
           }
-          if (name === 'and' || name === 'or') {
-            arity(2, MAX_TOKENS);
-            for (const arg of ast.args) {
-              const value = evaluate(arg);
-              if (typeof value !== 'boolean') fail('ARM logical conditions must be booleans.');
-              if (name === 'and' && !value) return false;
-              if (name === 'or' && value) return true;
+          let actual = key;
+          if (!own(object, key) && !Array.isArray(object)) actual = Object.keys(object).find(k => k.toLowerCase() === key.toLowerCase());
+          if (actual === undefined || !own(object, actual)) fail('A requested ARM object property is unavailable; supply resolved network values or scope options.');
+          let active = activeMembers.get(object);
+          if (!active) { active = new Set(); activeMembers.set(object, active); }
+          if (active.has(actual)) fail('Cyclic ARM object or variable reference. Remove the cycle before importing.');
+          active.add(actual);
+          try { return resolve(object[actual]); }
+          finally { active.delete(actual); }
+        }
+
+        function named(kind, name) {
+          if (typeof name !== 'string') fail('ARM parameter and variable selectors must be strings.');
+          if (unsafeKeys.has(name.toLowerCase())) fail('Prototype-related ARM parameter or variable names are not supported.');
+          const keyMap = kind === 'parameters' ? parameterKeys : variableKeys;
+          const actual = keyMap.get(name.toLowerCase());
+          if (actual === undefined) fail('Missing ARM ' + (kind === 'parameters' ? 'parameter ' : 'variable ') + safeSymbol(name) + '. Supply a nonsensitive default or export resolved network values.');
+          const key = kind + ':' + actual.toLowerCase();
+          if (activeNames.has(key)) fail('Cyclic ARM parameter or variable reference. Remove the cycle before importing.');
+          if (valueCache.has(key)) return valueCache.get(key);
+          activeNames.add(key);
+          try {
+            let value;
+            if (kind === 'parameters') {
+              const definition = parameters[actual];
+              const type = ci(definition, 'type');
+              if (typeof type === 'string' && /^secure(string|object)$/i.test(type)) {
+                fail('Secure parameter ' + safeSymbol(actual) + ' is ignored. Export a resolved, nonsensitive name or network value.');
+              }
+              if (!isObject(definition) || !own(definition, 'defaultValue')) {
+                fail('Missing default for ARM parameter ' + safeSymbol(actual) + '. Supply a nonsensitive default or export resolved network values.');
+              }
+              parameterDefaultsUsed = true;
+              value = resolve(definition.defaultValue);
+            } else value = resolve(variables[actual]);
+            valueCache.set(key, value);
+            return value;
+          } finally { activeNames.delete(key); }
+        }
+
+        function scalar(value) {
+          if (typeof value === 'string') return value;
+          if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+          if (typeof value === 'boolean') return String(value);
+          fail('ARM string conversion requires a scalar network value; object serialization is not supported.');
+        }
+        function arrayValues(value) {
+          if (!Array.isArray(value)) fail('The requested ARM value must be an array.');
+          if (value.length > MAX_RESOURCES) throw new ArmError('Requested ARM collection exceeds the 2,000-item safety limit.', true);
+          return value.map((_, index) => member(value, index));
+        }
+        function combine(values) {
+          const ids = values.filter(value => value instanceof ArmId);
+          if (ids.length) {
+            if (ids.length !== 1 || values[0] !== ids[0]) fail('Unsupported scoped resource ID composition.');
+            const id = ids[0];
+            const suffix = combine(values.slice(1));
+            if (id.path.length + suffix.length > MAX_VALUE) throw new ArmError('ARM result exceeds the value size limit.', true);
+            return new ArmId(id.path + suffix, id.group, id.subscription, id.level, id.local);
+          }
+          let length = 0;
+          const strings = values.map(value => {
+            const text = scalar(value);
+            length += text.length;
+            if (length > MAX_VALUE) throw new ArmError('ARM result exceeds the value size limit.', true);
+            return text;
+          });
+          return strings.join('');
+        }
+        function makeResourceId(name, args) {
+          const strings = args.map(scalar);
+          const typeIndex = strings.findIndex(value => /^[A-Za-z0-9_-]+\.[A-Za-z0-9_.-]+\/[A-Za-z0-9_/-]+$/.test(value));
+          const subscriptionLevel = name === 'subscriptionresourceid';
+          if (typeIndex < 0 || typeIndex > (subscriptionLevel ? 1 : 2)) fail('Unsupported ARM resourceId scope or resource type.');
+          const type = strings[typeIndex].split('/');
+          const names = strings.slice(typeIndex + 1).join('/').split('/');
+          // oxlint-disable-next-line no-control-regex -- Reject control characters in resource identity segments.
+          if (type.length - 1 !== names.length || names.some(n => !n || /[\u0000-\u001f]/.test(n))) fail('ARM resourceId type and name segment counts do not match.');
+          let path = '/providers/' + type[0];
+          for (let i = 0; i < names.length; i++) path += '/' + type[i + 1] + '/' + names[i];
+          const group = subscriptionLevel ? '' : typeIndex === 0 ? '' : strings[typeIndex - 1];
+          const sub = subscriptionLevel ? (typeIndex === 1 ? strings[0] : subscription) : typeIndex === 2 ? strings[0] : subscription;
+          return new ArmId(path, group, sub, subscriptionLevel ? 'subscription' : 'group', !subscriptionLevel && typeIndex === 0);
+        }
+        function evaluate(ast) {
+          tick();
+          if (++evalDepth > MAX_DEPTH) { evalDepth--; throw new ArmError('ARM evaluation depth exceeds 64.', true); }
+          try {
+            if (ast.kind === 'literal') return ast.value;
+            if (ast.kind === 'member') return member(evaluate(ast.target), evaluate(ast.key));
+            const name = ast.name;
+            const arity = (min, max = min) => {
+              if (ast.args.length < min || ast.args.length > max) fail('Unsupported ARM function argument count.');
+            };
+            if (name === 'if') {
+              arity(3);
+              const test = evaluate(ast.args[0]);
+              if (typeof test !== 'boolean') fail('ARM if condition is not a known boolean.');
+              return evaluate(ast.args[test ? 1 : 2]);
             }
-            return name === 'and';
-          }
-          const supported = new Set(['parameters', 'variables', 'concat', 'resourceid', 'subscriptionresourceid', 'format',
-            'tolower', 'toupper', 'replace', 'split', 'join', 'first', 'last', 'array', 'createarray', 'string', 'int', 'bool',
-            'equals', 'not', 'resourcegroup', 'subscription']);
-          if (!supported.has(name)) fail('Unsupported ARM function ' + safeSymbol(name) + '. Export resolved network values; runtime lookups and copy evaluation are not performed.');
-          const args = ast.args.map(evaluate);
-          switch (name) {
-            case 'parameters': case 'variables': arity(1); return named(name, args[0]);
-            case 'resourceid': case 'subscriptionresourceid': arity(2, 32); return makeResourceId(name, args);
-            case 'concat':
-              arity(1, MAX_TOKENS);
-              if (Array.isArray(args[0])) {
-                const result = [];
-                for (const arg of args) {
-                  const values = arrayValues(arg);
-                  if (result.length + values.length > MAX_RESOURCES) throw new ArmError('ARM array result exceeds 2,000 items.', true);
-                  result.push(...values);
+            if (name === 'and' || name === 'or') {
+              arity(2, MAX_TOKENS);
+              for (const arg of ast.args) {
+                const value = evaluate(arg);
+                if (typeof value !== 'boolean') fail('ARM logical conditions must be booleans.');
+                if (name === 'and' && !value) return false;
+                if (name === 'or' && value) return true;
+              }
+              return name === 'and';
+            }
+            const supported = new Set(['parameters', 'variables', 'concat', 'resourceid', 'subscriptionresourceid', 'format',
+              'tolower', 'toupper', 'replace', 'split', 'join', 'first', 'last', 'array', 'createarray', 'string', 'int', 'bool',
+              'equals', 'not', 'resourcegroup', 'subscription']);
+            if (!supported.has(name)) fail('Unsupported ARM function ' + safeSymbol(name) + '. Export resolved network values; runtime lookups and copy evaluation are not performed.');
+            const args = ast.args.map(evaluate);
+            switch (name) {
+              case 'parameters': case 'variables': arity(1); return named(name, args[0]);
+              case 'resourceid': case 'subscriptionresourceid': arity(2, 32); return makeResourceId(name, args);
+              case 'concat':
+                arity(1, MAX_TOKENS);
+                if (Array.isArray(args[0])) {
+                  const result = [];
+                  for (const arg of args) {
+                    const values = arrayValues(arg);
+                    if (result.length + values.length > MAX_RESOURCES) throw new ArmError('ARM array result exceeds 2,000 items.', true);
+                    result.push(...values);
+                  }
+                  return result;
                 }
+                return combine(args);
+              case 'format': {
+                arity(1, MAX_TOKENS);
+                const pattern = scalar(args[0]);
+                const parts = [];
+                let at = 0;
+                const tokens = /\{\{|\}\}|\{(\d+)\}|[{}]/g;
+                let match;
+                while ((match = tokens.exec(pattern))) {
+                  parts.push(pattern.slice(at, match.index));
+                  if (match[0] === '{{') parts.push('{');
+                  else if (match[0] === '}}') parts.push('}');
+                  else if (match[1] !== undefined && Number(match[1]) + 1 < args.length) parts.push(args[Number(match[1]) + 1]);
+                  else fail('Unsupported ARM format placeholder.');
+                  at = tokens.lastIndex;
+                }
+                parts.push(pattern.slice(at));
+                return combine(parts.filter(part => part !== ''));
+              }
+              case 'tolower': case 'toupper': {
+                arity(1);
+                const transform = text => name === 'tolower' ? text.toLowerCase() : text.toUpperCase();
+                const value = args[0];
+                return value instanceof ArmId
+                  ? new ArmId(transform(value.path), transform(value.group), transform(value.subscription), value.level, value.local)
+                  : transform(scalar(value));
+              }
+              case 'replace': {
+                arity(3);
+                const find = scalar(args[1]);
+                if (!find) fail('Empty ARM replace search strings are not supported.');
+                return combine(scalar(args[0]).split(find).flatMap((part, i) => i ? [scalar(args[2]), part] : [part]));
+              }
+              case 'split': {
+                arity(2);
+                const result = scalar(args[0]).split(scalar(args[1]));
+                if (result.length > MAX_RESOURCES) throw new ArmError('ARM split result exceeds 2,000 items.', true);
                 return result;
               }
-              return combine(args);
-            case 'format': {
-              arity(1, MAX_TOKENS);
-              const pattern = scalar(args[0]);
-              const parts = [];
-              let at = 0;
-              const tokens = /\{\{|\}\}|\{(\d+)\}|[{}]/g;
-              let match;
-              while ((match = tokens.exec(pattern))) {
-                parts.push(pattern.slice(at, match.index));
-                if (match[0] === '{{') parts.push('{');
-                else if (match[0] === '}}') parts.push('}');
-                else if (match[1] !== undefined && Number(match[1]) + 1 < args.length) parts.push(args[Number(match[1]) + 1]);
-                else fail('Unsupported ARM format placeholder.');
-                at = tokens.lastIndex;
+              case 'join': arity(2); return combine(arrayValues(args[0]).flatMap((part, i) => i ? [scalar(args[1]), scalar(part)] : [scalar(part)]));
+              case 'first': case 'last': {
+                arity(1);
+                const value = args[0];
+                if (typeof value !== 'string' && !Array.isArray(value)) fail('ARM first/last requires an array or string.');
+                if (!value.length) fail('ARM first/last cannot select an empty value.');
+                const index = name === 'first' ? 0 : value.length - 1;
+                return typeof value === 'string' ? value[index] : member(value, index);
               }
-              parts.push(pattern.slice(at));
-              return combine(parts.filter(part => part !== ''));
+              case 'array': arity(1); return Array.isArray(args[0]) ? args[0] : [args[0]];
+              case 'createarray': return args;
+              case 'string': arity(1); return args[0] instanceof ArmId ? args[0] : scalar(args[0]);
+              case 'int': {
+                arity(1);
+                const text = scalar(args[0]);
+                if (!/^-?\d+$/.test(text) || !Number.isSafeInteger(Number(text))) fail('ARM int requires a safe integer.');
+                return Number(text);
+              }
+              case 'bool':
+                arity(1);
+                if (args[0] === true || args[0] === false) return args[0];
+                if (typeof args[0] === 'number' && Number.isFinite(args[0])) return args[0] !== 0;
+                if (typeof args[0] === 'string' && /^(true|false)$/i.test(args[0])) return args[0].toLowerCase() === 'true';
+                fail('ARM bool value is not supported.');
+                break;
+              case 'equals':
+                arity(2);
+                if (args.some(a => a !== null && typeof a === 'object')) fail('ARM object equality is not supported.');
+                return typeof args[0] === 'string' && typeof args[1] === 'string'
+                  ? args[0].toLowerCase() === args[1].toLowerCase() : args[0] === args[1];
+              case 'not': arity(1); if (typeof args[0] !== 'boolean') fail('ARM not requires a boolean.'); return !args[0];
+              case 'resourcegroup': {
+                arity(0);
+                fail('ARM resourceGroup() deployment metadata is unavailable. A display label is not scope evidence; export resolved network values.');
+                break;
+              }
+              case 'subscription': {
+                arity(0);
+                const result = Object.create(null);
+                if (subscription) { result.subscriptionId = subscription; result.id = '/subscriptions/' + subscription; }
+                return result;
+              }
             }
-            case 'tolower': case 'toupper': {
-              arity(1);
-              const transform = text => name === 'tolower' ? text.toLowerCase() : text.toUpperCase();
-              const value = args[0];
-              return value instanceof ArmId
-                ? new ArmId(transform(value.path), transform(value.group), transform(value.subscription), value.level, value.local)
-                : transform(scalar(value));
-            }
-            case 'replace': {
-              arity(3);
-              const find = scalar(args[1]);
-              if (!find) fail('Empty ARM replace search strings are not supported.');
-              return combine(scalar(args[0]).split(find).flatMap((part, i) => i ? [scalar(args[2]), part] : [part]));
-            }
-            case 'split': {
-              arity(2);
-              const result = scalar(args[0]).split(scalar(args[1]));
-              if (result.length > MAX_RESOURCES) throw new ArmError('ARM split result exceeds 2,000 items.', true);
-              return result;
-            }
-            case 'join': arity(2); return combine(arrayValues(args[0]).flatMap((part, i) => i ? [scalar(args[1]), scalar(part)] : [scalar(part)]));
-            case 'first': case 'last': {
-              arity(1);
-              const value = args[0];
-              if (typeof value !== 'string' && !Array.isArray(value)) fail('ARM first/last requires an array or string.');
-              if (!value.length) fail('ARM first/last cannot select an empty value.');
-              const index = name === 'first' ? 0 : value.length - 1;
-              return typeof value === 'string' ? value[index] : member(value, index);
-            }
-            case 'array': arity(1); return Array.isArray(args[0]) ? args[0] : [args[0]];
-            case 'createarray': return args;
-            case 'string': arity(1); return args[0] instanceof ArmId ? args[0] : scalar(args[0]);
-            case 'int': {
-              arity(1);
-              const text = scalar(args[0]);
-              if (!/^-?\d+$/.test(text) || !Number.isSafeInteger(Number(text))) fail('ARM int requires a safe integer.');
-              return Number(text);
-            }
-            case 'bool':
-              arity(1);
-              if (args[0] === true || args[0] === false) return args[0];
-              if (typeof args[0] === 'number' && Number.isFinite(args[0])) return args[0] !== 0;
-              if (typeof args[0] === 'string' && /^(true|false)$/i.test(args[0])) return args[0].toLowerCase() === 'true';
-              fail('ARM bool value is not supported.');
-              break;
-            case 'equals':
-              arity(2);
-              if (args.some(a => a !== null && typeof a === 'object')) fail('ARM object equality is not supported.');
-              return typeof args[0] === 'string' && typeof args[1] === 'string'
-                ? args[0].toLowerCase() === args[1].toLowerCase() : args[0] === args[1];
-            case 'not': arity(1); if (typeof args[0] !== 'boolean') fail('ARM not requires a boolean.'); return !args[0];
-            case 'resourcegroup': {
-              arity(0);
-              fail('ARM resourceGroup() deployment metadata is unavailable. A display label is not scope evidence; export resolved network values.');
-              break;
-            }
-            case 'subscription': {
-              arity(0);
-              const result = Object.create(null);
-              if (subscription) { result.subscriptionId = subscription; result.id = '/subscriptions/' + subscription; }
-              return result;
-            }
-          }
-        } finally { evalDepth--; }
+          } finally { evalDepth--; }
+        }
+        return { template, groupName, subscription, raw: rawString, index, resolve, member, arrayValues };
       }
 
-      const context = record => record ? 'Resource ' + record.number + ' (' + record.type + ')' : 'Template';
+      const context = record => record ? (multiple ? 'Template ' + (record.document.index + 1) + ', ' : '')
+        + 'Resource ' + record.number + ' (' + record.type + ')' : 'Template';
       function optional(record, label, getValue) {
         try { return getValue(); }
         catch (error) {
@@ -464,7 +496,8 @@
           return missing;
         }
       }
-      function valueAt(object, path) {
+      function valueAt(record, object, path) {
+        const resolve = record.document.resolve;
         let value = resolve(object);
         for (const key of path.split('.')) {
           if (value === undefined || value === null) return undefined;
@@ -472,25 +505,25 @@
           if (ci(value, 'copy') !== undefined) fail('ARM property copy loops are not expanded. Export resolved network properties.');
           const raw = ci(value, key);
           if (raw === undefined) return undefined;
-          value = member(value, Object.keys(value).find(k => k.toLowerCase() === key.toLowerCase()));
+          value = record.document.member(value, Object.keys(value).find(k => k.toLowerCase() === key.toLowerCase()));
         }
         return value;
       }
-      const prop = (record, path) => optional(record, path, () => valueAt(ci(record.raw, 'properties') || {}, path));
+      const prop = (record, path) => optional(record, path, () => valueAt(record, ci(record.raw, 'properties') || {}, path));
       const configProp = (record, config, path) => optional(record, path, () => {
-        const resolved = resolve(config);
+        const resolved = record.document.resolve(config);
         if (!isObject(resolved)) fail('IP configuration must be an object.');
         const nested = ci(resolved, 'properties');
-        return valueAt(nested === undefined ? resolved : nested, path);
+        return valueAt(record, nested === undefined ? resolved : nested, path);
       });
       function list(record, label, value) {
         if (value === undefined || value === null || value === missing) return [];
-        const result = optional(record, label, () => arrayValues(value));
+        const result = optional(record, label, () => record.document.arrayValues(value));
         return result === missing ? [] : result;
       }
-      function collection(value) {
+      function collection(value, document) {
         if (Array.isArray(value)) return value;
-        if (isObject(value) && /^2(?:\.|$)/.test(String(ci(template, 'languageVersion') || ''))) return Object.values(value);
+        if (isObject(value) && /^2(?:\.|$)/.test(String(ci(document.template, 'languageVersion') || ''))) return Object.values(value);
         fail('ARM resources must be an array, or a languageVersion 2.0 resources object with explicit type and name properties.');
       }
       function parseId(value) {
@@ -514,6 +547,7 @@
         };
       }
       const identity = (type, name) => type.toLowerCase() + '|' + name.toLowerCase();
+      const localKey = (record, key = record.key) => record.document.index + '|' + key;
       const exactKey = id => id.level + '|' + id.subscription + '|' + id.group + '|' + identity(id.type, id.name);
       const addIndex = (index, key, record) => {
         if (!index.has(key)) index.set(key, []);
@@ -545,7 +579,8 @@
         }
         return JSON.stringify(result);
       }
-      function gather(raw, parent, embedded, inheritedReason) {
+      function gather(raw, parent, embedded, inheritedReason, document) {
+        const resolve = document.resolve;
         countResource();
         if (!embedded) resourceCount++;
         if (!isObject(raw)) fail('Every ARM resource declaration must be an object.');
@@ -554,7 +589,7 @@
         if (!type.includes('.') && parent) type = parent.typeRaw + '/' + type;
         const typeRaw = type;
         type = type.toLowerCase();
-        const record = { raw, type, typeRaw, number: allRecords.length + 1, embedded, parentRecord: parent, status: '', name: '', exact: null };
+        const record = { raw, type, typeRaw, document, number: allRecords.length + 1, embedded, parentRecord: parent, status: '', name: '', exact: null };
         allRecords.push(record);
         let reason = inheritedReason || '';
         if (ci(raw, 'copy') !== undefined) { reason = 'Skipped: copy loops are not expanded'; warn(context(record) + ': copy loop skipped; instances were not manufactured.'); }
@@ -603,14 +638,25 @@
               }
             } else warn(context(record) + ': explicit ID is invalid or disagrees with type/name; it is not used to prove scope.');
           }
+          if (multiple && record.exact && record.exact.group !== document.groupName.toLowerCase()) {
+            fail(context(record) + ': exported resource ID conflicts with the supplied resource group. Correct the scope before importing.');
+          }
+          if (multiple && document.subscription && document.groupName) {
+            const supplied = { type, name: name.toLowerCase(), subscription: document.subscription.toLowerCase(),
+              group: document.groupName.toLowerCase(), level: 'group', local: false };
+            if (record.exact && exactKey(record.exact) !== exactKey(supplied)) {
+              fail(context(record) + ': exported resource ID conflicts with the supplied resource group or subscription. Correct the scope before importing.');
+            }
+            record.exact ||= supplied;
+          }
           records.push(record);
         }
         const children = ci(raw, 'resources');
-        if (children !== undefined) for (const child of collection(children)) gather(child, record, false, reason);
+        if (children !== undefined) for (const child of collection(children, document)) gather(child, record, false, reason, document);
         if (type === 'microsoft.resources/deployments') {
           // Count embedded deployment declarations for the bound, without executing their scope.
           const nested = ci(ci(ci(raw, 'properties'), 'template'), 'resources');
-          if (nested !== undefined) for (const child of collection(nested)) gather(child, null, false, reason);
+          if (nested !== undefined) for (const child of collection(nested, document)) gather(child, null, false, reason, document);
         }
         const embeddedTypes = type === NETWORK + 'virtualnetworks' ? ['subnets', 'virtualNetworkPeerings']
           : type === NETWORK + 'networksecuritygroups' ? ['securityRules'] : type === NETWORK + 'routetables' ? ['routes'] : [];
@@ -619,41 +665,43 @@
           const childrenList = reason ? (Array.isArray(childrenValue) ? childrenValue : []) : list(record, childType, childrenValue);
           for (const child of childrenList) {
               if (!isObject(child)) fail(context(record) + ': embedded child resources must be objects.');
-              gather({ type: childType, name: ci(child, 'name'), id: ci(child, 'id'), properties: ci(child, 'properties') || {} }, record, true, reason);
+              gather({ type: childType, name: ci(child, 'name'), id: ci(child, 'id'), properties: ci(child, 'properties') || {} }, record, true, reason, document);
           }
         }
       }
       progress(25, 'resolve');
-      const roots = collection(template.resources);
-      for (let i = 0; i < roots.length; i++) {
-        gather(roots[i], null, false, '');
-        if (i % 32 === 0) progress(25 + Math.floor(20 * (i + 1) / Math.max(1, roots.length)), 'resolve');
+      for (const document of documents) {
+        const roots = collection(document.template.resources, document);
+        for (let i = 0; i < roots.length; i++) {
+          gather(roots[i], null, false, '', document);
+          if (i % 32 === 0) progress(25 + Math.floor(20 * (document.index + (i + 1) / Math.max(1, roots.length)) / documents.length), 'resolve');
+        }
       }
 
       const duplicates = new Map();
-      for (const record of records) addIndex(duplicates, record.key, record);
+      for (const record of records) addIndex(duplicates, localKey(record), record);
       const blockedExplicitKeys = new Set();
       const uncertainExplicitTypes = new Set();
-      const embeddedTypeSet = new Set(records.filter(r => r.embedded).map(r => r.type));
-      for (const record of allRecords.filter(r => !r.embedded && r.status === 'skipped' && embeddedTypeSet.has(r.type))) {
-        const name = optional(record, 'skipped declaration identity', () => resolve(ci(record.raw, 'name')));
+      const embeddedTypeSet = new Set(records.filter(r => r.embedded).map(r => localKey(r, r.type)));
+      for (const record of allRecords.filter(r => !r.embedded && r.status === 'skipped' && embeddedTypeSet.has(localKey(r, r.type)))) {
+        const name = optional(record, 'skipped declaration identity', () => record.document.resolve(ci(record.raw, 'name')));
         if (typeof name !== 'string' || name.startsWith('[')) {
-          uncertainExplicitTypes.add(record.type);
+          uncertainExplicitTypes.add(localKey(record, record.type));
           continue;
         }
         let fullName = name;
         if (record.parentRecord && name.split('/').length < record.type.split('/').length - 1) {
-          if (!record.parentRecord.name) { uncertainExplicitTypes.add(record.type); continue; }
+          if (!record.parentRecord.name) { uncertainExplicitTypes.add(localKey(record, record.type)); continue; }
           fullName = record.parentRecord.name + '/' + name;
         }
-        blockedExplicitKeys.add(identity(record.type, fullName));
+        blockedExplicitKeys.add(localKey(record, identity(record.type, fullName)));
       }
       const active = [];
       for (const entries of duplicates.values()) {
         const explicit = entries.filter(r => !r.embedded);
         const embedded = entries.filter(r => r.embedded);
         if (embedded.length) {
-          if (!explicit.length && (blockedExplicitKeys.has(entries[0].key) || uncertainExplicitTypes.has(entries[0].type))) {
+          if (!explicit.length && (blockedExplicitKeys.has(localKey(entries[0])) || uncertainExplicitTypes.has(localKey(entries[0], entries[0].type)))) {
             for (const record of embedded) {
               record.status = 'skipped';
               summarize(record.type, 'Embedded definition suppressed by a skipped or unresolved explicit declaration');
@@ -675,8 +723,11 @@
         } else active.push(...explicit);
       }
       for (const record of active) {
-        addIndex(indexes, record.key, record);
+        addIndex(indexes, localKey(record), record);
         if (record.exact) addIndex(exactIds, exactKey(record.exact), record);
+      }
+      if (multiple) for (const entries of exactIds.values()) {
+        if (entries.length > 1) fail(context(entries[0]) + ': duplicate full resource IDs. Remove the overlapping export or declaration before importing.');
       }
       for (const entries of indexes.values()) if (entries.length > 1) warn(context(entries[0]) + ': duplicate type/name declarations are ambiguous; unscoped references will not select an arbitrary resource.');
 
@@ -684,7 +735,11 @@
         if (!parsed) { warn(context(record) + ': ' + label + ' is not a supported resource ID; no relationship was inferred.'); return null; }
         let candidates = [];
         if (!parsed.local && parsed.subscription) candidates = exactIds.get(exactKey(parsed)) || [];
-        if (!candidates.length && parsed.local) candidates = indexes.get(identity(parsed.type, parsed.name)) || [];
+        if (!candidates.length && parsed.local) candidates = indexes.get(localKey(record, identity(parsed.type, parsed.name))) || [];
+        if (!candidates.length && multiple && !parsed.local && parsed.group && !parsed.subscription
+          && record.document.subscription) {
+          candidates = exactIds.get(exactKey({ ...parsed, subscription: record.document.subscription.toLowerCase() })) || [];
+        }
         if (candidates.length !== 1) {
           warn(context(record) + ': ' + label + (candidates.length > 1 ? ' is ambiguous' : ' is external, absent, skipped, or its scope is unproved') + '; no relationship was inferred.');
           return null;
@@ -788,7 +843,7 @@
       for (const record of active.filter(r => types.get(r.type) === 'vm')) {
         const nics = [];
         for (const item of list(record, 'network interfaces', prop(record, 'networkProfile.networkInterfaces'))) {
-          const id = optional(record, 'network interface ID', () => valueAt(item, 'id'));
+          const id = optional(record, 'network interface ID', () => valueAt(record, item, 'id'));
           const nic = reference(record, id, 'network interface', [NETWORK + 'networkinterfaces']);
           if (nic && !nics.includes(nic)) {
             nics.push(nic);
@@ -799,29 +854,29 @@
         nicsByVm.set(record, nics);
       }
       const now = new Date().toISOString();
-      // A Portal export omits its own scope, but any reference to a resource
-      // outside the exported group is written as a literal ID, so the
-      // subscription is frequently present in the file. It is read from the
-      // text, never invented, and is used only for the display IDs below -
-      // reference resolution and topology still use options.subscriptionId
-      // alone, so a discovered value cannot change the diagram.
-      const referenced = new Set();
-      for (const match of rawString.matchAll(/\/subscriptions\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\//gi)) {
-        referenced.add(match[1].toLowerCase());
+      // Reference scopes are not proof of the exporting group's subscription.
+      // Discovery supplies display metadata only, never a cross-template match.
+      for (const document of documents) {
+        const { subscription, groupName } = document;
+        const referenced = new Set();
+        for (const match of document.raw.matchAll(/\/subscriptions\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\//gi)) {
+          referenced.add(match[1].toLowerCase());
+        }
+        document.discovered = referenced.size === 1 ? [...referenced][0] : '';
+        if (subscription && document.discovered && document.discovered !== subscription.toLowerCase()) {
+          warn('Template ' + (document.index + 1) + ': the supplied subscription differs from a referenced subscription. References can point outside the exported group; confirm the supplied scope.');
+        }
+        if (!subscription && referenced.size > 1) {
+          warn('Template ' + (document.index + 1) + ': multiple subscriptions are referenced; displayed IDs keep the {subscriptionId} placeholder.');
+        }
+        document.scopeOrigin = subscription ? 'supplied' : document.discovered ? 'discovered' : 'unknown';
+        document.idScope = '/subscriptions/' + (subscription || document.discovered || '{subscriptionId}')
+          + '/resourceGroups/' + (groupName || '{resourceGroupName}');
+        document.rg = { id: document.index ? 'arm-rg-' + (document.index + 1) : 'arm-rg', type: 'group-rg',
+          position: { x: 0, y: 0 }, data: { name: groupName || 'Imported resources', fields: {},
+            armId: document.idScope, armOrigin: 'derived', armScope: document.scopeOrigin } };
+        nodeById.set(document.rg.id, document.rg);
       }
-      const discovered = referenced.size === 1 ? [...referenced][0] : '';
-      if (subscription && discovered && discovered !== subscription.toLowerCase()) {
-        warn('The supplied subscription ID differs from the one referenced in the template; the supplied value is used for resource IDs.');
-      }
-      if (!subscription && referenced.size > 1) {
-        warn('The template references ' + referenced.size + ' subscriptions, so none is assumed. Resource IDs keep the {subscriptionId} placeholder.');
-      }
-      const scopeOrigin = subscription ? 'supplied' : discovered ? 'discovered' : 'unknown';
-      // Display-only Azure resource IDs. The scope comes from what the operator
-      // typed or from a literal reference in the file; it is never guessed, so
-      // an unresolved scope stays a visible placeholder.
-      const idScope = '/subscriptions/' + (subscription || discovered || '{subscriptionId}')
-        + '/resourceGroups/' + (groupName || '{resourceGroupName}');
       const armPath = (record) => {
         const kinds = String(record.typeRaw || record.type).split('/');
         const names = String(record.name || '').split('/');
@@ -832,8 +887,6 @@
         for (let index = 0; index < kinds.length; index++) path += '/' + kinds[index] + '/' + names[index];
         return path;
       };
-      const rg = { id: 'arm-rg', type: 'group-rg', position: { x: 0, y: 0 }, data: { name: groupName || 'Imported resources', fields: {}, armId: idScope, armOrigin: 'derived', armScope: scopeOrigin } };
-      nodeById.set(rg.id, rg);
       for (const record of active) {
         let slug = types.get(record.type);
         if (slug === 'nic' && nicOwners.get(record)?.size === 1) continue;
@@ -855,12 +908,12 @@
           if (typeof gatewayType === 'string' && gatewayType.toLowerCase() === 'expressroute') slug = 'er-gw';
           else if (typeof gatewayType !== 'string' || gatewayType.toLowerCase() !== 'vpn') typeLabels.set(record.type, 'VNet gateway');
         }
-        const node = { id: 'arm-' + record.number, type: slug, parent: rg.id, position: { x: 0, y: 0 },
+        const node = { id: 'arm-' + record.number, type: slug, parent: record.document.rg.id, position: { x: 0, y: 0 },
           data: { name: record.name.split('/').at(-1), fields: {} } };
         const typeLabel = typeLabels.get(record.type) || (slug === 'custom' ? record.type.split('/').at(-1).slice(0, 40) : '');
         if (typeLabel) node.data.typeLabel = typeLabel;
         if (record.sourceId) { node.data.armId = record.sourceId; node.data.armOrigin = 'template'; }
-        else { const path = armPath(record); if (path) { node.data.armId = idScope + path; node.data.armOrigin = 'derived'; } }
+        else { const path = armPath(record); if (path) { node.data.armId = record.document.idScope + path; node.data.armOrigin = 'derived'; } }
         nodeByRecord.set(record, node);
         nodeById.set(node.id, node);
         if (record.sourceId) sourceByNode.set(node.id, record.sourceId);
@@ -1036,7 +1089,7 @@
           if (publicIp !== undefined) attachPip(record, publicIp);
           if (record.type === NETWORK + 'networkinterfaces') {
             for (const membership of list(record, 'application security groups', configProp(record, config, 'applicationSecurityGroups'))) {
-              const target = reference(record, optional(record, 'ASG ID', () => valueAt(membership, 'id')), 'ASG', [NETWORK + 'applicationsecuritygroups']);
+              const target = reference(record, optional(record, 'ASG ID', () => valueAt(record, membership, 'id')), 'ASG', [NETWORK + 'applicationsecuritygroups']);
               if (target) support(record, target, 'ASG', 'IP configuration membership on NIC ' + record.name);
             }
           }
@@ -1045,7 +1098,7 @@
             ['loadBalancerBackendAddressPools', NETWORK + 'loadbalancers/backendaddresspools'],
           ]) {
             for (const pool of list(record, path, configProp(record, config, path))) {
-              const id = optional(record, path, () => valueAt(pool, 'id'));
+              const id = optional(record, path, () => valueAt(record, pool, 'id'));
               const gateway = reference(record, id, 'backend pool', [expected], true);
               if (gateway) for (const owner of ownerNodes(record)) edge(nodeByRecord.get(gateway), owner, 'backend', 'Backend');
             }
@@ -1110,7 +1163,7 @@
           attachSubnet(record, prop(record, 'subnet.id'));
           configurations(record, list(record, 'IP configurations', prop(record, 'ipConfigurations')), false);
           for (const config of list(record, 'custom DNS configuration', prop(record, 'customDnsConfigs'))) {
-            const ips = optional(record, 'custom DNS IP addresses', () => valueAt(config, 'ipAddresses'));
+            const ips = optional(record, 'custom DNS IP addresses', () => valueAt(record, config, 'ipAddresses'));
             for (const ip of list(record, 'custom DNS IP addresses', ips)) address(record, ip, privateIPs);
           }
           for (const target of privateLinkTargets.get(record) || []) {
@@ -1120,7 +1173,8 @@
           }
         } else if (type === NETWORK + 'dnsresolvers') {
           const vnet = reference(record, prop(record, 'virtualNetwork.id'), 'resolver VNet', [NETWORK + 'virtualnetworks']);
-          if (vnet) node.parent = nodeByRecord.get(vnet).id;
+          if (vnet && vnet.document === record.document) node.parent = nodeByRecord.get(vnet).id;
+          else if (vnet) edge(node, nodeByRecord.get(vnet), 'link', 'Resolver VNet');
         } else if (type === NETWORK + 'dnsresolvers/inboundendpoints' || type === NETWORK + 'dnsresolvers/outboundendpoints') {
           const resolver = parentOf(record, NETWORK + 'dnsresolvers');
           if (resolver) edge(nodeByRecord.get(resolver), node, 'dns', type.endsWith('/inboundendpoints') ? 'Inbound' : 'Outbound');
@@ -1131,7 +1185,7 @@
           if (!configs.length && directSubnet === undefined) warn(context(record) + ': DNS endpoint subnet was not exported.');
         } else if (type === NETWORK + 'dnsforwardingrulesets') {
           for (const endpoint of list(record, 'outbound endpoints', prop(record, 'dnsResolverOutboundEndpoints'))) {
-            const target = reference(record, optional(record, 'outbound endpoint ID', () => valueAt(endpoint, 'id')), 'DNS outbound endpoint', [NETWORK + 'dnsresolvers/outboundendpoints']);
+            const target = reference(record, optional(record, 'outbound endpoint ID', () => valueAt(record, endpoint, 'id')), 'DNS outbound endpoint', [NETWORK + 'dnsresolvers/outboundendpoints']);
             if (target) support(target, record, 'DNS forwarding ruleset');
           }
         } else if (['firewall', 'bastion', 'vpn-gw', 'er-gw', 'private-link-service'].includes(node.type)) {
@@ -1142,10 +1196,10 @@
           configurations(record, list(record, 'frontend IP configurations', prop(record, 'frontendIPConfigurations')), false);
         } else if (node.type === 'nat') {
           for (const pip of list(record, 'public IP addresses', prop(record, 'publicIpAddresses'))) {
-            attachPip(record, optional(record, 'public IP ID', () => valueAt(pip, 'id')));
+            attachPip(record, optional(record, 'public IP ID', () => valueAt(record, pip, 'id')));
           }
           for (const prefix of list(record, 'public IP prefixes', prop(record, 'publicIpPrefixes'))) {
-            const target = reference(record, optional(record, 'public IP prefix ID', () => valueAt(prefix, 'id')), 'public IP prefix', [NETWORK + 'publicipprefixes']);
+            const target = reference(record, optional(record, 'public IP prefix ID', () => valueAt(record, prefix, 'id')), 'public IP prefix', [NETWORK + 'publicipprefixes']);
             if (target) {
               const cidr = prop(target, 'ipPrefix');
               address(target, cidr, cidrs, true);
@@ -1173,10 +1227,11 @@
         const node = nodeById.get(nodeId);
         const entries = [...subnets];
         const vnets = new Set(entries.map(subnet => vnetOfSubnet.get(subnet)));
-        if (!incompleteSubnet.has(nodeId) && entries.length === 1) node.parent = nodeByRecord.get(entries[0]).id;
+        const sameGroup = entries.every(subnet => subnet.document.rg.id === node.parent);
+        if (!incompleteSubnet.has(nodeId) && entries.length === 1 && sameGroup) node.parent = nodeByRecord.get(entries[0]).id;
         else {
-          if (!incompleteSubnet.has(nodeId) && vnets.size === 1 && !vnets.has(undefined)) node.parent = nodeByRecord.get([...vnets][0]).id;
-          warn(context(attachmentRecords.get(nodeId)) + ': multiple or unresolved subnet attachments; no single-subnet placement was asserted.');
+          if (!incompleteSubnet.has(nodeId) && sameGroup && vnets.size === 1 && !vnets.has(undefined)) node.parent = nodeByRecord.get([...vnets][0]).id;
+          warn(context(attachmentRecords.get(nodeId)) + ': multiple, cross-group, or unresolved subnet attachments; no single-subnet placement was asserted.');
           for (const subnet of subnets) edge(node, nodeByRecord.get(subnet), 'link', 'Subnet');
         }
       }
@@ -1189,7 +1244,7 @@
         const endpointVnet = nodeVnet(endpointNode);
         if (resolverVnet && endpointVnet && resolverVnet !== endpointVnet) {
           warn(context(record) + ': endpoint subnet disagrees with the resolver VNet; the exported subnet is shown without asserting a valid deployment.');
-        } else if (resolverVnet && !endpointVnet && !subnetSets.has(endpointNode.id)) {
+        } else if (resolverVnet && !endpointVnet && !subnetSets.has(endpointNode.id) && resolver.document === record.document) {
           endpointNode.parent = resolverVnet;
         }
       }
@@ -1478,13 +1533,13 @@
         if (own && own.id === 'arm-' + record.number && nodeById.has(own.id)) continue;
         if (record.embedded) continue;
         const path = armPath(record);
-        const resourceId = record.sourceId || (path ? idScope + path : '');
+        const resourceId = record.sourceId || (path ? record.document.idScope + path : '');
         if (!resourceId) continue;
         const owners = new Set(supportOwners.get(record) || []);
         if (own) owners.add(own.id);
         for (const node of ownerNodes(record)) owners.add(node.id);
         const hosts = [...owners].filter(id => nodeById.has(id));
-        if (!hosts.length) hosts.push(rg.id);
+        if (!hosts.length) hosts.push(record.document.rg.id);
         const entry = { t: record.typeRaw || record.type, i: resourceId,
           o: record.sourceId ? 'template' : 'derived' };
         for (const hostId of hosts) {
@@ -1498,6 +1553,10 @@
       }
       const diagram = { version: 1, meta: { title, createdUtc: now, updatedUtc: now }, nodes: ordered, edges, annotations: [] };
       const report = { resourceCount, nodeCount: ordered.length, edgeCount: edges.length,
+        templates: documents.map(document => ({ number: document.index + 1, resourceGroupName: document.groupName,
+          resourceCount: allRecords.filter(record => record.document === document && !record.embedded).length,
+          warnings: [...warnings].filter(warning => warning.startsWith('Template ' + (document.index + 1) + ':')
+            || warning.startsWith('Template ' + (document.index + 1) + ', ')) })),
         summarized: [...summaries.values()], warnings: [...warnings], parameterDefaultsUsed };
       const accounting = new Map();
       for (const record of allRecords.filter(r => !r.embedded)) accounting.set(record.status, (accounting.get(record.status) || 0) + 1);
@@ -1512,25 +1571,28 @@
         'This layout shows declared topology, not a verified traffic path. No source/destination or packet path was supplied or invented. Links represent only exported references, not measured reachability.',
         'NSG/ASG membership, route tables, policies and DNS configuration appear as short owner comments and fuller Notes, never as traffic arrows. UDR comments show explicitly configured destination/next hop, not effective routes or a routing decision.',
         'Resource count includes explicit declarations (including nested resources); embedded VNet subnets/peerings, NSG rules and routes are also bounded and normalized. Duplicate embedded declarations merge into explicit declarations.',
-        groupName ? 'The resource group label is supplied by the importer for display only.' : 'No resource group was supplied. The group is explicitly labeled Imported resources; no group is inferred from references.',
-        'Resource group labels never establish deployment scope, even alongside options.subscriptionId. Scoped references match only exact exported resource IDs. Unknown external scopes never alias local type/name identities.',
+        multiple ? 'Each template has isolated parameters, variables and local resource names. Cross-group references require an exact exported ID or both resource group and subscription explicitly supplied for that template. These are operator-supplied scopes, not verified live Azure inventory.'
+          : 'The resource group label is supplied by the importer for display only. Scoped references match only exact exported resource IDs.',
+        'Unknown external scopes never alias local type/name identities. Subscription IDs discovered in references are display-only and never establish cross-template scope.',
         'Optional options.subscriptionId supplies explicit subscription metadata for subscription() and subscriptionResourceId(); no subscription metadata is inferred. resourceGroup() is unresolved because display labels are not deployment metadata.',
-        scopeOrigin === 'supplied'
+        ...documents.map(({ index, scopeOrigin, discovered }) => 'Template ' + (index + 1) + ': ' + (scopeOrigin === 'supplied'
           ? 'Displayed resource IDs use the subscription supplied at import.'
           : scopeOrigin === 'discovered'
             ? 'Displayed resource IDs use subscription ' + discovered + ', read from a literal resource reference in this template rather than supplied. Confirm it is the subscription that hosts this resource group. Reference resolution did not use it.'
-            : 'No subscription was supplied, and none could be read from the template, so displayed resource IDs keep the {subscriptionId} placeholder.',
+            : 'No subscription was supplied, and none could be read from the template, so displayed resource IDs keep the {subscriptionId} placeholder.')),
         'Attached NIC/public-IP details are folded into every explicit endpoint owner. Shared declarations do not prove valid attachment or placement. Unattached supporting configuration, unrelated services and unreferenced remote gateway configuration stay in Notes without guessed owners.',
         'Only referenced remote VPN endpoints remain as cards; they are not equated with Azure gateways by name or address. Connection names label declared tunnels, not live tunnel health.',
         'Owner comments have at most three lines of at most 100 characters, prioritizing routing/security and showing an overflow count. Full names and configured IPs/prefixes remain in Notes. Address fields are limited to two complete IP/CIDR values per card.',
         'IP-only backends require an exact unique address in the gateway VNet, or an explicitly supplied backend VNet. Cross-VNet reachability, DNS names and live health are not inferred. DependsOn is not connectivity.',
         'Notes-only NIC declarations still participate in duplicate-IP checks; they never become inferred workload endpoints.',
         'Copy loops, runtime functions and linked/nested deployment scopes are not evaluated. Unknown conditions do not assert deployment. Child service, DNS record, security-rule and backup configuration is summarized instead of drawn.',
-        'Limits: 10 MiB JSON; 2,000 resources including embedded declarations; 300 rendered nodes including groups after support-node removal and NIC/public-IP folding; 12,000 owner-detail entries; JSON/resolution depth 64; expressions 16,384 characters / 4,096 tokens; 500,000 processing steps.',
+        'Limits across the complete import: 10 templates; 10 MiB JSON; 2,000 resources including embedded declarations; 300 rendered nodes including groups after support-node removal and NIC/public-IP folding; 12,000 owner-detail entries; JSON/resolution depth 64; expressions 16,384 characters / 4,096 tokens; 500,000 processing steps.',
         '',
         '## Import totals',
         'Explicit resources: ' + resourceCount + '; nodes: ' + ordered.length + '; edges: ' + edges.length + '.',
         'Explicit declaration accounting: ' + [...accounting].map(([status, count]) => status + ' ' + count).join('; ') + '.',
+        ...report.templates.map(item => 'Template ' + item.number + ': ' + markdownText(item.resourceGroupName || 'Imported resources')
+          + '; explicit resources: ' + item.resourceCount + '; scoped warnings: ' + item.warnings.length + '.'),
         '',
         '## Summarized or mapped resources',
         ...report.summarized.map(item => '- ' + markdownText(item.type) + ': ' + item.count + ' - ' + markdownText(item.reason) + '.'),
@@ -1551,6 +1613,7 @@
         ...(notesDetails.length ? ['', '## Additional exported addressing', ...notesDetails.map(markdownText)] : []),
       ].join('\n');
       report.notes = notes;
+      if (multiple) diagram.notes = notes;
       progress(85, 'topology');
       const nodeSources = ordered.filter(node => sourceByNode.has(node.id))
         .map(node => ({ nodeId: node.id, resourceId: sourceByNode.get(node.id) }));

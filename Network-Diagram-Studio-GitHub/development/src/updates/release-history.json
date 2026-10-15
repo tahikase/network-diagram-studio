@@ -1,5 +1,41 @@
 [
   {
+    "version": "0.9.139",
+    "date": "2026-10-15",
+    "category": "Usability",
+    "title": "Less text in Import ARM, with Steps kept visible.",
+    "description": "A simpler layout keeps template files and resource-group fields in focus, with detailed guidance in expandable Help & limits.",
+    "before": {
+      "file": "0.9.139-before.png",
+      "version": "0.9.138",
+      "caption": "Instructions and import guidance filled the default view"
+    },
+    "after": {
+      "file": "0.9.139-after.png",
+      "version": "0.9.139",
+      "caption": "Visible Steps, concise controls and expandable help"
+    },
+    "note": "Help & limits includes file selection, cross-group matching and combined import limits. Processing remains local."
+  },
+  {
+    "version": "0.9.138",
+    "date": "2026-10-14",
+    "category": "New feature",
+    "title": "Import multiple resource groups into one diagram.",
+    "description": "Add several ARM templates, set each file's resource group and optional subscription, then import them together.",
+    "before": {
+      "file": "0.9.138-before.png",
+      "version": "0.9.137",
+      "caption": "One resource-group template per import"
+    },
+    "after": {
+      "file": "0.9.138-after.png",
+      "version": "0.9.138",
+      "caption": "Multiple templates with per-file group settings"
+    },
+    "note": "Processing stays local. Cross-group connections require matching resource references; unresolved references are recorded in Notes."
+  },
+  {
     "version": "0.9.135",
     "date": "2026-10-12",
     "category": "Usability",

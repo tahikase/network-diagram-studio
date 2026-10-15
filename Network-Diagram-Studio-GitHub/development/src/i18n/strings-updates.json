@@ -1,4 +1,94 @@
 {
+  "Less text in Import ARM, with Steps kept visible.": {
+    "ja": "Import ARM の文字を減らし、手順を常に表示します。",
+    "zh": "ARM 导入中的文字更少，步骤始终可见。",
+    "es": "Menos texto en Importar ARM, con los pasos siempre visibles.",
+    "pt": "Menos texto em Importar ARM, com as etapas sempre visíveis.",
+    "fr": "Moins de texte dans Importer ARM, avec les étapes toujours visibles.",
+    "de": "Weniger Text beim ARM-Import, die Schritte bleiben sichtbar.",
+    "ko": "ARM 가져오기의 텍스트를 줄이고 단계를 항상 표시합니다."
+  },
+  "A simpler layout keeps template files and resource-group fields in focus, with detailed guidance in expandable Help & limits.": {
+    "ja": "ファイルとリソースグループの入力欄が見やすいシンプルなレイアウトにし、詳しい説明を展開式の「ヘルプと上限」にまとめました。",
+    "zh": "更简洁的布局突出模板文件和资源组字段，详细说明放在可展开的“帮助与限制”中。",
+    "es": "Un diseño más sencillo destaca los archivos y los campos de grupo, con instrucciones detalladas en la sección desplegable Ayuda y límites.",
+    "pt": "Um layout mais simples destaca os arquivos e os campos de grupo, com orientações detalhadas na seção expansível Ajuda e limites.",
+    "fr": "Une présentation simplifiée met en avant les fichiers et les champs de groupe, avec les instructions détaillées dans la section dépliable Aide et limites.",
+    "de": "Ein einfacheres Layout rückt Dateien und Gruppenfelder in den Fokus. Ausführliche Hinweise stehen im aufklappbaren Bereich Hilfe und Limits.",
+    "ko": "간단한 레이아웃으로 파일과 리소스 그룹 필드를 강조하고 자세한 안내는 펼칠 수 있는 도움말 및 제한에 모았습니다."
+  },
+  "Instructions and import guidance filled the default view": {
+    "ja": "通常の画面に説明やインポートの注意事項を表示",
+    "zh": "默认视图中显示大量说明和导入指导",
+    "es": "Las instrucciones y la ayuda ocupaban la vista inicial",
+    "pt": "As instruções e orientações ocupavam a visualização inicial",
+    "fr": "Les instructions et les conseils occupaient la vue initiale",
+    "de": "Anleitungen und Importhinweise füllten die Standardansicht",
+    "ko": "기본 화면에 표시되던 많은 설명과 가져오기 안내"
+  },
+  "Visible Steps, concise controls and expandable help": {
+    "ja": "常に見える手順、簡潔な操作項目、展開式のヘルプ",
+    "zh": "可见的步骤、简洁的控件和可展开的帮助",
+    "es": "Pasos visibles, controles concisos y ayuda desplegable",
+    "pt": "Etapas visíveis, controles concisos e ajuda expansível",
+    "fr": "Étapes visibles, commandes concises et aide dépliable",
+    "de": "Sichtbare Schritte, knappe Bedienelemente und aufklappbare Hilfe",
+    "ko": "항상 보이는 단계, 간결한 컨트롤, 펼칠 수 있는 도움말"
+  },
+  "Help & limits includes file selection, cross-group matching and combined import limits. Processing remains local.": {
+    "ja": "「ヘルプと上限」には、ファイルの選択、グループ間の照合、インポート全体の上限を記載しています。処理は引き続きローカルで行います。",
+    "zh": "“帮助与限制”包括文件选择、跨组匹配和整个导入的限制。处理仍在本地进行。",
+    "es": "Ayuda y límites incluye la selección de archivos, las referencias entre grupos y los límites de toda la importación. El procesamiento sigue siendo local.",
+    "pt": "Ajuda e limites inclui seleção de arquivos, referências entre grupos e limites de toda a importação. O processamento continua local.",
+    "fr": "Aide et limites couvre la sélection des fichiers, les références entre groupes et les limites de l’import complet. Le traitement reste local.",
+    "de": "Hilfe und Limits erläutert Dateiauswahl, gruppenübergreifende Zuordnung und Gesamtlimits des Imports. Die Verarbeitung bleibt lokal.",
+    "ko": "도움말 및 제한에는 파일 선택, 그룹 간 일치 확인, 전체 가져오기 제한이 포함됩니다. 처리는 계속 로컬에서 수행됩니다."
+  },
+  "Import multiple resource groups into one diagram.": {
+    "ja": "複数のリソースグループを 1 つの図にインポートできます。",
+    "zh": "将多个资源组导入一个图表。",
+    "es": "Importa varios grupos de recursos en un solo diagrama.",
+    "pt": "Importe vários grupos de recursos em um único diagrama.",
+    "fr": "Importez plusieurs groupes de ressources dans un seul diagramme.",
+    "de": "Mehrere Ressourcengruppen in ein Diagramm importieren.",
+    "ko": "여러 리소스 그룹을 하나의 다이어그램으로 가져오세요."
+  },
+  "Add several ARM templates, set each file's resource group and optional subscription, then import them together.": {
+    "ja": "複数の ARM テンプレートを追加し、ファイルごとにリソースグループと任意のサブスクリプションを設定して、まとめてインポートできます。",
+    "zh": "添加多个 ARM 模板，为每个文件设置资源组和可选的订阅，然后一起导入。",
+    "es": "Añade varias plantillas ARM, indica el grupo y la suscripción opcional de cada archivo e impórtalas juntas.",
+    "pt": "Adicione vários modelos ARM, defina o grupo e a assinatura opcional de cada arquivo e importe todos juntos.",
+    "fr": "Ajoutez plusieurs modèles ARM, renseignez le groupe et l’abonnement facultatif de chaque fichier, puis importez-les ensemble.",
+    "de": "Fügen Sie mehrere ARM-Vorlagen hinzu, geben Sie je Datei die Gruppe und optional das Abonnement an und importieren Sie sie gemeinsam.",
+    "ko": "여러 ARM 템플릿을 추가하고 파일별 리소스 그룹과 선택 사항인 구독을 설정한 뒤 함께 가져오세요."
+  },
+  "One resource-group template per import": {
+    "ja": "1 回のインポートで 1 つのリソースグループ",
+    "zh": "每次导入一个资源组模板",
+    "es": "Una plantilla de grupo de recursos por importación",
+    "pt": "Um modelo de grupo de recursos por importação",
+    "fr": "Un modèle de groupe de ressources par import",
+    "de": "Eine Ressourcengruppenvorlage pro Import",
+    "ko": "가져오기당 하나의 리소스 그룹 템플릿"
+  },
+  "Multiple templates with per-file group settings": {
+    "ja": "複数のテンプレートに、ファイルごとのグループ設定",
+    "zh": "多个模板，各自具有资源组设置",
+    "es": "Varias plantillas con ajustes de grupo por archivo",
+    "pt": "Vários modelos com configurações de grupo por arquivo",
+    "fr": "Plusieurs modèles avec un groupe configuré par fichier",
+    "de": "Mehrere Vorlagen mit eigenen Gruppeneinstellungen",
+    "ko": "파일별 그룹 설정이 있는 여러 템플릿"
+  },
+  "Processing stays local. Cross-group connections require matching resource references; unresolved references are recorded in Notes.": {
+    "ja": "処理はローカルで行います。グループ間の接続には一致するリソース参照が必要です。解決できない参照は Notes に記録します。",
+    "zh": "仍在本地处理。跨组连接需要匹配的资源引用；无法解析的引用会记录在 Notes 中。",
+    "es": "El procesamiento sigue siendo local. Las conexiones entre grupos requieren referencias coincidentes; las no resueltas se registran en Notes.",
+    "pt": "O processamento continua local. Conexões entre grupos exigem referências correspondentes; referências não resolvidas ficam em Notes.",
+    "fr": "Le traitement reste local. Les connexions entre groupes exigent des références concordantes ; les références non résolues figurent dans Notes.",
+    "de": "Die Verarbeitung bleibt lokal. Gruppenübergreifende Verbindungen erfordern passende Ressourcenverweise; ungelöste Verweise stehen in Notes.",
+    "ko": "처리는 로컬에서 수행됩니다. 그룹 간 연결에는 일치하는 리소스 참조가 필요하며, 해결되지 않은 참조는 Notes에 기록됩니다."
+  },
   "A clearer template chooser in Import ARM.": {
     "ja": "Import ARM のテンプレート選択がわかりやすくなりました。",
     "zh": "ARM 导入中的模板选择更清晰。",

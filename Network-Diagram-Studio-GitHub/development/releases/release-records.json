@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.9.139",
+    "date": "2026-10-15",
+    "kind": "ui",
+    "userImpact": "A simpler ARM import dialog keeps the export Steps visible and the file and scope controls easy to scan. Repeated headings and explanatory paragraphs move out of the default view; expandable Help & limits retains file guidance, cross-group matching details and the combined limits. Import behavior remains local and unchanged."
+  },
+  {
+    "version": "0.9.138",
+    "date": "2026-10-14",
+    "kind": "functionality",
+    "userImpact": "Import several resource-group ARM exports into one editable diagram with separate group containers. Each file has its own group and optional subscription, can be changed or removed, and retains isolated parameters and local identities. Exact scoped references can connect imported groups; validation and cancellation preserve existing work. Processing remains local."
+  },
+  {
     "version": "0.9.137",
     "date": "2026-10-13",
     "kind": "internal",

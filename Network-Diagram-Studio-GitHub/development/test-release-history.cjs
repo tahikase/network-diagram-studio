@@ -85,8 +85,17 @@ async function main() {
     rejected(() => { const changed = structuredClone(dictionary); delete changed[entries[0].title].ja; json(dictionaryFile, changed); }, /seven non-English/);
     rejected(() => { const changed = structuredClone(dictionary); changed['Release {position} of {count}'].ja = '{position}'; json(dictionaryFile, changed); }, /placeholder mismatch/);
     rejected(() => json(manifestFile, entries.slice(0, -1)), /needs a complete public history entry/);
-    rejected(() => { const changed = structuredClone(entries); changed[1].note = changed[0].note; json(manifestFile, changed); }, /previously sealed.*changed/);
-    rejected(() => { const file = [...images.keys()][2], bytes = Buffer.from(images.get(file)); bytes[bytes.length - 1] ^= 1; write(file, bytes); }, /previously sealed.*changed/);
+    const sealedEntry = entries.slice(1).find(entry => !ledger.find(record => record.version === entry.version)?.correctedIn);
+    assert(sealedEntry, 'Fixture includes an uncorrected published product update');
+    rejected(() => {
+      const changed = structuredClone(entries);
+      changed.find(entry => entry.version === sealedEntry.version).note = entries.find(entry => entry.note !== sealedEntry.note).note;
+      json(manifestFile, changed);
+    }, /previously sealed.*changed/);
+    rejected(() => {
+      const file = path.join(root, 'src', 'updates', 'release-images', sealedEntry.before.file);
+      const bytes = Buffer.from(images.get(file)); bytes[bytes.length - 1] ^= 1; write(file, bytes);
+    }, /previously sealed.*changed/);
     rejected(() => write(path.join(root, 'src', 'component.ts'), 'export const appearance = "candidate edit";'), /changed after sealing/);
     assert.equal(sealReleaseHistory(root).version, appVersion, 'unpublished candidates can be reviewed and re-sealed');
     rejected(() => write(path.join(root, 'package', 'production_editor', 'example.js'), 'changed runtime asset'), /changed after sealing/);
@@ -182,7 +191,7 @@ async function main() {
       const archive = path.join(root, 'releases', 'archive', corrected.version);
       rejected(() => {
         const changed = structuredClone(entries);
-        changed.find(item => item.version === corrected.version).note = entries[1].note;
+        changed.find(item => item.version === corrected.version).note = entries.find(item => item.note !== entry.note).note;
         json(manifestFile, changed);
       }, /previously published correction.*changed/, sealReleaseHistory);
       rejected(() => {

@@ -94,14 +94,24 @@ existing Enter behavior.
 
 ## ARM import help
 
-Import ARM opens a compact, single-column instructions dialog. Step 5 reads
-`template.json` in every language. Only Choose template.json opens the native
-file picker; cancelling file selection leaves the instructions open.
-A highlighted selection panel provides
-a larger Choose template.json button, folder icon, localized guidance and
-an announced filename status. It supports all eight languages, narrow screens
-and both themes. The ARM demo and its packaged media have been removed at the
-user's request; the import engine and the other dialog text are unchanged.
+Import ARM accepts one or several resource-group exports into one new diagram,
+with separate resource-group containers. Each template card has its own required
+group name, optional subscription GUID and Change/Remove controls. Add another
+template preserves existing selections and values. Only explicit file-selection
+buttons open the native picker; cancellation keeps the dialog and selections.
+Export Steps stay visible above the template cards. Detailed file and connection
+guidance and the combined import limits are in expandable Help & limits. Concise
+controls and a local-processing footer support all eight languages, narrow screens
+and both themes. Processing stays local; no deployment occurs.
+
+Parameters, variables and unscoped identities stay isolated per template.
+Cross-template matching requires an exact exported ID or the resource group's
+explicitly supplied name and subscription. Subscriptions discovered in references
+are display-only. Multi-template summaries and unresolved references travel in
+Notes. Duplicate scopes, conflicting IDs or invalid files stop the whole import
+before it creates a tab. Cancellation and layout rollback preserve existing work.
+The limits apply to the complete import: 10 templates, 10 MiB JSON, 2,000
+declarations including embedded resources and 300 rendered nodes including groups.
 
 ## Release workflow
 
