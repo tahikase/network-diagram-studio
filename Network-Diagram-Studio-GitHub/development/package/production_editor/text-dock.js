@@ -101,15 +101,21 @@
       toolbar.dataset.ndsDockOrientation = 'horizontal';
     }
     const w = toolbar.offsetWidth;
-    const top = toolbar.dataset.ndsDockOrientation === 'vertical' ? b.top + 44 : b.top;
-    const left = preference.edge === 'top' && b.right - b.left > w + 108 ? b.left + 108 : b.left;
+    const controls = host.querySelector('[data-nds-canvas-view-controls]')?.getBoundingClientRect();
+    const reservedRight = controls ? controls.right - b.r.left + 12 : b.left + 108;
+    const reservedBottom = controls ? controls.bottom - b.r.top + 12 : b.top + 44;
+    const fitsBesideControls = b.right - reservedRight >= w;
+    // Keep the drawing toolbar below the view controls when a top row cannot fit both.
+    const top = toolbar.dataset.ndsDockOrientation === 'vertical' ? Math.max(b.top + 44, reservedBottom)
+      : preference.edge === 'top' && !fitsBesideControls ? reservedBottom : b.top;
+    const left = preference.edge === 'top' && fitsBesideControls ? reservedRight : b.left;
     // CSS resolves both host and toolbar size in the same layout frame.
     // Pixel coordinates recalculated in ResizeObserver lag inspector changes.
     const anchor = (near, far) => `calc(${preference.offset * 100}% + ${near * (1 - preference.offset) - far * preference.offset}px)`;
     Object.assign(toolbar.style, {
       left: vertical ? (preference.edge === 'left' ? b.left + 'px' : 'auto') : anchor(left, rightInset),
       right: preference.edge === 'right' ? rightInset + 'px' : 'auto',
-      top: vertical ? anchor(top, bottomInset + (preference.edge === 'left' ? 28 : 0)) : (preference.edge === 'bottom' ? 'auto' : b.top + 'px'),
+      top: vertical ? anchor(top, bottomInset + (preference.edge === 'left' ? 28 : 0)) : (preference.edge === 'bottom' ? 'auto' : top + 'px'),
       bottom: preference.edge === 'bottom' ? bottomInset + 'px' : 'auto',
       transform: `translate${vertical ? 'Y' : 'X'}(${-preference.offset * 100}%)`
     });
@@ -191,6 +197,8 @@
     grip.addEventListener('lostpointercapture', e => finish(e, true));
     resize.observe(host);
     resize.observe(toolbar);
+    const controls = host.querySelector('[data-nds-canvas-view-controls]');
+    if (controls) resize.observe(controls);
   }
 
   function createText(event, reactFlow, buildShape) {

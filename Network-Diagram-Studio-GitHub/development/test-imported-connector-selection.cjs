@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 const entries = process.argv.slice(2);
 if (!entries.length) entries.push(path.join(__dirname, '..', 'index.html'));
@@ -126,7 +127,7 @@ async function verify(entry, index) {
     const destination = path.join(temp, filename);
     created.push(destination);
     const pending = page.waitForEvent('download');
-    await page.getByRole('button', { name: label, exact: true }).click();
+    await clickHeaderAction(page, label);
     await (await pending).saveAs(destination);
     return destination;
   }
@@ -134,7 +135,7 @@ async function verify(entry, index) {
     await context.addInitScript(() => localStorage.setItem('nds.lang', 'en'));
     await page.goto(pathToFileURL(path.resolve(entry)).href);
     const choose = page.waitForEvent('filechooser');
-    await page.locator('#nds-arm-open').click();
+    await clickHeaderAction(page, 'Import ARM');
     await page.locator('#nds-arm-choose').click();
     await (await choose).setFiles({ name: 'template.json', mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(template)) });
@@ -224,7 +225,7 @@ async function verify(entry, index) {
     const json = await save('Save JSON', 'edited.json');
     await reset(original);
     const chooser = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+    await clickHeaderAction(page, 'Load JSON');
     await (await chooser).setFiles(json);
     await settle();
     assert.deepEqual((await graph()).edges, edited.edges);

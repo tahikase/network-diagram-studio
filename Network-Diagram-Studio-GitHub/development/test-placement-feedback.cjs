@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { openHeaderMenu, clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 const VARIANTS = [
   'arrow-straight', 'arrow-line', 'arrow-dashed',
@@ -448,6 +449,7 @@ async function groups(page) {
 
 async function downloaded(page, title, programmatic = false) {
   const pending = page.waitForEvent('download');
+  if (title.startsWith('Export the full diagram')) await openHeaderMenu(page, 'export', programmatic);
   const button = page.getByTitle(title, { exact: true });
   if (programmatic) await button.evaluate(el => el.click());
   else await button.click();
@@ -500,29 +502,29 @@ async function exportsAndHeader(page, context) {
   for (const lang of ['en', 'ja', 'zh', 'es', 'pt', 'fr', 'de', 'ko']) {
     await page.evaluate(lang => window.__nds_i18nStore.getState().setLang(lang), lang);
     await settle(page);
-    assert.equal(await page.locator('#nds-arm-open').evaluate(el => {
-      const json = [...document.querySelectorAll('header button')].filter(b => b.textContent.includes('JSON'));
-      return json.length === 2 && el.previousElementSibling === json[1];
-    }), true, lang + ': wide toolbar has Load JSON, Save JSON, Import ARM');
+    assert.equal(await page.locator('#nds-arm-open').evaluate(el =>
+      el.parentElement.matches('[data-nds-arm-menu]') && Boolean(el.closest('#nds-menu-file'))),
+    true, lang + ': Import ARM remains in the File menu');
   }
   await page.evaluate(() => window.__nds_i18nStore.getState().setLang('en'));
   const choosing = page.waitForEvent('filechooser');
-  await page.locator('#nds-arm-open').click();
+  await clickHeaderAction(page, 'Import ARM');
   await page.locator('#nds-arm-choose').click();
   const chooser = await choosing;
   assert.equal(await page.locator('#nds-arm-dialog').evaluate(el => el.open), true, 'Import ARM still opens its dialog');
   await chooser.setFiles([]);
   await page.keyboard.press('Escape');
   await page.setViewportSize({ width: 1000, height: 900 }); await settle(page);
-  assert.equal(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-tabbar="1"]')), true);
+  assert.equal(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')), true);
   await page.setViewportSize({ width: 1600, height: 1050 }); await settle(page);
-  assert.equal(await page.locator('#nds-arm-open').evaluate(el => el.previousElementSibling.textContent.includes('Save')), true);
+  assert.equal(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')), true);
   console.log('PASS JSON/SVG/PNG exports, header ordering in every language, ARM dialog and compact layout');
 }
 
 (async () => {
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 1600, height: 1050 }, locale: 'en-US', acceptDownloads: true });
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

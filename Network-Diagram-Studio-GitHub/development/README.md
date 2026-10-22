@@ -25,7 +25,7 @@ dependencies/browsers; the packaged editor continues to work offline.
 | Location | Purpose |
 | --- | --- |
 | `src` | Editable React/TypeScript application, icons, localization and history |
-| `package` | Editable runtime sidecars, walkthrough, launcher, notices and root documentation templates |
+| `package` | Editable runtime sidecars, launcher, notices and root documentation templates |
 | `scripts` | Standalone build, release validation, publication and optional icon authoring |
 | `releases` | Required release classifications and development-only archives of authorized withdrawals; never bundled into the app |
 | `test-*.cjs` | Release and browser regression checks |
@@ -113,6 +113,34 @@ before it creates a tab. Cancellation and layout rollback preserve existing work
 The limits apply to the complete import: 10 templates, 10 MiB JSON, 2,000
 declarations including embedded resources and 300 rendered nodes including groups.
 
+## Workspace controls
+
+File contains New, Load JSON and Import ARM. Undo, Redo and Save JSON stay
+visible; Export contains full-diagram PNG/SVG downloads and the separate
+Screenshot-to-Notes capture. Feedback sits beside browser save status and Settings.
+The matching Fullscreen and Canvas controls offer Blank, Dots and Grid.
+Background is a browser-only view preference, not diagram or undo data; it
+does not change snapping. Grid is the initial default; saved background choices
+remain unchanged. Settings retains the Guide and keyboard shortcuts without a
+demo-video player or bundled movie.
+
+## Screenshot editor
+
+The compact annotation toolbar includes separate 8-512px Text size controls for
+selected callouts, text and step labels. Font-only changes preserve the callout
+body, pointer, border and step circle. S/M/L restores the original presets.
+Callouts and step labels continue to fit inside their shapes; their saved font
+size remains the preferred size, even when fitting requires smaller text.
+
+Fit / Ctrl+0 shows the whole image; 100% / Ctrl+1 uses actual image pixels.
+Use +/- or Ctrl+wheel to zoom, Space+drag or middle-drag to pan, Ctrl/Cmd+D to
+duplicate, and arrow keys to move a selection by one source pixel (Shift: ten).
+Ctrl/Cmd+Z, Shift+Z or Y undo/redo; Ctrl/Cmd+S saves PNG and Ctrl/Cmd+C copies PNG
+when not typing. Text-tool clicks and double-clicks re-edit labels. Enter finishes,
+Shift+Enter adds a line, and Escape cancels. Unsaved edits require confirmation
+before dismissal. PNG/Copy use the same renderer as the preview; Notes and JSON
+retain editable text settings. Blur is pixelation, not secure redaction.
+
 ## Release workflow
 
 1. Bump `src\version.ts` and prepend a dated classification to
@@ -189,8 +217,8 @@ announcement or unread badge; do not hand-edit the lock.
 
 `release:verify` runs release-history, runtime, launcher, offline app, history,
 All Icons, Settings, group header editing, shape text formatting, Database shapes,
-connected-shape and overlapping-object selection, tab order, transparent controls, Save/Load JSON, screenshot,
-walkthrough and canvas-motion checks. Logs and `accepted.json` stay beside the
+connected-shape and overlapping-object selection, tab order, transparent controls, workspace menus/backgrounds, Save/Load JSON, screenshot,
+retired-video absence and canvas-motion checks. Logs and `accepted.json` stay beside the
 candidate. The individual `test:*` commands normally target the installed app;
 most test files also accept an explicit entry HTML argument.
 

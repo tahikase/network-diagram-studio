@@ -465,7 +465,8 @@
   function close() {
     cancelOperation();
     dialog.close();
-    if (opener.isConnected) opener.focus();
+    const returnTo = document.querySelector('[data-nds-menu-trigger="file"]') || opener;
+    if (returnTo.isConnected) returnTo.focus();
   }
   function checkGeometry(diagram, measurementsOnly = false) {
     const nodes = new Map(diagram.nodes.map((n) => [n.id, n]));
@@ -840,18 +841,15 @@
       unsubscribeLanguage = langStore.subscribe(updateLanguage);
       updateLanguage();
     }
-    const narrow = matchMedia('(max-width: 1100px)').matches;
-    const load = Array.from(document.querySelectorAll('header button')).find((b) => b.textContent.includes('JSON'));
-    const save = Array.from(document.querySelectorAll('header button')).find((b) => b !== load && b.textContent.includes('JSON'));
-    // Reuse the shipped toolbar classes, including rem-based sizing and theme.
-    if (load && opener.className !== load.className) opener.className = load.className;
-    const anchor = narrow
-      ? document.querySelector('[data-nds-tabbar="1"]')
-      : save;
-    if (anchor && (narrow ? opener.parentElement !== anchor : opener.previousElementSibling !== anchor)) {
-      if (narrow) anchor.prepend(opener);
-      else anchor.after(opener);
-    }
+    const menu = document.querySelector('[data-nds-arm-menu]');
+    if (!menu) return;
+    opener.className = 'nds-menu-item';
+    opener.setAttribute('role', 'menuitem');
+    opener.setAttribute('aria-label', text('short'));
+    opener.tabIndex = -1;
+    const description = opener.querySelector('.nds-arm-menu-description');
+    if (description.textContent !== menu.dataset.ndsArmDescription) description.textContent = menu.dataset.ndsArmDescription;
+    if (opener.parentElement !== menu) menu.append(opener);
   }
   function init() {
     if (document.getElementById('nds-arm-dialog')) return;
@@ -859,7 +857,7 @@
     opener.id = 'nds-arm-open';
     opener.type = 'button';
     opener.setAttribute('aria-haspopup', 'dialog');
-    opener.innerHTML = '<span class="nds-arm-long"></span><span class="nds-arm-short">ARM</span>';
+    opener.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/></svg><span class="nds-menu-item-copy"><span class="nds-arm-long"></span><small class="nds-arm-menu-description"></small></span>';
     opener.addEventListener('click', open);
     dialog = document.createElement('dialog');
     dialog.id = 'nds-arm-dialog';
@@ -939,7 +937,7 @@
     const observer = new MutationObserver(records => {
       if (dialog.isConnected) {
         if (!opener.isConnected || !langStore || records.some(record =>
-          record.target instanceof Element && record.target.closest('header, [data-nds-tabbar]'))) attach();
+          record.target instanceof Element && record.target.closest('header'))) attach();
         return;
       }
       cancelOperation();
@@ -949,7 +947,7 @@
       window.removeEventListener('pagehide', close);
       opener.remove();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-nds-arm-description'] });
     window.addEventListener('resize', attach);
     window.addEventListener('pagehide', close);
   }

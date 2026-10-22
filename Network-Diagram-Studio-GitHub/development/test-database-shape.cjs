@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 const { SHAPE_TILES, RETIRED_VARIANTS } = require('./test-networking-palette.cjs');
 
 const evidence = process.env.NDS_DATABASE_EVIDENCE;
@@ -39,7 +40,7 @@ async function geometry(page, shape, legacy = false) {
 
 async function load(page, shapes, edges) {
   const choosing = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+  await clickHeaderAction(page, 'Load JSON');
   await (await choosing).setFiles({ name: 'database-example.json', mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(fixture(shapes, edges))) });
   await page.waitForFunction(count => window.__nds_tabsStore.getState().activeTab().shapes.length === count, shapes.length);
@@ -129,7 +130,7 @@ async function verify(entry) {
   const save = async (button, filename) => {
     const destination = path.join(temp, filename); downloads.push(destination);
     const pending = page.waitForEvent('download');
-    await page.getByRole('button', { name: button, exact: true }).click();
+    await clickHeaderAction(page, button);
     await (await pending).saveAs(destination);
     const bytes = fs.readFileSync(destination);
     if (evidence) fs.writeFileSync(path.join(evidence, filename), bytes);
@@ -236,7 +237,7 @@ async function verify(entry) {
     assert.deepEqual(JSON.parse(saved).shapes, [rotated]);
     await load(page, []);
     const choosing = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+    await clickHeaderAction(page, 'Load JSON');
     await (await choosing).setFiles(path.join(temp, 'database.json'));
     await shapeNode(page, rotated.id).waitFor();
     assert.deepEqual(await readShapes(page), [rotated]);
@@ -296,7 +297,7 @@ async function verify(entry) {
     }
     const box = await shapeNode(page, artwork.id).boundingBox();
     const crop = { x: box.x - 10, y: box.y - 10, width: box.width + 20, height: box.height + 20 };
-    await page.locator('[data-nds-screenshot]').click();
+    await clickHeaderAction(page, 'Screenshot');
     await page.locator('[data-nds-capture-layer]').waitFor();
     await drag(page, crop, { x: crop.x + crop.width, y: crop.y + crop.height });
     await page.locator('[data-nds-shot-canvas]').waitFor();

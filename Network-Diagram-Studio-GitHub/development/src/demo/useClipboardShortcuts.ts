@@ -131,7 +131,7 @@ export function useClipboardShortcuts() {
     if (images) return images.installClipboard(copy, paste);
 
     const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector('dialog[open]')) return;
+      if (document.querySelector('dialog[open], [data-nds-shot-editor]')) return;
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
       const key = e.key.toLowerCase();
       if (key !== 'c' && key !== 'v') return;

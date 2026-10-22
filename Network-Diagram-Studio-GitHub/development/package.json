@@ -35,6 +35,7 @@
     "test:screenshot-shapes": "node test-screenshot-shapes.cjs",
     "test:canvas-motion": "node test-canvas-motion.cjs",
     "test:canvas-chrome": "node test-canvas-chrome.cjs",
+    "test:workspace-ui": "node test-workspace-ui.cjs",
     "build:icons": "node scripts/build-icon-sprite.mjs",
     "lint": "oxlint src scripts vite.config.ts"
   },

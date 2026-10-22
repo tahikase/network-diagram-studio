@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 const { SHAPE_TILES, RETIRED_VARIANTS } = require('./test-networking-palette.cjs');
 
 const FIELDS = ['textAlign', 'textIndent', 'textSpaceBefore', 'textSpaceAfter', 'textLineHeight'];
@@ -39,7 +40,7 @@ function placed(template, id) {
 
 async function load(page, shapes, nodes = []) {
   const choosing = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+  await clickHeaderAction(page, 'Load JSON');
   await (await choosing).setFiles({ name: 'shape-text-example.json', mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(fixture(shapes, nodes))) });
   await page.waitForFunction(id => window.__nds_tabsStore.getState().activeTab().shapes[0]?.id === id, shapes[0].id);
@@ -134,7 +135,7 @@ async function verify(entry) {
     const destination = path.join(temp, filename);
     downloads.push(destination);
     const pending = page.waitForEvent('download');
-    await page.getByRole('button', { name, exact: true }).click();
+    await clickHeaderAction(page, name);
     await (await pending).saveAs(destination);
     return fs.readFileSync(destination);
   };
@@ -655,7 +656,7 @@ async function verify(entry) {
     const shotBox = await shapeNode(page, box.id).boundingBox();
     const crop = { x: shotBox.x - 8, y: shotBox.y - 8, width: shotBox.width + 16, height: shotBox.height + 16 };
     const shotBefore = await readShapes(page);
-    await page.locator('[data-nds-screenshot]').click();
+    await clickHeaderAction(page, 'Screenshot');
     await page.locator('[data-nds-capture-layer]').waitFor();
     await page.mouse.move(crop.x, crop.y); await page.mouse.down();
     await page.mouse.move(crop.x + crop.width, crop.y + crop.height, { steps: 10 }); await page.mouse.up();

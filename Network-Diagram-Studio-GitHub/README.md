@@ -93,18 +93,6 @@ more room. Existing diagrams and default text sizes do not change.
 **Escape** cancels text edits; Undo also reverses formatting. Save JSON, browser
 auto-save and image exports retain the formatting.
 
-## Three-minute demo
-
-Open **Settings > Demo video** for the current UI walkthrough. It covers palette
-icons and shapes, importing icons or a folder, drawing VNet peering, Notes and a
-colleague's JSON/comment handoff, local ARM import, PNG/SVG exports, screenshots,
-Appearance, keyboard shortcuts and Guide.
-
-The 3:00 video includes English narration, optional captions, 12 chapters and
-a matching transcript, all available offline. The colleague review is a
-simulated file handoff, not live collaboration; names are self-declared.
-The synthetic examples do not deploy or change Azure resources.
-
 ## What's new
 
 Click **What's new** beside the palette version, or open **Settings > What's
@@ -143,7 +131,7 @@ development\
 ```
 
 Keep `index.html` and all four `production_*` folders together. They provide ARM
-import, the walkthrough, editor controls, connector routing, screenshots, and
+import, group copy/paste, editor controls, connector routing, screenshots, and
 the vendor icon catalog. Keep the license and notice files with redistributed
 copies.
 
@@ -172,7 +160,7 @@ and must not relabel bug fixes as features or enhancements.
 
 ## Version
 
-Network Diagram Studio v0.9.139
+Network Diagram Studio v0.9.145
 
 ## License
 

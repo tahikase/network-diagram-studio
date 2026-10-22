@@ -1,7 +1,39 @@
 {
   "format": 1,
-  "publishedThrough": "0.9.139",
+  "publishedThrough": "0.9.145",
   "releases": {
+    "0.9.145": {
+      "entry": "aa1341c50459f46e1eb71bc0bef6b9658f5a5878bb498b537ae4733679be9bf2",
+      "internal": true,
+      "source": "404aaa67d840de391943c5231c6e0e0b8770ff7b891918aa030bf2c38f3e374d"
+    },
+    "0.9.144": {
+      "entry": "52030df0ded1bfb8f9de083093e1ff64fb713a150104de9fa11f553e31e50078",
+      "before": "7dbc0a8db0d9a0bcf397962031eb947950c5b3deee98638af5051941fe94975f",
+      "after": "df0b99214790bc0c96838a53bf7b08f20639ce4f967c54e2d787243e2ae99a3e",
+      "source": "64f9ec6364660c9dbf8b1d9b6dffad054b57ed638e923cd631f69a81c6834eeb"
+    },
+    "0.9.143": {
+      "entry": "5ee62562cda13a4e834798ce01dea4115851d53ea8aded5f4fe2c1402bea56c8",
+      "internal": true,
+      "source": "fd9f4255f81580962df72df2c36e3c50e68348873dc83d7cad197bba5e540013"
+    },
+    "0.9.142": {
+      "entry": "0577f6e8c5a6bd2e375474db147db3eb5b258d598c08700ba715e3912f894ae5",
+      "internal": true,
+      "source": "6f55ee113e0014eeb1ee1a8c11d8fea703ec8b500b9565ce640b5841fcfcdcb1"
+    },
+    "0.9.141": {
+      "entry": "362b4bfc2c2f34794895cd80595648e4c06b13740f02364f26afa35c05662fac",
+      "internal": true,
+      "source": "bf0fd0b31dc13b919ce16f6ad2e7ba7f12240b1081b49f0a34a68d460db49347"
+    },
+    "0.9.140": {
+      "entry": "d1479cfcb5f79300f562bb763ac9178ce77e1c4030f61f47f9925f8fde70f8ed",
+      "before": "64c02eb8cf76ee0b4750a0fb5abcfad7906b1799e574ca954638df4ecb5044fd",
+      "after": "ebe08a267048bdbf9a284eb1a6afaa4b20cb70e1f1bdd12a95d92fcf9e257f85",
+      "source": "0a81c712bb27c92627a5b56e3b0f626d44fa1967d84358a827fe53f1ccb60925"
+    },
     "0.9.139": {
       "entry": "b0c1646f890e8c48e042bddcdc42f68d73ff3215fbd592b67e1657d8d55dd5fd",
       "before": "4df3304cbb0ce9bb3dffca35eb803369f1d7de861d93fecd81078c911e24907e",

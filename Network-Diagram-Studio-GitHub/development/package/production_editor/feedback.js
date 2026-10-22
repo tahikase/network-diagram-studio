@@ -59,14 +59,10 @@
     paint();
   }
 
-  // The shortcut stays the same in every language. Mount before its top-level
-  // header group, and restore the position only if a React render changes it.
   function mount() {
     const found = document.querySelector('header');
-    const undo = found && found.querySelector('button[title*="Ctrl+Z"]');
-    if (!undo) return false;
-    let anchor = undo;
-    while (anchor.parentElement !== found) anchor = anchor.parentElement;
+    const slot = found && found.querySelector('[data-nds-feedback-slot]');
+    if (!slot) return false;
     if (!button) build();
     if (found !== header) {
       header = found;
@@ -74,9 +70,7 @@
       headerWatch = new MutationObserver(mount);
       headerWatch.observe(header, { childList: true, subtree: true });
     }
-    if (button.parentElement !== header || button.nextElementSibling !== anchor) {
-      header.insertBefore(button, anchor);
-    }
+    if (button.parentElement !== slot) slot.append(button);
     return true;
   }
 

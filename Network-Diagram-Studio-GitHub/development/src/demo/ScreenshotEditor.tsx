@@ -15,29 +15,33 @@
 // pixels exactly once, in `toImage`. Nothing downstream knows about display
 // units, which is what keeps shapes still when the window is resized.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../i18n/useT';
 import { NOTES_IMAGES } from '../env';
 import { copyPngToClipboard, useImagesUi } from './notes-images';
 import { saveEdited } from './notes-image-insert';
 import { PEN_COLORS } from '../theme/palette';
+import { MAX_NOTE_SHAPES, MAX_NOTE_TEXT_LENGTH, MAX_NOTE_TEXT_SIZE, MIN_NOTE_TEXT_SIZE } from '../model/schema';
+import './screenshot-editor.css';
 import {
   DEFAULT_COLOR,
   FONT_SIZE,
   HIGHLIGHT_HEX,
   THICKNESS,
   canvasOf,
+  annotationTextSize,
   cropScene,
   decodeToCanvas,
   handleAt,
   hitTest,
+  hasTextSize,
   isBoxy,
+  isDark,
   normBox,
   boundsOf,
   paintHandles,
   paintScene,
   pixelateRegion,
-  PLATE,
   resized,
   shapeId,
   snapAngle,
@@ -53,6 +57,18 @@ import {
 interface Snapshot {
   base: HTMLCanvasElement;
   shapes: Shape[];
+}
+
+interface TextDraft {
+  x: number;
+  y: number;
+  id: string | null;
+  value: string;
+  box: Box | null;
+  size: number;
+  fontSize?: number;
+  width: number;
+  color: string;
 }
 
 /** Tools that are drawn by dragging a box rather than placed by a click. */
@@ -73,6 +89,21 @@ const SHORTCUT: Record<EditorTool, string> = {
   select: 'v', arrow: 'a', rect: 'r', ellipse: 'o', callout: 'c', highlight: 'h',
   text: 't', counter: 'n', blur: 'b', crop: 'x',
 };
+
+const TOOL_HINTS: Record<EditorTool, string> = {
+  select: 'Select an outline or label. Drag to move; use handles to resize.',
+  arrow: 'Drag an arrow. Hold Shift to snap to 45-degree angles.',
+  rect: 'Drag a rectangle. Hold Shift to draw a square.',
+  ellipse: 'Drag an ellipse. Hold Shift to draw a circle.',
+  callout: 'Drag a callout, then type. Select it to change Text size, move its pointer or resize its box.',
+  highlight: 'Drag a yellow highlight. The image underneath stays visible.',
+  text: 'Click to add text. Enter finishes; double-click a label to edit.',
+  counter: 'Click to add the next numbered step.',
+  blur: 'Drag to pixelate the image. Undo restores it. Blur is not secure redaction.',
+  crop: 'Drag to crop the image. Undo restores the previous area.',
+};
+
+const formatTextSize = (size: number) => String(Number(size.toFixed(2)));
 
 function toolLabel(tool: EditorTool, t: (s: string) => string): string {
   switch (tool) {
@@ -123,6 +154,16 @@ export function ScreenshotEditor() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLTextAreaElement | null>(null);
+  const fontRef = useRef<HTMLInputElement | null>(null);
+  const lastFontTarget = useRef<string | null>(null);
+  const fontEdited = useRef(false);
+  const draftFont = useRef<{ target: string; value: number } | null>(null);
+  const autoFit = useRef(true);
+  const spaceDown = useRef(false);
+  const zoomCenter = useRef<{ x: number; y: number } | null>(null);
+  const saved = useRef<(Snapshot & { caption: string }) | null>(null);
+  const toastTimer = useRef<number | null>(null);
 
   const [base, setBase] = useState<HTMLCanvasElement | null>(null);
   const [shapes, setShapes] = useState<Shape[]>([]);
@@ -131,12 +172,14 @@ export function ScreenshotEditor() {
   const [sizeKey, setSizeKey] = useState<SizeKey>('sm');
   const [selected, setSelected] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+  const [viewport, setViewport] = useState({ w: 0, h: 0 });
+  const [panning, setPanning] = useState(false);
   const [drag, setDrag] = useState<Box | null>(null);
   const [caption, setCaption] = useState('');
   const [toast, setToast] = useState('');
-  const [typing, setTyping] = useState<
-    { x: number; y: number; id: string | null; value: string; box: Box | null } | null
-  >(null);
+  const [typing, setTyping] = useState<TextDraft | null>(null);
+  const [fontInput, setFontInput] = useState('');
+  const [fontInvalid, setFontInvalid] = useState(false);
 
   const past = useRef<Snapshot[]>([]);
   const future = useRef<Snapshot[]>([]);
@@ -144,21 +187,51 @@ export function ScreenshotEditor() {
     | { mode: 'draw'; ax: number; ay: number }
     | { mode: 'move'; id: string; ax: number; ay: number; from: Shape; snap: Shape[] }
     | { mode: 'resize'; id: string; handle: HandleId; from: Shape; snap: Shape[] }
+    | { mode: 'pan'; ax: number; ay: number; left: number; top: number }
     | null
   >(null);
   const [historyRev, setHistoryRev] = useState(0);
+  const selectedShape = shapes.find(s => s.id === selected);
+  const fontValue = typing ? typing.fontSize ?? typing.size
+    : hasTextSize(selectedShape) ? annotationTextSize(selectedShape) : null;
+  const fontTarget = typing ? `draft-${typing.id ?? 'new'}` : hasTextSize(selectedShape) ? selectedShape.id : null;
+
+  useEffect(() => {
+    if (lastFontTarget.current !== fontTarget || document.activeElement !== fontRef.current) {
+      setFontInput(fontValue === null ? '' : formatTextSize(fontValue));
+      fontEdited.current = false;
+    }
+    if (lastFontTarget.current !== fontTarget) draftFont.current = null;
+    lastFontTarget.current = fontTarget;
+    setFontInvalid(false);
+  }, [fontTarget, fontValue]);
+
+  const flash = useCallback((msg: string) => {
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    setToast(msg);
+    toastTimer.current = window.setTimeout(() => setToast(''), 2400);
+  }, []);
+
+  useEffect(() => () => {
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+  }, []);
 
   // Load the incoming picture into a canvas we can paint over.
   useEffect(() => {
     if (!editing) {
       setBase(null);
       setShapes([]);
+      saved.current = null;
       return;
     }
     let live = true;
     setCaption(editing.caption ?? '');
     setSelected(null);
     setTyping(null);
+    setToast('');
+    setFontInvalid(false);
+    autoFit.current = true;
+    gesture.current = null;
     // Size starts at S for every capture. It is the one control that carries a
     // cost when it is wrong — an L arrow drawn on a small crop covers what it
     // was meant to point at — and the last picture's choice is a poor guess for
@@ -169,33 +242,75 @@ export function ScreenshotEditor() {
     setHistoryRev((r) => r + 1);
     void decodeToCanvas(editing.png).then((c) => {
       if (!live || !c) return;
+      saved.current = { base: c, shapes: editing.shapes ?? [], caption: editing.caption ?? '' };
       setBase(c);
-      setShapes((editing.shapes ?? []) as Shape[]);
+      setShapes(editing.shapes ?? []);
     });
     return () => { live = false; };
   }, [editing]);
 
-  // Fit-to-window. Recomputed on resize so the editor is usable on a laptop
-  // and on a 4K panel without two sets of numbers.
-  useEffect(() => {
-    if (!base) return;
-    const fit = () => {
-      const el = wrapRef.current;
-      if (!el) return;
-      // clientWidth/Height include padding, so measure it rather than hard-coding
-      // the p-4: a canvas sized to the padding box always overflows by 2x pad.
-      const cs = getComputedStyle(el);
-      const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-      const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-      const availW = el.clientWidth - padX;
-      const availH = el.clientHeight - padY;
-      if (availW < 10 || availH < 10) return;
-      setScale(Math.min(1, availW / base.width, availH / base.height));
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
+  const fitView = useCallback(() => {
+    const el = wrapRef.current;
+    if (!base || !el) return;
+    autoFit.current = true;
+    zoomCenter.current = null;
+    setScale(Math.max(0.005, Math.min(1, (el.clientWidth - 48) / base.width, (el.clientHeight - 48) / base.height)));
+    el.scrollTo(0, 0);
   }, [base]);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!base || !el) return;
+    const measure = () => {
+      setViewport(current => current.w === el.clientWidth && current.h === el.clientHeight
+        ? current : { w: el.clientWidth, h: el.clientHeight });
+      if (autoFit.current && !gesture.current) fitView();
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [base, fitView]);
+
+  useEffect(() => {
+    if (base && editing) canvasRef.current?.focus({ preventScroll: true });
+  }, [base, editing]);
+
+  const changeZoom = useCallback((value: number) => {
+    const el = wrapRef.current, cv = canvasRef.current;
+    if (!base || !el || !cv) return;
+    const next = Math.max(0.005, Math.min(8, value));
+    const area = el.getBoundingClientRect(), image = cv.getBoundingClientRect();
+    zoomCenter.current = {
+      x: (area.left + el.clientWidth / 2 - image.left) / scale,
+      y: (area.top + el.clientHeight / 2 - image.top) / scale,
+    };
+    autoFit.current = false;
+    setScale(next);
+  }, [base, scale]);
+
+  useLayoutEffect(() => {
+    const el = wrapRef.current, cv = canvasRef.current, point = zoomCenter.current;
+    if (!el || !cv) return;
+    if (point) {
+      const area = el.getBoundingClientRect(), image = cv.getBoundingClientRect();
+      el.scrollLeft += image.left + point.x * scale - area.left - el.clientWidth / 2;
+      el.scrollTop += image.top + point.y * scale - area.top - el.clientHeight / 2;
+      zoomCenter.current = null;
+    }
+  }, [scale, viewport, base]);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!editing || !el) return;
+    const wheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      changeZoom(scale * (event.deltaY < 0 ? 1.15 : 1 / 1.15));
+    };
+    el.addEventListener('wheel', wheel, { passive: false });
+    return () => el.removeEventListener('wheel', wheel);
+  }, [editing, changeZoom, scale]);
 
   const repaint = useCallback(() => {
     const cv = canvasRef.current;
@@ -278,10 +393,46 @@ export function ScreenshotEditor() {
     setHistoryRev((r) => r + 1);
   }, [base]);
 
+  const applyTextSize = useCallback((value: number) => {
+    if (!Number.isFinite(value) || value < MIN_NOTE_TEXT_SIZE || value > MAX_NOTE_TEXT_SIZE) {
+      setFontInvalid(true);
+      flash(t('Enter a text size from 8 to 512 px.'));
+      return false;
+    }
+    setFontInvalid(false);
+    fontEdited.current = false;
+    setFontInput(String(value));
+    if (typing) {
+      if ((typing.fontSize ?? typing.size) !== value) {
+        if (fontTarget) draftFont.current = { target: fontTarget, value };
+        setTyping({ ...typing, fontSize: value });
+      }
+    } else if (hasTextSize(selectedShape) && annotationTextSize(selectedShape) !== value) {
+      push();
+      setShapes(list => list.map(s => s.id === selectedShape.id ? { ...s, fontSize: value } : s));
+    }
+    return true;
+  }, [typing, selectedShape, push, flash, t, fontTarget]);
+
+  const canAdd = useCallback(() => {
+    if (shapes.length < MAX_NOTE_SHAPES) return true;
+    flash(t('This screenshot has 200 annotations. Delete one before adding another.'));
+    return false;
+  }, [shapes.length, flash, t]);
+
+  const cancelGesture = useCallback(() => {
+    const g = gesture.current;
+    gesture.current = null;
+    if (g?.mode === 'move' || g?.mode === 'resize') setShapes(g.snap);
+    setDrag(null);
+    setPanning(false);
+  }, []);
+
   const undo = useCallback(() => {
     const prev = past.current.pop();
     if (!prev || !base) return;
     future.current.push({ base, shapes: shapes.slice() });
+    if (base.width !== prev.base.width || base.height !== prev.base.height) autoFit.current = true;
     setBase(prev.base);
     setShapes(prev.shapes);
     setSelected(null);
@@ -292,6 +443,7 @@ export function ScreenshotEditor() {
     const next = future.current.pop();
     if (!next || !base) return;
     past.current.push({ base, shapes: shapes.slice() });
+    if (base.width !== next.base.width || base.height !== next.base.height) autoFit.current = true;
     setBase(next.base);
     setShapes(next.shapes);
     setSelected(null);
@@ -312,22 +464,32 @@ export function ScreenshotEditor() {
   };
 
   const commitTyping = useCallback(() => {
-    const ty = typing;
-    if (!ty) return;
-    setTyping(null);
-    const text = ty.value.replace(/\s+$/, '');
-    if (ty.id) {
-      push();
-      setShapes((list) =>
-        text
-          ? list.map((s) => (s.id === ty.id && (s.kind === 'text' || s.kind === 'callout')
-            ? { ...s, text } : s))
-          : list.filter((s) => s.id !== ty.id),
-      );
-      return;
+    const pending = draftFont.current;
+    const ty = typing && pending?.target === fontTarget ? { ...typing, fontSize: pending.value } : typing;
+    if (!ty) return true;
+    if (fontInvalid) {
+      flash(t('Enter a text size from 8 to 512 px.'));
+      fontRef.current?.focus();
+      return false;
     }
-    if (!text) return;
+    const text = ty.value.replace(/\s+$/, '');
+    if (!ty.id && text && !canAdd()) return false;
+    setTyping(null);
+    if (ty.id) {
+      const next = text ? shapes.map(s => {
+        if (s.id !== ty.id || (s.kind !== 'text' && s.kind !== 'callout')) return s;
+        const updated = { ...s, text, size: ty.size, color: ty.color };
+        if (updated.kind === 'callout') updated.width = ty.width;
+        if (ty.fontSize === undefined) delete updated.fontSize;
+        else updated.fontSize = ty.fontSize;
+        return updated;
+      }) : shapes.filter(s => s.id !== ty.id);
+      if (JSON.stringify(next) !== JSON.stringify(shapes)) { push(); setShapes(next); }
+      return true;
+    }
+    if (!text) return true;
     push();
+    const customFont = ty.fontSize === undefined ? {} : { fontSize: ty.fontSize };
     if (ty.box) {
       const b = ty.box;
       // The tail starts below the bubble rather than at its edge, so the shape
@@ -341,22 +503,76 @@ export function ScreenshotEditor() {
         {
           id: shapeId(), kind: 'callout', ...b,
           tx: b.x + b.w / 2, ty: ty0,
-          text, color, size: FONT_SIZE[sizeKey], width: THICKNESS[sizeKey],
+          text, color: ty.color, size: ty.size, width: ty.width, ...customFont,
         },
       ]);
-      return;
+      return true;
     }
     setShapes((list) => [
       ...list,
-      { id: shapeId(), kind: 'text', x: ty.x, y: ty.y, text, color, size: FONT_SIZE[sizeKey] },
+      { id: shapeId(), kind: 'text', x: ty.x, y: ty.y, text, color: ty.color, size: ty.size, ...customFont },
     ]);
-  }, [typing, push, color, sizeKey, base]);
+    return true;
+  }, [typing, fontInvalid, flash, t, canAdd, shapes, push, base, fontTarget]);
 
-  const onDown = (e: React.MouseEvent) => {
-    if (!base) return;
+  const isDirty = useCallback(() => {
+    const original = saved.current;
+    if (!base || !original) return false;
+    if (base !== original.base || caption !== original.caption ||
+        JSON.stringify(shapes) !== JSON.stringify(original.shapes)) return true;
+    if (fontEdited.current && fontValue !== null && Number(fontInput) !== fontValue) return true;
+    if (!typing) return false;
+    if (!typing.id) return !!typing.value.trim();
+    const previous = shapes.find(s => s.id === typing.id);
+    return !!previous && (previous.kind === 'text' || previous.kind === 'callout') &&
+      (previous.text !== typing.value || previous.size !== typing.size ||
+       previous.fontSize !== typing.fontSize || previous.color !== typing.color);
+  }, [base, caption, shapes, fontValue, fontInput, typing]);
+
+  const requestClose = useCallback(() => {
+    if (isDirty() && !window.confirm(t('Discard unsaved screenshot edits?'))) return;
+    closeEditor();
+  }, [isDirty, closeEditor, t]);
+
+  useEffect(() => {
+    if (!editing) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isDirty()) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    const blur = () => { spaceDown.current = false; cancelGesture(); };
+    window.addEventListener('beforeunload', beforeUnload);
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnload);
+      window.removeEventListener('blur', blur);
+    };
+  }, [editing, isDirty, cancelGesture]);
+
+  const changeTool = useCallback((next: EditorTool) => {
+    if (!commitTyping()) return;
+    cancelGesture();
+    setTool(next);
+    setSelected(null);
+    canvasRef.current?.focus({ preventScroll: true });
+  }, [commitTyping, cancelGesture]);
+
+  const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!base || !e.isPrimary || (e.button !== 0 && e.button !== 1)) return;
     if (typing) { commitTyping(); return; }
     e.preventDefault();
+    e.currentTarget.focus({ preventScroll: true });
+    e.currentTarget.setPointerCapture(e.pointerId);
     const p = toImage(e);
+
+    if (spaceDown.current || e.button === 1) {
+      const view = wrapRef.current;
+      if (!view) return;
+      gesture.current = { mode: 'pan', ax: e.clientX, ay: e.clientY, left: view.scrollLeft, top: view.scrollTop };
+      setPanning(true);
+      return;
+    }
 
     if (tool === 'select') {
       const ctx = canvasRef.current?.getContext('2d') ?? undefined;
@@ -390,11 +606,21 @@ export function ScreenshotEditor() {
     }
 
     if (tool === 'text') {
-      setTyping({ x: p.x, y: p.y, id: null, value: '', box: null });
+      const hit = hitTest(shapes, p.x, p.y, canvasRef.current?.getContext('2d') ?? undefined);
+      if (hit?.kind === 'text' || hit?.kind === 'callout') {
+        setSelected(hit.id);
+        setTyping({ x: hit.x, y: hit.y, id: hit.id, value: hit.text, box: hit.kind === 'callout' ? hit : null,
+          size: hit.size, fontSize: hit.fontSize, color: hit.color, width: hit.kind === 'callout' ? hit.width : THICKNESS[sizeKey] });
+      } else {
+        setTyping({ x: p.x, y: p.y, id: null, value: '', box: null,
+          size: FONT_SIZE[sizeKey], color, width: THICKNESS[sizeKey] });
+      }
       return;
     }
 
     if (tool === 'counter') {
+      if (!canAdd()) return;
+      if (nextCounter > 999) { flash(t('Step numbers cannot exceed 999.')); return; }
       push();
       setShapes((list) => [
         ...list,
@@ -417,9 +643,18 @@ export function ScreenshotEditor() {
     return BOX_TOOLS.has(tool) ? snapSquare(ax, ay, p.x, p.y) : snapAngle(ax, ay, p.x, p.y);
   };
 
-  const onMove = (e: React.MouseEvent) => {
+  const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!e.isPrimary) return;
     const g = gesture.current;
     if (!g || !base) return;
+    if (g.mode === 'pan') {
+      const view = wrapRef.current;
+      if (view) {
+        view.scrollLeft = g.left + g.ax - e.clientX;
+        view.scrollTop = g.top + g.ay - e.clientY;
+      }
+      return;
+    }
     const p = toImage(e);
     if (g.mode === 'move') {
       const dx = p.x - g.ax;
@@ -438,10 +673,12 @@ export function ScreenshotEditor() {
       : { x: g.ax, y: g.ay, w: q.x - g.ax, h: q.y - g.ay });
   };
 
-  const onUp = (e: React.MouseEvent) => {
+  const onUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!e.isPrimary) return;
     const g = gesture.current;
     gesture.current = null;
     if (!g || !base) return;
+    if (g.mode === 'pan') { setPanning(false); return; }
 
     if (g.mode === 'move' || g.mode === 'resize') {
       // The shapes array already carries the change, so what gets recorded is
@@ -463,6 +700,7 @@ export function ScreenshotEditor() {
       if (box.w < 16 || box.h < 16) return;
       push();
       const out = cropScene(base, shapes, box);
+      autoFit.current = true;
       setBase(out.base);
       setShapes(out.shapes);
       return;
@@ -478,10 +716,12 @@ export function ScreenshotEditor() {
     if (tool === 'callout') {
       // No shape yet — an empty bubble is not worth undoing, so the text is
       // collected first and the shape created on commit.
-      setTyping({ x: box.x, y: box.y, id: null, value: '', box });
+      setTyping({ x: box.x, y: box.y, id: null, value: '', box,
+        size: FONT_SIZE[sizeKey], color, width: THICKNESS[sizeKey] });
       return;
     }
 
+    if (!canAdd()) return;
     push();
     if (tool === 'arrow') {
       setShapes((list) => [
@@ -510,10 +750,14 @@ export function ScreenshotEditor() {
     const hit = hitTest(shapes, p.x, p.y, ctx);
     if (hit?.kind === 'text') {
       setTool('select');
-      setTyping({ x: hit.x, y: hit.y, id: hit.id, value: hit.text, box: null });
+      setSelected(hit.id);
+      setTyping({ x: hit.x, y: hit.y, id: hit.id, value: hit.text, box: null,
+        size: hit.size, fontSize: hit.fontSize, color: hit.color, width: THICKNESS[sizeKey] });
     } else if (hit?.kind === 'callout') {
       setTool('select');
-      setTyping({ x: hit.x, y: hit.y, id: hit.id, value: hit.text, box: hit });
+      setSelected(hit.id);
+      setTyping({ x: hit.x, y: hit.y, id: hit.id, value: hit.text, box: hit,
+        size: hit.size, fontSize: hit.fontSize, color: hit.color, width: hit.width });
     }
   };
 
@@ -536,6 +780,7 @@ export function ScreenshotEditor() {
         // so its colour is left alone on purpose.
         if (patch.color && next.kind !== 'highlight') next.color = patch.color;
         if (patch.size) {
+          if (hasTextSize(next)) delete next.fontSize;
           if (next.kind === 'text' || next.kind === 'counter') next.size = FONT_SIZE[patch.size];
           else if (next.kind === 'callout') {
             next.size = FONT_SIZE[patch.size];
@@ -558,28 +803,29 @@ export function ScreenshotEditor() {
     return out.toDataURL('image/png');
   }, [base, shapes]);
 
-  const flash = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(''), 1800);
-  };
-
   const onCopy = useCallback(async () => {
+    if (fontInvalid) { flash(t('Enter a text size from 8 to 512 px.')); return; }
     const png = flatten();
     if (!png) return;
-    flash(await copyPngToClipboard(png) ? t('Copied to clipboard') : t('Could not copy — use Add to Notes'));
-  }, [flatten, t]);
+    const copied = await copyPngToClipboard(png);
+    if (copied && base) saved.current = { base, shapes: shapes.slice(), caption };
+    flash(copied ? t('Copied to clipboard') : t('Could not copy — use Add to Notes'));
+  }, [flatten, fontInvalid, flash, t, base, shapes, caption]);
 
   const onSaveFile = useCallback(() => {
+    if (fontInvalid) { flash(t('Enter a text size from 8 to 512 px.')); return; }
     const png = flatten();
     if (!png) return;
     const a = document.createElement('a');
     a.href = png;
     a.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`;
     a.click();
-  }, [flatten]);
+    if (base) saved.current = { base, shapes: shapes.slice(), caption };
+  }, [flatten, fontInvalid, flash, t, base, shapes, caption]);
 
   const onInsert = useCallback(() => {
     if (!editing || !base) return;
+    if (fontInvalid) { flash(t('Enter a text size from 8 to 512 px.')); return; }
     // `base` is stored, NOT the flattened result: shapes stay editable, and
     // the picture is held once rather than twice. Blur and crop are already
     // part of `base`, so a redaction is gone for good either way.
@@ -588,51 +834,64 @@ export function ScreenshotEditor() {
       { ...editing, png, w: base.width, h: base.height, caption, shapes: shapes.length ? shapes : undefined },
       existing,
     );
-  }, [editing, base, shapes, caption, existing]);
+  }, [editing, base, shapes, caption, existing, fontInvalid, flash, t]);
 
-  // Keys are bound on the document with capture: the canvas is not focusable
-  // and the notes editor below would otherwise eat Delete and Ctrl+Z.
+  // Capture editing shortcuts before the underlying diagram can handle them.
   useEffect(() => {
     if (!editing) return;
     const onKey = (e: KeyboardEvent) => {
-      const inField = (e.target as HTMLElement | null)?.tagName?.match(/INPUT|TEXTAREA/);
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (typing) { setTyping(null); return; }
-        closeEditor();
-        return;
-      }
+      if (e.isComposing || e.keyCode === 229) return;
+      const inField = e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable="true"]');
       if (inField) return;
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selected) {
-        e.preventDefault();
-        deleteSelected();
-        return;
+      const key = e.key.toLowerCase(), control = e.ctrlKey || e.metaKey;
+      if (e.key === 'Escape') {
+        if (gesture.current) cancelGesture();
+        else if (typing) setTyping(null);
+        else if (selected) setSelected(null);
+        else requestClose();
+      } else if (control) {
+        if (key === 'z') { if (e.shiftKey) redo(); else undo(); }
+        else if (key === 'y') redo();
+        else if (key === 'c') void onCopy();
+        else if (key === 's') onSaveFile();
+        else if (key === '0') fitView();
+        else if (key === '1') changeZoom(1);
+        else if (key === 'd' && selectedShape) {
+          if (canAdd()) {
+            push();
+            const copy = { ...translated(selectedShape, 12 / scale, 12 / scale), id: shapeId() };
+            setShapes(list => [...list, copy]);
+            setSelected(copy.id);
+          }
+        } else return;
+      } else if (e.altKey) return;
+      else if (key === 'delete' || key === 'backspace') deleteSelected();
+      else if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown'].includes(key) && selectedShape) {
+        const step = e.shiftKey ? 10 : 1;
+        const dx = key === 'arrowleft' ? -step : key === 'arrowright' ? step : 0;
+        const dy = key === 'arrowup' ? -step : key === 'arrowdown' ? step : 0;
+        push();
+        setShapes(list => list.map(s => s.id === selectedShape.id ? translated(s, dx, dy) : s));
+      } else if (key === ' ' && e.target === canvasRef.current) spaceDown.current = true;
+      else if (key === '+' || key === '=') changeZoom(scale * 1.2);
+      else if (key === '-') changeZoom(scale / 1.2);
+      else {
+        const hit = TOOL_ORDER.find(k => SHORTCUT[k] === key);
+        if (!hit) return;
+        changeTool(hit);
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.shiftKey) redo(); else undo();
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        void onCopy();
-        return;
-      }
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      const hit = TOOL_ORDER.find((k) => SHORTCUT[k] === e.key.toLowerCase());
-      if (hit) {
-        e.preventDefault();
-        // The diagram behind the modal has its own letter shortcuts. Stop the
-        // event here or picking a pen also does something to the diagram.
-        e.stopPropagation();
-        setTool(hit);
-      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
     };
+    const onKeyUp = (event: KeyboardEvent) => { if (event.key === ' ') spaceDown.current = false; };
     document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
-  }, [editing, typing, selected, deleteSelected, undo, redo, onCopy, closeEditor]);
+    document.addEventListener('keyup', onKeyUp, true);
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      document.removeEventListener('keyup', onKeyUp, true);
+    };
+  }, [editing, typing, selected, selectedShape, deleteSelected, undo, redo, onCopy, onSaveFile,
+    fitView, changeZoom, scale, canAdd, push, cancelGesture, requestClose, changeTool]);
 
   if (!NOTES_IMAGES || !editing) return null;
 
@@ -645,56 +904,49 @@ export function ScreenshotEditor() {
   return (
     <div
       data-nds-shot-editor="1"
-      className="fixed inset-0 z-[90] flex flex-col"
-      style={{ background: 'rgba(15,23,42,0.72)' }}
+      className="nds-shot-editor"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('Screenshot editor')}
+      onKeyDown={event => event.stopPropagation()}
+      onKeyUp={event => event.stopPropagation()}
     >
-      <div className="flex-1 min-h-0 m-4 mb-0 rounded-xl bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-hidden">
-        {/* Tool rail */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-200 dark:border-slate-700 flex-wrap">
-          <div className="flex items-center gap-1">
+      <div className="nds-shot-window">
+        <div className="nds-shot-toolbar" data-nds-shot-toolbar>
+          <div className="nds-shot-group nds-shot-tools" role="group" aria-label={t('Annotation tools')}>
             {TOOL_ORDER.map((k) => (
               <button
                 key={k}
                 type="button"
                 data-nds-shot-tool={k}
-                title={`${toolLabel(k, t)} (${SHORTCUT[k].toUpperCase()})`}
+                title={`${toolLabel(k, t)} (${SHORTCUT[k].toUpperCase()}). ${t(TOOL_HINTS[k])}`}
+                aria-label={toolLabel(k, t)}
                 aria-pressed={tool === k}
-                onClick={() => { setTool(k); setSelected(null); }}
-                className={`h-8 w-8 grid place-items-center rounded-md border transition
-                  ${tool === k
-                    ? 'bg-sky-600 text-white border-sky-600'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                onClick={() => changeTool(k)}
               >
                 <ToolIcon tool={k} />
               </button>
             ))}
           </div>
 
-          <span className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
-
-          <div className="flex items-center gap-1" role="radiogroup" aria-label={t('Annotation colour')}>
+          <div className="nds-shot-group nds-shot-palette" role="radiogroup" aria-label={t('Annotation colour')}>
             {PEN_COLORS.map((c) => (
               <button
                 key={c.key}
                 type="button"
                 data-nds-shot-color={c.key}
-                title={c.label}
+                title={t(c.label)}
                 role="radio"
                 aria-checked={color.toLowerCase() === c.hex.toLowerCase()}
-                aria-label={c.label}
-                onClick={() => { setColor(c.hex); restyle({ color: c.hex }); }}
-                className={`h-6 w-6 rounded-full border-2 transition
-                  ${color.toLowerCase() === c.hex.toLowerCase()
-                    ? 'border-sky-500 scale-110'
-                    : 'border-slate-300 dark:border-slate-600'}`}
+                aria-label={t(c.label)}
+                onClick={() => { if (!commitTyping()) return; setColor(c.hex); restyle({ color: c.hex }); }}
+                className="nds-shot-color"
                 style={{ background: c.hex }}
               />
             ))}
           </div>
 
-          <span className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
-
-          <div className="flex items-center gap-1" role="radiogroup" aria-label={t('Size')}>
+          <div className="nds-shot-group nds-shot-presets" role="radiogroup" aria-label={t('Size')}>
             {sizeKeys.map((k) => (
               <button
                 key={k}
@@ -702,28 +954,20 @@ export function ScreenshotEditor() {
                 data-nds-shot-size={k}
                 role="radio"
                 aria-checked={sizeKey === k}
-                onClick={() => { setSizeKey(k); restyle({ size: k }); }}
-                className={`h-8 px-2.5 rounded-md border text-xs font-semibold transition
-                  ${sizeKey === k
-                    ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-900'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                onClick={() => { if (!commitTyping()) return; setSizeKey(k); restyle({ size: k }); }}
               >
                 {k === 'sm' ? t('S') : k === 'md' ? t('M') : t('L')}
               </button>
             ))}
           </div>
 
-          <span className="w-px h-6 bg-slate-200 dark:bg-slate-700" />
-
+          <div className="nds-shot-group nds-shot-history" role="group" aria-label={t('History and selection')}>
           <button
             type="button"
             data-nds-shot-undo
             disabled={!canUndo}
             onClick={undo}
-            title={t('Undo')}
-            className="h-8 px-2.5 rounded-md border text-xs font-medium bg-white dark:bg-slate-800
-                       text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600
-                       hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+            title={`${t('Undo')} (Ctrl+Z)`}
           >
             {t('Undo')}
           </button>
@@ -732,10 +976,7 @@ export function ScreenshotEditor() {
             data-nds-shot-redo
             disabled={!canRedo}
             onClick={redo}
-            title={t('Redo')}
-            className="h-8 px-2.5 rounded-md border text-xs font-medium bg-white dark:bg-slate-800
-                       text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600
-                       hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+            title={`${t('Redo')} (Ctrl+Shift+Z / Ctrl+Y)`}
           >
             {t('Redo')}
           </button>
@@ -744,47 +985,117 @@ export function ScreenshotEditor() {
               type="button"
               data-nds-shot-delete
               onClick={deleteSelected}
-              className="h-8 px-2.5 rounded-md border text-xs font-medium border-rose-300 text-rose-700
-                         bg-rose-50 hover:bg-rose-100"
+              className="nds-shot-delete"
+              aria-label={t('Delete')}
+              title={`${t('Delete')} (Delete)`}
             >
-              {t('Delete')}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M5 6h14M9 6V3h6v3M7 6l1 15h8l1-15M10 10v7M14 10v7" />
+              </svg>
             </button>
           )}
+          </div>
+          <div className="nds-shot-view">
+            <span data-nds-shot-dimensions>{base ? `${base.width} × ${base.height}` : ''}</span>
+            <button type="button" data-nds-shot-fit onClick={fitView} title={`${t('Fit image to window')} (Ctrl+0)`}>
+              {t('Fit')}
+            </button>
+            <button type="button" data-nds-shot-actual onClick={() => changeZoom(1)} title={`${t('Actual image size')} (Ctrl+1)`}>100%</button>
+          </div>
         </div>
 
-        {/* Canvas */}
-        <div ref={wrapRef} className="flex-1 min-h-0 overflow-auto grid place-items-center bg-slate-100 dark:bg-slate-950 p-4 relative">
+        <div className="nds-shot-text-options" data-nds-shot-text-options role="group" aria-label={t('Selected text size')}
+          onBlur={event => {
+            if (!typing || event.relatedTarget === textRef.current ||
+                (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget))) return;
+            const value = fontRef.current?.valueAsNumber;
+            if ((fontEdited.current || fontInvalid) &&
+                (value === undefined || !Number.isFinite(value) || value < MIN_NOTE_TEXT_SIZE || value > MAX_NOTE_TEXT_SIZE)) return;
+            commitTyping();
+          }}>
+          <label htmlFor="nds-shot-font-size">{t('Text size')}</label>
+          <button type="button" data-nds-shot-text-smaller disabled={fontValue === null || fontValue <= MIN_NOTE_TEXT_SIZE}
+            aria-label={t('Decrease text size')}
+            onPointerDown={event => { if (typing && document.activeElement === textRef.current) event.preventDefault(); }}
+            onClick={() => fontValue !== null && applyTextSize(Math.max(MIN_NOTE_TEXT_SIZE, Math.round((fontValue - 1) * 100) / 100))}>A-</button>
+          <input ref={fontRef} id="nds-shot-font-size" data-nds-shot-text-size type="number" min={MIN_NOTE_TEXT_SIZE} max={MAX_NOTE_TEXT_SIZE}
+            step="any" inputMode="decimal" placeholder="--" disabled={fontValue === null} value={fontInput}
+            title={t('Enter a text size from 8 to 512 px.')}
+            aria-label={t('Text size in pixels')} aria-invalid={fontInvalid} aria-describedby="nds-shot-font-hint"
+            onChange={event => {
+              fontEdited.current = true;
+              setFontInput(event.target.value);
+              const value = event.target.valueAsNumber;
+              setFontInvalid(!Number.isFinite(value) || value < MIN_NOTE_TEXT_SIZE || value > MAX_NOTE_TEXT_SIZE);
+            }}
+            onBlur={event => { if (fontTarget && fontEdited.current) applyTextSize(event.currentTarget.valueAsNumber); }}
+            onKeyDown={event => {
+              if (event.nativeEvent.isComposing) return;
+              if (event.key === 'Enter') {
+                event.preventDefault(); event.stopPropagation();
+                if (!fontEdited.current || applyTextSize(event.currentTarget.valueAsNumber)) {
+                  window.requestAnimationFrame(() => (typing ? textRef.current : canvasRef.current)?.focus({ preventScroll: true }));
+                }
+              } else if (event.key === 'Escape') {
+                event.preventDefault(); event.stopPropagation();
+                fontEdited.current = false;
+                setFontInput(fontValue === null ? '' : String(fontValue)); setFontInvalid(false);
+                window.requestAnimationFrame(() => (typing ? textRef.current : canvasRef.current)?.focus({ preventScroll: true }));
+              }
+            }} />
+          <span>px</span>
+          <button type="button" data-nds-shot-text-larger disabled={fontValue === null || fontValue >= MAX_NOTE_TEXT_SIZE}
+            aria-label={t('Increase text size')}
+            onPointerDown={event => { if (typing && document.activeElement === textRef.current) event.preventDefault(); }}
+            onClick={() => fontValue !== null && applyTextSize(Math.max(MIN_NOTE_TEXT_SIZE, Math.min(MAX_NOTE_TEXT_SIZE, Math.round((fontValue + 1) * 100) / 100)))}>A+</button>
+          <span id="nds-shot-font-hint" className={fontInvalid ? 'nds-shot-font-error' : 'nds-shot-font-hint'}>
+            {fontInvalid ? t('Enter a text size from 8 to 512 px.') : fontValue === null ? t('Select a callout, text or step.') : ''}
+          </span>
+        </div>
+
+        <div ref={wrapRef} className="nds-shot-viewport" data-nds-shot-viewport>
           {base && (
-            <div className="relative" style={{ width: base.width * scale, height: base.height * scale }}>
+            <div className="nds-shot-board" style={{ width: Math.max(viewport.w, base.width * scale + 48), height: Math.max(viewport.h, base.height * scale + 48) }}>
+            <div className="nds-shot-stage" style={{ width: base.width * scale, height: base.height * scale }}>
               <canvas
                 ref={canvasRef}
                 data-nds-shot-canvas
                 width={base.width}
                 height={base.height}
-                onMouseDown={onDown}
-                onMouseMove={onMove}
-                onMouseUp={onUp}
+                onPointerDown={onDown}
+                onPointerMove={onMove}
+                onPointerUp={onUp}
+                onPointerCancel={cancelGesture}
+                onLostPointerCapture={cancelGesture}
                 onDoubleClick={onDoubleClick}
-                className="block shadow-md rounded"
+                tabIndex={0}
+                aria-label={t('Screenshot canvas')}
                 style={{
                   width: base.width * scale,
                   height: base.height * scale,
-                  cursor: tool === 'select' ? 'default' : 'crosshair',
+                  cursor: panning ? 'grabbing' : tool === 'select' ? 'default' : tool === 'text' ? 'text' : 'crosshair',
                 }}
               />
               {typing && (
                 <textarea
                   autoFocus
+                  ref={textRef}
                   data-nds-shot-text
                   value={typing.value}
                   onChange={(e) => setTyping({ ...typing, value: e.target.value })}
-                  onBlur={commitTyping}
+                  maxLength={MAX_NOTE_TEXT_LENGTH}
+                  aria-label={t('Annotation text')}
+                  onBlur={event => {
+                    if (event.relatedTarget instanceof Element && event.relatedTarget.closest('[data-nds-shot-text-options]')) return;
+                    commitTyping();
+                  }}
                   onKeyDown={(e) => {
+                    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+                    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setTyping(null); return; }
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitTyping(); }
                   }}
                   placeholder={t('Type, then Enter')}
-                  className="absolute bg-white/95 border-2 border-sky-500 rounded px-1 py-0.5
-                             outline-none resize-none shadow-lg"
+                  className="nds-shot-input"
                   style={{
                     left: typing.x * scale,
                     top: typing.y * scale,
@@ -794,9 +1105,11 @@ export function ScreenshotEditor() {
                     minWidth: typing.box ? undefined : 140,
                     height: typing.box
                       ? typing.box.h * scale
-                      : Math.max(28, (typing.value.split('\n').length) * FONT_SIZE[sizeKey] * scale * 1.3),
-                    color: typing.box ? undefined : color,
-                    fontSize: Math.max(11, FONT_SIZE[sizeKey] * scale),
+                      : Math.max(28, (typing.value.split('\n').length) * (typing.fontSize ?? typing.size) * scale * 1.3),
+                    color: typing.box ? (isDark(typing.color) ? '#0f172a' : '#ffffff') : typing.color,
+                    background: isDark(typing.color) ? '#fffffff5' : '#0f172af5',
+                    fontFamily: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+                    fontSize: Math.max(12, (typing.fontSize ?? typing.size) * scale),
                     fontWeight: 600,
                     lineHeight: 1.25,
                     textAlign: typing.box ? 'center' : 'start',
@@ -804,36 +1117,29 @@ export function ScreenshotEditor() {
                 />
               )}
             </div>
-          )}
-          {toast && (
-            <div
-              data-nds-shot-toast
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-md
-                         text-white text-xs shadow-lg"
-              style={{ background: PLATE }}
-            >
-              {toast}
             </div>
           )}
         </div>
 
-        {/* Action bar */}
-        <div className="flex items-center gap-2 px-3 py-2.5 border-t border-slate-200 dark:border-slate-700 flex-wrap">
+        <div className="nds-shot-actions">
           <input
             data-nds-shot-caption
             value={caption}
             onChange={(e) => setCaption(e.target.value.slice(0, 120))}
             placeholder={t('Caption (optional)')}
-            className="h-8 px-2.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm
-                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 min-w-[180px] flex-1 max-w-xs"
+            className="nds-shot-caption"
+            aria-label={t('Caption (optional)')}
           />
-          <span className="flex-1" />
+          <span className="nds-shot-status" data-nds-shot-status data-nds-shot-toast={toast ? '1' : undefined}
+            data-error={fontInvalid} role="status" aria-live="polite">
+            {toast || t(typing ? 'Enter finishes. Shift+Enter adds a line. Escape cancels.' : TOOL_HINTS[tool])}
+          </span>
+          <div className="nds-shot-buttons">
           <button
             type="button"
             data-nds-shot-savefile
             onClick={onSaveFile}
-            className="h-9 px-3.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm font-medium
-                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+            title={`${t('Save .png')} (Ctrl+S)`}
           >
             {t('Save .png')}
           </button>
@@ -841,8 +1147,7 @@ export function ScreenshotEditor() {
             type="button"
             data-nds-shot-copy
             onClick={() => void onCopy()}
-            className="h-9 px-3.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm font-medium
-                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+            title={`${t('Copy')} (Ctrl+C)`}
           >
             {t('Copy')}
           </button>
@@ -850,22 +1155,20 @@ export function ScreenshotEditor() {
             type="button"
             data-nds-shot-insert
             onClick={onInsert}
-            className="h-9 px-4 rounded-md bg-sky-600 text-white text-sm font-semibold hover:bg-sky-500"
+            className="nds-shot-primary"
           >
             {existing ? t('Save changes') : t('Add to Notes')}
           </button>
           <button
             type="button"
             data-nds-shot-cancel
-            onClick={closeEditor}
-            className="h-9 px-3.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm font-medium
-                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+            onClick={requestClose}
           >
             {t('Cancel')}
           </button>
+          </div>
         </div>
       </div>
-      <div className="h-4" />
     </div>
   );
 }

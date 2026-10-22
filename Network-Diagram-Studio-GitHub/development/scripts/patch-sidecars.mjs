@@ -4,8 +4,6 @@ import { verifyReleaseBundle } from './check-release-history.mjs';
 
 export const runtimeTags = [
   '<link rel="icon" type="image/svg+xml" sizes="any" href="./production_editor/nds-logo.svg?v=node-n-1" />',
-  '<link rel="stylesheet" href="./production_demo/demo.css?v=studio-tour-current-ui-106" />',
-  '<script src="./production_demo/demo.js?v=studio-tour-current-ui-106"></script>',
   '<script src="./production_demo/group-copy.js"></script>',
   '<link rel="stylesheet" href="./production_arm/import.css?v=arm-resource-ids-1" />',
   '<script defer src="./production_arm/engine.js?v=arm-resource-ids-1"></script>',

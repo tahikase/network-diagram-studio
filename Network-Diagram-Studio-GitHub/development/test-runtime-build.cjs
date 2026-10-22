@@ -18,7 +18,7 @@ async function main() {
     return file;
   }
   try {
-    assert.equal(runtimeTags.length, 30);
+    assert.equal(runtimeTags.length, 28);
     for (const tag of runtimeTags) write(tag.match(/(?:src|href)="\.\/([^"?]+)/)[1], 'fixture asset');
     let raw = html;
     for (const tag of runtimeTags) {

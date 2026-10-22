@@ -324,6 +324,11 @@ export type NoteCommentMessage = NoteComment['messages'][number];
  * `url(...)` fill into a canvas paint.
  */
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+export const MIN_NOTE_TEXT_SIZE = 8;
+export const MAX_NOTE_TEXT_SIZE = 512;
+export const MAX_NOTE_TEXT_LENGTH = 2000;
+export const MAX_NOTE_SHAPES = 200;
+const noteFontSize = z.number().min(MIN_NOTE_TEXT_SIZE).max(MAX_NOTE_TEXT_SIZE).optional();
 
 export const noteShapeSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -353,8 +358,9 @@ export const noteShapeSchema = z.discriminatedUnion('kind', [
     color: hexColor,
     x: z.number(), y: z.number(), w: z.number(), h: z.number(),
     tx: z.number(), ty: z.number(),
-    text: z.string().max(400),
+    text: z.string().max(MAX_NOTE_TEXT_LENGTH),
     size: z.number().positive().max(400),
+    fontSize: noteFontSize,
     width: z.number().positive().max(200),
   }),
   z.object({
@@ -368,8 +374,9 @@ export const noteShapeSchema = z.discriminatedUnion('kind', [
     id: z.string().max(40),
     color: hexColor,
     x: z.number(), y: z.number(),
-    text: z.string().max(400),
+    text: z.string().max(MAX_NOTE_TEXT_LENGTH),
     size: z.number().positive().max(400),
+    fontSize: noteFontSize,
   }),
   z.object({
     kind: z.literal('counter'),
@@ -378,6 +385,7 @@ export const noteShapeSchema = z.discriminatedUnion('kind', [
     x: z.number(), y: z.number(),
     n: z.number().int().min(0).max(999),
     size: z.number().positive().max(400),
+    fontSize: noteFontSize,
   }),
 ]);
 
@@ -396,7 +404,7 @@ export const noteImageSchema = z.object({
   // crop are already burned into it, everything else is re-rendered from this
   // list. Storing the picture once instead of twice is why a file with three
   // annotated screenshots is not three megabytes.
-  shapes: z.array(noteShapeSchema).max(200).optional(),
+  shapes: z.array(noteShapeSchema).max(MAX_NOTE_SHAPES).optional(),
 });
 
 export type NoteImage = z.infer<typeof noteImageSchema>;

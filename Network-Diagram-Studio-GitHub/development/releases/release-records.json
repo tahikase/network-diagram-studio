@@ -1,5 +1,41 @@
 [
   {
+    "version": "0.9.145",
+    "date": "2026-10-22",
+    "kind": "fix",
+    "reason": "Keep palette resource and icon drops at the pointer instead of recentering the first resource on the canvas. Frame loaded or recovered content explicitly rather than leaving React Flow's initial fit pending on a blank canvas. Preserve existing creation coordinates, zoom/pan, selection, one-step undo/redo, JSON and manual Fit. Restore expected placement without a public announcement or unread badge."
+  },
+  {
+    "version": "0.9.144",
+    "date": "2026-10-21",
+    "kind": "functionality",
+    "userImpact": "The Screenshot editor gains the requested NetShot-style compact toolbar, independent 8–512px text sizing for callouts, text and step labels, image dimensions, Fit/100% views, zoom/pan, duplication, keyboard nudging and contextual guidance. Font-only changes preserve callout geometry and step circles, remain editable through Notes/JSON and have Undo/Redo. Existing capture, local storage and text containment are retained; unsaved edits are protected on dismissal."
+  },
+  {
+    "version": "0.9.143",
+    "date": "2026-10-21",
+    "kind": "fix",
+    "reason": "Keep Screenshot annotation text inside its shape: wrap unbroken identifiers at Unicode grapheme boundaries, fit callout text to both the padded width and height without changing its stored text or preferred size, and fit longer step numbers inside their circles. The shared renderer keeps preview, PNG, clipboard and Notes output identical, including after resizing, editing, undo/redo and browser recovery. Restore expected containment without a new public announcement or unread badge."
+  },
+  {
+    "version": "0.9.142",
+    "date": "2026-10-21",
+    "kind": "fix",
+    "reason": "Apply the requested UI corrections: use Grid for an unset, invalid or unreadable background preference while preserving saved Blank, Dots and Grid choices, and remove Demo video from Settings with its unused player and media. Keep the Guide, keyboard shortcuts and shared group copy/paste runtime intact. These corrections add no new product capability or public announcement."
+  },
+  {
+    "version": "0.9.141",
+    "date": "2026-10-21",
+    "kind": "fix",
+    "reason": "Restore the expected visibility of the Dots canvas background in both themes and throughout the supported zoom range. Increase dot contrast, preserve a minimum screen diameter and thin the world-aligned lattice when zoomed out so dots do not disappear or merge. Grid, Blank, snapping and diagram data are unchanged. Add screenshot-pixel regression coverage without a new public announcement or unread badge."
+  },
+  {
+    "version": "0.9.140",
+    "date": "2026-10-21",
+    "kind": "ui",
+    "userImpact": "File and Export menus organize the toolbar while Undo, Redo and Save JSON remain directly accessible. Feedback, browser save status and Settings stay together on the right. A Canvas menu beside an equally sized Fullscreen button offers Blank, Dots and Grid backgrounds without changing diagram content, positions or snapping. Dots remains the default."
+  },
+  {
     "version": "0.9.139",
     "date": "2026-10-15",
     "kind": "ui",

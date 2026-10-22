@@ -1,5 +1,41 @@
 [
   {
+    "version": "0.9.144",
+    "date": "2026-10-21",
+    "category": "Usability",
+    "title": "More control in the Screenshot editor.",
+    "description": "Change a selected label's text size without changing its shape. Fit the image, view at 100%, zoom and pan, and use keyboard editing shortcuts.",
+    "before": {
+      "file": "0.9.144-before.png",
+      "version": "0.9.143",
+      "caption": "Screenshot tools with S/M/L presets and automatic fit"
+    },
+    "after": {
+      "file": "0.9.144-after.png",
+      "version": "0.9.144",
+      "caption": "Independent Text size controls, image views and tool guidance"
+    },
+    "note": "Text settings stay editable in Notes and JSON. Existing capture, PNG and clipboard actions remain available."
+  },
+  {
+    "version": "0.9.140",
+    "date": "2026-10-21",
+    "category": "Usability",
+    "title": "A tidier toolbar and your choice of canvas background.",
+    "description": "File and Export menus organize commands while Undo, Redo and Save JSON stay visible. Choose Blank, Dots or Grid beside Fullscreen.",
+    "before": {
+      "file": "0.9.140-before.png",
+      "version": "0.9.139",
+      "caption": "Individual toolbar buttons and a dotted canvas"
+    },
+    "after": {
+      "file": "0.9.140-after.png",
+      "version": "0.9.140",
+      "caption": "Grouped commands and selectable canvas backgrounds"
+    },
+    "note": "All existing commands remain available. Fullscreen and Canvas controls match in size. Background choices do not change objects or snapping; Dots remains the default."
+  },
+  {
     "version": "0.9.139",
     "date": "2026-10-15",
     "category": "Usability",

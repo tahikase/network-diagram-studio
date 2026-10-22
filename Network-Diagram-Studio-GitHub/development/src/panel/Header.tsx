@@ -8,6 +8,8 @@ import { IS_DEMO } from '../env';
 import { SettingsMenu } from './SettingsMenu';
 import { ScreenshotButton } from '../demo/NotesScreenshot';
 import { useT } from '../i18n/useT';
+import { CommandMenu, CommandMenuItem } from './CommandMenu';
+import { NOTES_IMAGES } from '../env';
 
 interface HeaderProps {
   rightSlot?: React.ReactNode;
@@ -18,11 +20,13 @@ function IconBtn({
   disabled,
   title,
   children,
+  primary = false,
 }: {
   onClick: () => void;
   disabled?: boolean;
   title: string;
   children: React.ReactNode;
+  primary?: boolean;
 }) {
   return (
     <button
@@ -30,15 +34,26 @@ function IconBtn({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`h-8 px-3 rounded-md text-sm font-medium border transition
-        whitespace-nowrap shrink-0
-        ${disabled
-          ? 'text-slate-400 border-slate-200 bg-slate-50 cursor-not-allowed'
-          : 'text-slate-700 border-slate-300 bg-white hover:bg-slate-100'}`}
+      className={`nds-header-button${primary ? ' nds-header-save' : ''}`}
     >
       {children}
     </button>
   );
+}
+
+function ActionIcon({ kind }: { kind: 'file' | 'new' | 'load' | 'save' | 'export' | 'undo' | 'redo' | 'png' | 'svg' }) {
+  const paths = {
+    file: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5',
+    new: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M12 12v6 M9 15h6',
+    load: 'M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v1 M3 7v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-1.6L22 11H6l-3 8',
+    save: 'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h9',
+    export: 'M12 16V3 m-4 4 4-4 4 4 M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5',
+    undo: 'M3 7v6h6 M3 13a9 9 0 1 0 3-6.7L3 9',
+    redo: 'M21 7v6h-6 M21 13a9 9 0 1 1-3-6.7L21 9',
+    png: 'M3 3h18v18H3z M21 15l-6-6L5 21 M7 7h1v1H7z',
+    svg: 'M3 3h5v5H3z M16 16h5v5h-5z M8 5.5h7a3.5 3.5 0 0 1 3.5 3.5v7 M5.5 8v7a3.5 3.5 0 0 0 3.5 3.5h7',
+  };
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind]} /></svg>;
 }
 
 /**
@@ -106,10 +121,17 @@ export function Header({ rightSlot }: HeaderProps) {
   // fits in the current viewport.
   const rf = useReactFlow();
   const t = useT();
+  const downloadImage = async (format: 'png' | 'svg') => {
+    try {
+      await (format === 'png' ? exportPng(diagram, rf) : exportSvg(diagram, rf));
+    } catch (error) {
+      window.alert(`${t('Export failed')}: ${error instanceof Error ? error.message : t('Unknown error')}`);
+    }
+  };
 
   return (
     <header
-      className="flex items-center gap-3 px-4 border-b bg-white"
+      className="nds-workspace-header flex items-center gap-3 px-4 border-b bg-white"
       style={{ borderColor: 'var(--nds-border)', height: 56 }}
     >
       <div className="flex items-center gap-2 pr-3 border-r shrink-0" style={{ borderColor: 'var(--nds-border)' }}>
@@ -141,61 +163,59 @@ export function Header({ rightSlot }: HeaderProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('Diagram title')}
-        className="h-8 px-3 text-sm border rounded-md min-w-[60px] flex-1 max-w-[420px]"
+        className="nds-header-title h-8 px-3 text-sm border rounded-md min-w-[60px] flex-1 max-w-[360px]"
         style={{ borderColor: 'var(--nds-border)' }}
       />
 
-      <div className="flex items-center gap-1 shrink-0">
-        <IconBtn onClick={undo} disabled={!canUndo} title={`${t('Undo')} (Ctrl+Z)`}>
-          ↶ {t('Undo')}
-        </IconBtn>
-        <IconBtn onClick={redo} disabled={!canRedo} title={`${t('Redo')} (Ctrl+Y)`}>
-          ↷ {t('Redo')}
-        </IconBtn>
-      </div>
-
-      <div className="flex items-center gap-1 pl-2 border-l shrink-0" style={{ borderColor: 'var(--nds-border)' }}>
-        <IconBtn
+      <CommandMenu id="file" label={t('File')} icon={<ActionIcon kind="file" />}>
+        <div className="nds-menu-heading">{t('Create or open')}</div>
+        <CommandMenuItem
+          label={t('New')}
+          description={t('Start with an empty canvas')}
+          icon={<ActionIcon kind="new" />}
           onClick={() => {
-            // Start fresh: wipe the diagram AND any pencil strokes / shapes
-            // on the active tab, and drop the selection state so no
-            // resize-handle ghosts are left over.
             clear();
             useTabsStore.getState().resetActiveTabAnnotations();
             useAnnotationStore.getState().clearShapeSelection();
           }}
-          title={t('Start with an empty canvas')}
-        >
-          {t('New')}
-        </IconBtn>
-        <IconBtn
-          onClick={() =>
-            loadJsonFile((raw) => {
-              // loadStudioFile, NOT loadFromJson: the latter replaces the
-              // diagram alone and leaves the old diagram's shapes behind.
-              const res = useTabsStore.getState().loadStudioFile(raw);
-              if (!res.ok) window.alert(`${t('Load failed')}: ${res.error}`);
-            })
-          }
+        />
+        <CommandMenuItem
+          label={`${t('Load')} JSON`}
           title={t('Load a diagram from JSON')}
-        >
-          {t('Load')} JSON
+          description={t('Open an editable diagram')}
+          icon={<ActionIcon kind="load" />}
+          onClick={() => loadJsonFile(raw => {
+            const res = useTabsStore.getState().loadStudioFile(raw);
+            if (!res.ok) window.alert(`${t('Load failed')}: ${res.error}`);
+          })}
+        />
+        <div data-nds-arm-menu data-nds-arm-description={t('Build from Azure resource exports')} />
+      </CommandMenu>
+
+      <div className="nds-header-quick-actions">
+        <IconBtn onClick={undo} disabled={!canUndo} title={`${t('Undo')} (Ctrl+Z)`}>
+          <ActionIcon kind="undo" />{t('Undo')}
         </IconBtn>
-        <IconBtn onClick={() => {
+        <IconBtn onClick={redo} disabled={!canRedo} title={`${t('Redo')} (Ctrl+Y)`}>
+          <ActionIcon kind="redo" />{t('Redo')}
+        </IconBtn>
+        <IconBtn primary onClick={() => {
           try { saveJson(diagram); }
           catch (error) { window.alert(`${t('Save failed')}: ${error instanceof Error ? error.message : t('Unknown error')}`); }
         }} title={t('Save current diagram as JSON')}>
-          {t('Save')} JSON
+          <ActionIcon kind="save" />{t('Save')} JSON
         </IconBtn>
       </div>
 
-      <div className="flex items-center gap-1 pl-2 border-l shrink-0" style={{ borderColor: 'var(--nds-border)' }}>
-        <IconBtn onClick={() => exportPng(diagram, rf)} title={t('Export the full diagram as PNG')}>PNG</IconBtn>
-        <IconBtn onClick={() => exportSvg(diagram, rf)} title={t('Export the full diagram as SVG')}>SVG</IconBtn>
-        <ScreenshotButton />
-      </div>
+      <CommandMenu id="export" label={t('Export')} icon={<ActionIcon kind="export" />}>
+        <div className="nds-menu-heading">{t('Download full diagram')}</div>
+        <CommandMenuItem label="PNG" description={t('Image file')} title={t('Export the full diagram as PNG')} icon={<ActionIcon kind="png" />} onClick={() => { void downloadImage('png'); }} />
+        <CommandMenuItem label="SVG" description={t('Scalable vector file')} title={t('Export the full diagram as SVG')} icon={<ActionIcon kind="svg" />} onClick={() => { void downloadImage('svg'); }} />
+        {NOTES_IMAGES && <><div className="nds-menu-separator" /><div className="nds-menu-heading">{t('Capture to Notes')}</div><ScreenshotButton menuItem /></>}
+      </CommandMenu>
 
-      <div className="ml-auto flex items-center gap-2 shrink-0">
+      <div className="nds-header-utilities ml-auto flex items-center gap-2 shrink-0">
+        <span data-nds-feedback-slot />
         {rightSlot}
         <SettingsMenu />
       </div>

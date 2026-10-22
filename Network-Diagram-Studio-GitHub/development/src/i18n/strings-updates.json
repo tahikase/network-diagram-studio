@@ -1,4 +1,94 @@
 {
+  "More control in the Screenshot editor.": {
+    "ja": "スクリーンショット編集の操作が充実しました。",
+    "zh": "截图编辑器提供更多控制。",
+    "es": "Más control en el editor de capturas.",
+    "pt": "Mais controle no editor de capturas.",
+    "fr": "Plus de contrôle dans l'éditeur de captures.",
+    "de": "Mehr Kontrolle im Screenshot-Editor.",
+    "ko": "스크린샷 편집기에서 더 세밀하게 조정하세요."
+  },
+  "Change a selected label's text size without changing its shape. Fit the image, view at 100%, zoom and pan, and use keyboard editing shortcuts.": {
+    "ja": "図形を変えずに、選択した文字のサイズだけを変更できます。全体表示、100%表示、拡大・縮小、パン、編集用のキーボードショートカットも使えます。",
+    "zh": "更改所选文字大小，而不改变形状。可适应窗口、按 100% 查看、缩放和平移，并使用键盘编辑快捷键。",
+    "es": "Cambia el tamaño del texto seleccionado sin modificar su forma. Ajusta la imagen, mírala al 100%, amplía, desplaza y usa atajos de edición.",
+    "pt": "Mude o tamanho do texto selecionado sem alterar a forma. Ajuste a imagem, veja em 100%, amplie, desloque e use atalhos de edição.",
+    "fr": "Réglez le texte sélectionné sans modifier sa forme. Adaptez l'image, affichez-la à 100 %, zoomez, déplacez-vous et utilisez les raccourcis d'édition.",
+    "de": "Die Schriftgröße der Auswahl ändern, ohne die Form zu verändern. Bild einpassen, bei 100 % ansehen, zoomen, verschieben und Tastenkürzel nutzen.",
+    "ko": "도형을 바꾸지 않고 선택한 텍스트 크기만 변경하세요. 맞춤 및 100% 보기, 확대·축소, 화면 이동, 편집 단축키를 사용할 수 있습니다."
+  },
+  "Screenshot tools with S/M/L presets and automatic fit": {
+    "ja": "S/M/Lプリセットと自動全体表示の編集ツール",
+    "zh": "带 S/M/L 预设和自动适应的截图工具",
+    "es": "Herramientas con ajustes S/M/L y encuadre automático",
+    "pt": "Ferramentas com predefinições S/M/L e ajuste automático",
+    "fr": "Outils avec tailles S/M/L et adaptation automatique",
+    "de": "Screenshot-Werkzeuge mit S/M/L und automatischer Anpassung",
+    "ko": "S/M/L 프리셋 및 자동 맞춤 스크린샷 도구"
+  },
+  "Independent Text size controls, image views and tool guidance": {
+    "ja": "独立した文字サイズ、表示切り替え、ツールの操作案内",
+    "zh": "独立的文字大小控件、图像视图和工具说明",
+    "es": "Tamaño de texto independiente, vistas y ayuda de herramientas",
+    "pt": "Tamanho de texto independente, visualizações e orientação",
+    "fr": "Taille de texte indépendante, vues et conseils d'utilisation",
+    "de": "Unabhängige Schriftgröße, Bildansichten und Werkzeughinweise",
+    "ko": "독립적인 텍스트 크기, 이미지 보기, 도구 안내"
+  },
+  "Text settings stay editable in Notes and JSON. Existing capture, PNG and clipboard actions remain available.": {
+    "ja": "文字の設定はノートとJSONに保存され、再編集できます。既存のキャプチャ、PNG保存、クリップボードへのコピーも引き続き使えます。",
+    "zh": "文字设置在笔记和 JSON 中仍可编辑。现有截图、PNG 和剪贴板操作继续可用。",
+    "es": "Los ajustes de texto siguen editables en Notas y JSON. Se mantienen la captura, PNG y el portapapeles.",
+    "pt": "As configurações de texto continuam editáveis em Notas e JSON. Captura, PNG e área de transferência continuam disponíveis.",
+    "fr": "Les réglages restent modifiables dans Notes et JSON. Capture, PNG et presse-papiers restent disponibles.",
+    "de": "Texteinstellungen bleiben in Notizen und JSON bearbeitbar. Aufnahme, PNG und Zwischenablage bleiben verfügbar.",
+    "ko": "텍스트 설정은 노트 및 JSON에서 계속 편집할 수 있습니다. 기존 캡처, PNG, 클립보드 기능도 유지됩니다."
+  },
+  "A tidier toolbar and your choice of canvas background.": {
+    "ja": "ツールバーを整理し、キャンバスの背景を選べるようにしました。",
+    "zh": "更整洁的工具栏，以及可选的画布背景。",
+    "es": "Una barra más ordenada y un fondo de lienzo a tu elección.",
+    "pt": "Uma barra mais organizada e opções de fundo da tela.",
+    "fr": "Une barre mieux organisée et un arrière-plan au choix.",
+    "de": "Eine übersichtlichere Werkzeugleiste und wählbare Leinwandhintergründe.",
+    "ko": "정리된 도구 모음과 선택 가능한 캔버스 배경."
+  },
+  "File and Export menus organize commands while Undo, Redo and Save JSON stay visible. Choose Blank, Dots or Grid beside Fullscreen.": {
+    "ja": "操作を「ファイル」と「エクスポート」にまとめ、「元に戻す」「やり直し」「JSON を保存」は常に表示します。全画面表示の横で、無地・ドット・グリッドを選べます。",
+    "zh": "“文件”和“导出”菜单整理命令，同时保留撤销、重做和保存 JSON。可在全屏按钮旁选择空白、圆点或网格。",
+    "es": "Los menús Archivo y Exportar agrupan los comandos; Deshacer, Rehacer y Guardar JSON siguen visibles. Elige fondo en blanco, puntos o cuadrícula junto a Pantalla completa.",
+    "pt": "Os menus Arquivo e Exportar organizam os comandos; Desfazer, Refazer e Salvar JSON continuam visíveis. Escolha fundo em branco, pontos ou grade ao lado de Tela cheia.",
+    "fr": "Les menus Fichier et Exporter regroupent les commandes. Annuler, Rétablir et Enregistrer JSON restent visibles. Choisissez un fond uni, à points ou quadrillé près de Plein écran.",
+    "de": "Datei und Exportieren bündeln die Befehle. Rückgängig, Wiederholen und JSON speichern bleiben sichtbar. Neben Vollbild stehen Leer, Punkte und Raster zur Wahl.",
+    "ko": "파일 및 내보내기 메뉴로 명령을 정리하고 실행 취소, 다시 실행, JSON 저장은 계속 표시합니다. 전체 화면 옆에서 빈 배경, 점 또는 격자를 선택하세요."
+  },
+  "Individual toolbar buttons and a dotted canvas": {
+    "ja": "操作ごとに並ぶボタンとドットのキャンバス",
+    "zh": "单独排列的工具栏按钮和圆点画布",
+    "es": "Botones individuales y un lienzo con puntos",
+    "pt": "Botões individuais e uma tela com pontos",
+    "fr": "Boutons individuels et canevas à points",
+    "de": "Einzelne Schaltflächen und eine gepunktete Leinwand",
+    "ko": "개별 도구 모음 버튼과 점 배경 캔버스"
+  },
+  "Grouped commands and selectable canvas backgrounds": {
+    "ja": "分類された操作と選択できるキャンバスの背景",
+    "zh": "分组的命令和可选的画布背景",
+    "es": "Comandos agrupados y fondos de lienzo seleccionables",
+    "pt": "Comandos agrupados e fundos de tela selecionáveis",
+    "fr": "Commandes regroupées et arrière-plans au choix",
+    "de": "Gruppierte Befehle und wählbare Leinwandhintergründe",
+    "ko": "그룹화된 명령과 선택 가능한 캔버스 배경"
+  },
+  "All existing commands remain available. Fullscreen and Canvas controls match in size. Background choices do not change objects or snapping; Dots remains the default.": {
+    "ja": "既存の操作はすべて引き続き使えます。全画面表示とキャンバスのボタンは同じ大きさです。背景を変えてもオブジェクトやスナップは変わりません。既定はドットです。",
+    "zh": "所有现有命令仍然可用。全屏和画布控件大小一致。背景选择不会改变对象或吸附；默认仍为圆点。",
+    "es": "Todos los comandos siguen disponibles. Los controles de pantalla completa y lienzo tienen el mismo tamaño. El fondo no cambia los objetos ni el ajuste; los puntos siguen siendo la opción predeterminada.",
+    "pt": "Todos os comandos continuam disponíveis. Os controles de tela cheia e tela têm o mesmo tamanho. O fundo não altera objetos nem encaixe; pontos continua sendo o padrão.",
+    "fr": "Toutes les commandes restent disponibles. Les boutons Plein écran et Canevas ont la même taille. Le fond ne modifie ni les objets ni l'alignement automatique ; les points restent le choix par défaut.",
+    "de": "Alle bisherigen Befehle bleiben verfügbar. Vollbild und Leinwand haben gleich große Schaltflächen. Die Hintergrundwahl ändert weder Objekte noch Einrasten; Punkte bleibt der Standard.",
+    "ko": "모든 기존 명령을 계속 사용할 수 있습니다. 전체 화면과 캔버스 컨트롤은 같은 크기입니다. 배경 선택은 개체나 맞춤 동작을 변경하지 않으며 기본값은 점입니다."
+  },
   "Less text in Import ARM, with Steps kept visible.": {
     "ja": "Import ARM の文字を減らし、手順を常に表示します。",
     "zh": "ARM 导入中的文字更少，步骤始终可见。",

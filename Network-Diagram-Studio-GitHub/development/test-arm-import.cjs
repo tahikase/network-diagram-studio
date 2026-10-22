@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 const vm = require('node:vm');
 
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -122,7 +123,7 @@ async function choose(page, opener, keyboard = false, filename = 'template.json'
 }
 
 async function openARM(page) {
-  await page.locator('#nds-arm-open').click();
+  await clickHeaderAction(page, 'Import ARM');
   assert(await page.locator('#nds-arm-dialog').evaluate(el => el.open));
   await choose(page, '#nds-arm-choose');
   await page.locator('#nds-arm-group').fill('rg-example');
@@ -143,7 +144,7 @@ async function verifyCombined(page) {
     await (await choosing).setFiles(files);
   };
   const cards = page.locator('[data-arm-entry]');
-  await page.locator('#nds-arm-open').click();
+  await clickHeaderAction(page, 'Import ARM');
   await setFiles(cards.first().locator('[data-arm-choose]'), file('rg-hub', 'rg-spoke'));
   await cards.first().locator('[data-arm-group]').fill('rg-hub');
   await cards.first().locator('[data-arm-sub]').fill(sub);
@@ -198,7 +199,7 @@ async function verifyCombined(page) {
   await page.locator('#nds-arm-cancel').click();
   assert.equal(await snapshot(page), original, 'Cancelling combined import restores the original transaction');
   assert.deepEqual(await page.evaluate(() => window.__nds_tabsStore.getState().tabs.map(tab => tab.id)), tabIds);
-  await page.locator('#nds-arm-open').click();
+  await clickHeaderAction(page, 'Import ARM');
   await page.locator('#nds-arm-start').click();
   await page.waitForFunction(() => document.getElementById('nds-arm-percent').textContent === '100%', null, { timeout: 30000 });
   const imported = await page.evaluate(() => structuredClone(window.__nds_diagramStore.getState().diagram));
@@ -248,13 +249,13 @@ async function verify(target) {
   });
   try {
     await page.goto(url);
-    await page.locator('#nds-arm-open').waitFor();
+    await page.locator('#nds-arm-open').waitFor({ state: 'attached' });
     await page.getByRole('textbox', { name: 'Search the whole palette' }).fill('group virtual network');
     await page.locator('[data-nds-search-hit-kind="resource"]').first().click();
     await page.waitForFunction(() => window.__nds_diagramStore.getState().diagram.nodes.length === 1);
     const before = await snapshot(page);
     const camera = await page.locator('.react-flow__viewport').getAttribute('style');
-    await page.locator('#nds-arm-open').click();
+    await clickHeaderAction(page, 'Import ARM');
     assert(await page.locator('#nds-arm-dialog').evaluate(el => el.open));
     assert.equal(chooserCount, 0, 'Import ARM opens instructions without a blocking file picker');
     assert.equal(await page.locator('#nds-arm-filename').textContent(), 'No file selected');
@@ -352,7 +353,7 @@ async function verify(target) {
     assert(await page.locator('#nds-arm-dialog').evaluate(el => el.open));
     assert.equal(await page.locator('#nds-arm-filename').textContent(), filename);
     await page.keyboard.press('Escape');
-    assert(await page.locator('#nds-arm-open').evaluate(el => document.activeElement === el));
+    assert(await page.locator('[data-nds-menu-trigger="file"]').evaluate(el => document.activeElement === el));
     await openARM(page);
     assert(await page.locator('#nds-arm-start').isEnabled());
     const originalId = await page.evaluate(() => window.__nds_tabsStore.getState().activeTabId);

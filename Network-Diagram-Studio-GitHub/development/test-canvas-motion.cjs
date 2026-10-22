@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 function motionFixture() {
   const file = {
@@ -88,7 +89,7 @@ async function verify(entry, index) {
   }
   async function load(value) {
     const chosen = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+    await clickHeaderAction(page, 'Load JSON');
     await (await chosen).setFiles({
       name: 'motion.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)),
     });
@@ -133,24 +134,23 @@ async function verify(entry, index) {
     for (const language of ['en', 'ja', 'zh', 'es', 'pt', 'fr', 'de', 'ko']) {
       await page.evaluate(lang => window.__nds_i18nStore.getState().setLang(lang), language);
       await settle();
-      assert(await page.locator('#nds-arm-open').evaluate(el => {
-        const buttons = [...document.querySelectorAll('header button')].filter(b => b.textContent.includes('JSON'));
-        return buttons.length === 2 && el.previousElementSibling === buttons[1];
-      }), `${language}: ARM stays after Save JSON when the header changes`);
+      assert(await page.locator('#nds-arm-open').evaluate(el =>
+        el.parentElement.matches('[data-nds-arm-menu]') && el.closest('#nds-menu-file')),
+      `${language}: ARM stays in File when the header changes`);
     }
     await page.evaluate(() => window.__nds_i18nStore.getState().setLang('en'));
     await page.setViewportSize({ width: 1000, height: 850 });
     await settle();
-    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-tabbar]')));
+    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')));
     const compactToolbar = await toolbar.boundingBox();
     const compactHost = await page.locator('[data-nds-fullscreen-target]').boundingBox();
     assert(compactToolbar.x >= compactHost.x &&
       compactToolbar.x + compactToolbar.width <= compactHost.x + compactHost.width + 1);
     await page.setViewportSize({ width: 1600, height: 1050 });
     await settle();
-    assert(await page.locator('#nds-arm-open').evaluate(el => el.previousElementSibling.textContent.includes('Save')));
+    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')));
     const choosing = page.waitForEvent('filechooser');
-    await page.locator('#nds-arm-open').click();
+    await clickHeaderAction(page, 'Import ARM');
     await page.locator('#nds-arm-choose').click();
     const chooser = await choosing;
     assert(await page.locator('#nds-arm-dialog').evaluate(el => el.open));

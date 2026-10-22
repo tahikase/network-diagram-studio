@@ -332,7 +332,7 @@ async function verify(browser, entry, edition) {
       /Drag to reorder|Moved \{tab\}|Tab reordering|Each tab holds its own diagram, shapes and notes\.|Reorder the focused tab|Navigate tabs|Activate the focused tab|Cancel tab reordering/.test(value)));
     await page.evaluate(() => window.__nds_i18nStore.getState().setLang('en'));
     await page.setViewportSize({ width: 1000, height: 850 }); await settle(page);
-    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-tabbar]')));
+    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')));
     assert.equal(await page.locator('#nds-arm-open').getAttribute('data-nds-tab'), null);
     await page.evaluate(() => {
       const store = window.__nds_tabsStore;
@@ -372,11 +372,11 @@ async function verify(browser, entry, edition) {
     for (const key of ['Alt+ArrowLeft', 'Alt+ArrowRight']) {
       await page.keyboard.press(key); await focus(page, keyboardSource);
       const visible = await tab(page, keyboardSource).evaluate(el => {
-        const tab = el.getBoundingClientRect(), arm = document.querySelector('#nds-arm-open').getBoundingClientRect();
+        const tab = el.getBoundingClientRect();
         const area = el.closest('[data-nds-tabbar]').getBoundingClientRect();
-        return tab.left >= arm.right && tab.right <= area.right;
+        return tab.left >= area.left && tab.right <= area.right;
       });
-      assert(visible, 'A keyboard-moved tab must be fully visible, not hidden behind the pinned Import ARM button.');
+      assert(visible, 'A keyboard-moved tab must be fully visible inside the tab strip.');
       assert.equal(await camera(page), keyboardCamera, 'Revealing a focused tab scrolls only the tab strip.');
     }
     await expectOrder(page, expected);

@@ -9,6 +9,7 @@
 //
 // Run:  node test-studiofile.cjs [path-to-bundle]
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 const path = require('path');
 
 const BUNDLE =
@@ -416,7 +417,7 @@ function readShapes(page) {
     };
   });
   // NOT title*="Load" — that also matches the palette's Load Balancer row.
-  await page.click('button[title="Load a diagram from JSON"]');
+  await clickHeaderAction(page, 'Load JSON');
   const fed = await page.evaluate((raw) => {
     const input = window.__nds_lastInput;
     if (!input || input.type !== 'file') return false;

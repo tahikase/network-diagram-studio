@@ -2,8 +2,6 @@ import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { shallow } from 'zustand/vanilla/shallow';
 import {
   ReactFlow,
-  Background,
-  BackgroundVariant,
   ConnectionMode,
   Controls,
   Panel,
@@ -77,6 +75,8 @@ import { installImportedSymbols } from '../icons/imported-library';
 import { runtimeExtensions } from '../runtime/extensions';
 import { CANVAS_PLACEMENT_FEEDBACK } from '../env';
 import { clearPlacementFeedback, isPreviewArrow, usePlacementFeedback } from '../demo/placement-feedback';
+import { CanvasBackground, CanvasBackgroundMenu } from './CanvasBackground';
+import { useT } from '../i18n/useT';
 
 // Install the SVG symbol sprite exactly once, module-side, on the FIRST
 // canvas mount. Moving it out of the Canvas render tree means:
@@ -100,19 +100,10 @@ let SPRITE_INSTALLED = false;function installSpriteOnce() {
 }
 
 /**
- * Options for EVERY fitView in this canvas.
- *
- * `maxZoom: 1` is the important part. React Flow's `fitView` prop defers
- * the initial fit until it has nodes to measure, so on a canvas that
- * starts empty it fires on the FIRST node the user adds — and with the
- * component's `maxZoom={2.5}`, framing one small card zoomed the canvas
- * to 2.5x. A freshly dropped 208x137 card rendered 520x343 and filled the
- * viewport, which read as "the default node size is enormous" even though
- * the node's own size was correct.
- *
- * Capping the fit at 1 means fitView may still zoom OUT to frame a large
- * diagram, but never zooms IN past 1:1. The user can still zoom in by
- * hand; nothing stops them.
+ * Automatic framing may zoom out for a large diagram, but never zooms in
+ * past 1:1. Frame on mount or an explicit content change, not through the
+ * React Flow fitView prop: on an empty canvas it defers until the first
+ * resource drop, moving that resource away from the pointer.
  */
 const FIT_VIEW_OPTIONS = { padding: 0.12, maxZoom: 1 } as const;
 
@@ -269,12 +260,12 @@ export function Canvas(props: CanvasProps = {}) {
     };
   }, [rfInstance]);
 
-  // Frame any diagram that arrives as new content (Sample, Load JSON, New,
-  // AI import). Deferred twice so React Flow has rendered AND measured the
-  // incoming nodes — fitView can only frame nodes it has measured.
+  // Frame recovered work on mount and explicit new content (Sample, Load
+  // JSON, New, AI import). An empty initial pass resets the viewport without
+  // leaving a deferred fit for the first palette drop. Wait two frames so
+  // React Flow has rendered and measured the incoming nodes.
   const fitNonce = useDiagramStore((s) => s.fitNonce);
   useEffect(() => {
-    if (fitNonce === 0) return;
     let cancelled = false;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -1116,6 +1107,7 @@ export function Canvas(props: CanvasProps = {}) {
   // back to our own wrapper.
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const t = useT();
 
   const resolveFullscreenTarget = useCallback((): HTMLElement | null => {
     const el = wrapperRef.current;
@@ -1136,18 +1128,19 @@ export function Canvas(props: CanvasProps = {}) {
   const toggleFullscreen = useCallback(async () => {
     const target = resolveFullscreenTarget();
     if (!target) return;
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    } else {
-      await target.requestFullscreen();
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await target.requestFullscreen();
+    } catch (error) {
+      window.alert(`${t('Fullscreen failed')}: ${error instanceof Error ? error.message : t('Unknown error')}`);
     }
-  }, [resolveFullscreenTarget]);
+  }, [resolveFullscreenTarget, t]);
 
   return (
     <div
       ref={wrapperRef}
       className={`w-full h-full relative bg-slate-50${isConnecting ? ' nds-connecting' : ''}`}
-      style={{ '--nds-group-count': groupCount } as React.CSSProperties}
+      style={{ '--nds-group-count': groupCount, backgroundColor: 'var(--nds-bg)' } as React.CSSProperties}
       onDoubleClickCapture={(event) => runtimeExtensions().ndsTextDock?.createText(event, rfInstance, buildShapeFromVariantAt)}
       onDragOver={onDragOver}
       onDragLeave={event => {
@@ -1188,7 +1181,6 @@ export function Canvas(props: CanvasProps = {}) {
            identical to the one a shape's connect anchor draws. See
            theme/connection-line.ts. */
         connectionLineStyle={CONNECTION_LINE_STYLE}
-        fitView
         fitViewOptions={FIT_VIEW_OPTIONS}
         minZoom={0.1}
         maxZoom={2.5}
@@ -1208,41 +1200,43 @@ export function Canvas(props: CanvasProps = {}) {
         selectionOnDrag={selectionOnDrag}
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="var(--nds-grid)" />
+        <CanvasBackground />
         <Controls position="bottom-left" showInteractive={false} />
-        <Panel position="top-left">
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            data-nds-fullscreen
-            title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Enter fullscreen'}
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            className="nds-canvas-chrome flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-slate-700 text-xs font-medium transition-colors"
-          >
-            {isFullscreen ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8 3v3a2 2 0 0 1-2 2H3" />
-                  <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
-                  <path d="M3 16h3a2 2 0 0 1 2 2v3" />
-                  <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
-                </svg>
-                Exit fullscreen
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 8V5a2 2 0 0 1 2-2h3" />
-                  <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-                  <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-                  <path d="M21 16v3a2 2 0 0 1-2 2h-3" />
-                </svg>
-                Fullscreen
-              </>
-            )}
-          </button>
-        </Panel>
       </ReactFlow>
+      {/* Keep menus above React Flow's stacking context and the drawing tools. */}
+      <Panel position="top-left" className="nds-canvas-view-controls" data-nds-canvas-view-controls="1">
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          data-nds-fullscreen
+          title={isFullscreen ? t('Exit fullscreen (Esc)') : t('Enter fullscreen')}
+          aria-label={isFullscreen ? t('Exit fullscreen') : t('Enter fullscreen')}
+          className="nds-canvas-chrome nds-canvas-view-button"
+        >
+          {isFullscreen ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+                <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+                <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+                <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+              </svg>
+              {t('Exit fullscreen')}
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 8V5a2 2 0 0 1 2-2h3" />
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                <path d="M21 16v3a2 2 0 0 1-2 2h-3" />
+              </svg>
+              {t('Fullscreen')}
+            </>
+          )}
+        </button>
+        <CanvasBackgroundMenu />
+      </Panel>
     </div>
   );
 }

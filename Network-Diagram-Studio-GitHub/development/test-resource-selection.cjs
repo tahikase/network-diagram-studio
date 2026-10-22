@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 const entries = process.argv.slice(2);
 if (!entries.length) entries.push(path.join(__dirname, '..', 'index.html'));
@@ -119,13 +120,13 @@ async function verify(entry, index) {
     const destination = path.join(temp, filename);
     files.push(destination);
     const pending = page.waitForEvent('download');
-    await page.getByRole('button', { name: label, exact: true }).click();
+    await clickHeaderAction(page, label);
     await (await pending).saveAs(destination);
     return destination;
   }
   async function load(file) {
     const pending = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+    await clickHeaderAction(page, 'Load JSON');
     await (await pending).setFiles(file);
     await settle();
   }

@@ -198,7 +198,7 @@
     if (editable(event.target)) return;
     // The screenshot editor and the ARM dialog run their own history. Leaving
     // the event alone there keeps the native handler in charge, unchanged.
-    if (document.querySelector('dialog[open]')) return;
+    if (document.querySelector('dialog[open], [data-nds-shot-editor]')) return;
     if (!ready()) return;
     event.preventDefault();
     event.stopImmediatePropagation();

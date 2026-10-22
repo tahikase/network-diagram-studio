@@ -63,10 +63,6 @@
   background: var(--nds-settings-surface);
   border-color: var(--nds-settings-line);
 }
-[data-nds-settings-panel] #nds-demo-settings-open {
-  border-color: var(--nds-settings-line);
-  background: var(--nds-settings-active);
-}
 [data-nds-settings-panel] :is([data-nds-guide-group], [data-nds-shortcut-group]) > span:first-child,
 [data-nds-settings-panel] [data-nds-guide-item] > div,
 [data-nds-settings-panel] [data-nds-shortcut] > span:first-child {

@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
+const { clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 const evidence = process.env.NDS_SHAPE_CONNECTOR_EVIDENCE;
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -49,7 +50,7 @@ async function verify(entry) {
   async function load(document) {
     const title = `Connected shape example ${++loadCount}`;
     const choosing = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'Load JSON', exact: true }).click();
+    await clickHeaderAction(page, 'Load JSON');
     await (await choosing).setFiles({ name: 'connected-shapes.json', mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify({ ...document, meta: { ...document.meta, title } })) });
     await page.waitForFunction(value => window.__nds_diagramStore.getState().diagram.meta.title === value, title);

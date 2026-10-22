@@ -197,7 +197,7 @@ export function CaptureLayer() {
  * The header entry point. Renders nothing at all when the feature is off, so
  * the prod bundle keeps the exact export group it had.
  */
-export function ScreenshotButton() {
+export function ScreenshotButton({ menuItem = false }: { menuItem?: boolean } = {}) {
   const t = useT();
   const startCapture = useImagesUi((s) => s.startCapture);
   const busy = useImagesUi((s) => s.busy);
@@ -205,11 +205,14 @@ export function ScreenshotButton() {
   return (
     <button
       type="button"
+      role={menuItem ? 'menuitem' : undefined}
+      tabIndex={menuItem ? -1 : undefined}
+      aria-label={t('Screenshot')}
       data-nds-screenshot
       disabled={busy}
       onClick={() => startCapture()}
       title={t('Capture part of the diagram into Notes')}
-      className={`h-8 px-3 rounded-md text-sm font-medium border transition
+      className={menuItem ? 'nds-menu-item' : `h-8 px-3 rounded-md text-sm font-medium border transition
         whitespace-nowrap shrink-0 inline-flex items-center gap-1.5
         ${busy
           ? 'text-slate-400 border-slate-200 bg-slate-50 cursor-not-allowed'
@@ -218,7 +221,7 @@ export function ScreenshotButton() {
       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4" />
       </svg>
-      {t('Screenshot')}
+      <span className="nds-menu-item-copy"><span>{t('Screenshot')}</span>{menuItem && <small>{t('Select an area of the diagram')}</small>}</span>
     </button>
   );
 }

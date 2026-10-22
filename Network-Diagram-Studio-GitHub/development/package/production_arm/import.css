@@ -1,22 +1,12 @@
 #nds-arm-open {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   cursor: pointer;
 }
 #nds-arm-open:focus-visible, #nds-arm-dialog :focus-visible {
   outline: 3px solid var(--nds-accent-text, #0078d4);
   outline-offset: 3px;
-}
-#nds-arm-open .nds-arm-short { display: none; }
-@media (max-width: 1439px) {
-  #nds-arm-open .nds-arm-long { display: none; }
-  #nds-arm-open .nds-arm-short { display: inline; }
-}
-@media (max-width: 1100px) {
-  #nds-arm-open { position: sticky; left: 0; z-index: 1; align-self: center; }
-  #nds-arm-open .nds-arm-long { display: inline; }
-  #nds-arm-open .nds-arm-short { display: none; }
 }
 #nds-arm-dialog {
   position: fixed;

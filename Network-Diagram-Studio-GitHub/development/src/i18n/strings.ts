@@ -7,6 +7,8 @@ import { PALETTE_ORDER_DICT } from './strings-palette-order';
 import { TAB_ORDER_DICT } from './strings-tab-order';
 import { UPDATES_DICT } from './strings-updates';
 import { SHAPE_TEXT_DICT } from './strings-shape-text';
+import { WORKSPACE_DICT } from './strings-workspace';
+import { SCREENSHOT_DICT } from './strings-screenshot';
 
 /**
  * English source text is the lookup key — see the comment in `useT.ts` for why.
@@ -2740,11 +2742,11 @@ const ko: Dict = {
 /** UI strings merged with the per-resource Details prose from
  *  `strings-knowledge.ts` and the in-app Guide from `strings-guide.ts`. */
 export const DICT: Partial<Record<Exclude<LangCode, 'en'>, Dict>> = {
-  ja: { ...ja, ...KNOWLEDGE_DICT.ja, ...EDGE_KNOWLEDGE_DICT.ja, ...GUIDE_DICT.ja, ...IMPORTED_ICON_DICT.ja, ...PALETTE_ORDER_DICT.ja, ...TAB_ORDER_DICT.ja, ...UPDATES_DICT.ja, ...SHAPE_TEXT_DICT.ja },
-  zh: { ...zh, ...KNOWLEDGE_DICT.zh, ...EDGE_KNOWLEDGE_DICT.zh, ...GUIDE_DICT.zh, ...IMPORTED_ICON_DICT.zh, ...PALETTE_ORDER_DICT.zh, ...TAB_ORDER_DICT.zh, ...UPDATES_DICT.zh, ...SHAPE_TEXT_DICT.zh },
-  es: { ...es, ...KNOWLEDGE_DICT.es, ...EDGE_KNOWLEDGE_DICT.es, ...GUIDE_DICT.es, ...IMPORTED_ICON_DICT.es, ...PALETTE_ORDER_DICT.es, ...TAB_ORDER_DICT.es, ...UPDATES_DICT.es, ...SHAPE_TEXT_DICT.es },
-  pt: { ...pt, ...KNOWLEDGE_DICT.pt, ...EDGE_KNOWLEDGE_DICT.pt, ...GUIDE_DICT.pt, ...IMPORTED_ICON_DICT.pt, ...PALETTE_ORDER_DICT.pt, ...TAB_ORDER_DICT.pt, ...UPDATES_DICT.pt, ...SHAPE_TEXT_DICT.pt },
-  fr: { ...fr, ...KNOWLEDGE_DICT.fr, ...EDGE_KNOWLEDGE_DICT.fr, ...GUIDE_DICT.fr, ...IMPORTED_ICON_DICT.fr, ...PALETTE_ORDER_DICT.fr, ...TAB_ORDER_DICT.fr, ...UPDATES_DICT.fr, ...SHAPE_TEXT_DICT.fr },
-  de: { ...de, ...KNOWLEDGE_DICT.de, ...EDGE_KNOWLEDGE_DICT.de, ...GUIDE_DICT.de, ...IMPORTED_ICON_DICT.de, ...PALETTE_ORDER_DICT.de, ...TAB_ORDER_DICT.de, ...UPDATES_DICT.de, ...SHAPE_TEXT_DICT.de },
-  ko: { ...ko, ...KNOWLEDGE_DICT.ko, ...EDGE_KNOWLEDGE_DICT.ko, ...GUIDE_DICT.ko, ...IMPORTED_ICON_DICT.ko, ...PALETTE_ORDER_DICT.ko, ...TAB_ORDER_DICT.ko, ...UPDATES_DICT.ko, ...SHAPE_TEXT_DICT.ko },
+  ja: { ...ja, ...KNOWLEDGE_DICT.ja, ...EDGE_KNOWLEDGE_DICT.ja, ...GUIDE_DICT.ja, ...IMPORTED_ICON_DICT.ja, ...PALETTE_ORDER_DICT.ja, ...TAB_ORDER_DICT.ja, ...UPDATES_DICT.ja, ...SHAPE_TEXT_DICT.ja, ...WORKSPACE_DICT.ja, ...SCREENSHOT_DICT.ja },
+  zh: { ...zh, ...KNOWLEDGE_DICT.zh, ...EDGE_KNOWLEDGE_DICT.zh, ...GUIDE_DICT.zh, ...IMPORTED_ICON_DICT.zh, ...PALETTE_ORDER_DICT.zh, ...TAB_ORDER_DICT.zh, ...UPDATES_DICT.zh, ...SHAPE_TEXT_DICT.zh, ...WORKSPACE_DICT.zh, ...SCREENSHOT_DICT.zh },
+  es: { ...es, ...KNOWLEDGE_DICT.es, ...EDGE_KNOWLEDGE_DICT.es, ...GUIDE_DICT.es, ...IMPORTED_ICON_DICT.es, ...PALETTE_ORDER_DICT.es, ...TAB_ORDER_DICT.es, ...UPDATES_DICT.es, ...SHAPE_TEXT_DICT.es, ...WORKSPACE_DICT.es, ...SCREENSHOT_DICT.es },
+  pt: { ...pt, ...KNOWLEDGE_DICT.pt, ...EDGE_KNOWLEDGE_DICT.pt, ...GUIDE_DICT.pt, ...IMPORTED_ICON_DICT.pt, ...PALETTE_ORDER_DICT.pt, ...TAB_ORDER_DICT.pt, ...UPDATES_DICT.pt, ...SHAPE_TEXT_DICT.pt, ...WORKSPACE_DICT.pt, ...SCREENSHOT_DICT.pt },
+  fr: { ...fr, ...KNOWLEDGE_DICT.fr, ...EDGE_KNOWLEDGE_DICT.fr, ...GUIDE_DICT.fr, ...IMPORTED_ICON_DICT.fr, ...PALETTE_ORDER_DICT.fr, ...TAB_ORDER_DICT.fr, ...UPDATES_DICT.fr, ...SHAPE_TEXT_DICT.fr, ...WORKSPACE_DICT.fr, ...SCREENSHOT_DICT.fr },
+  de: { ...de, ...KNOWLEDGE_DICT.de, ...EDGE_KNOWLEDGE_DICT.de, ...GUIDE_DICT.de, ...IMPORTED_ICON_DICT.de, ...PALETTE_ORDER_DICT.de, ...TAB_ORDER_DICT.de, ...UPDATES_DICT.de, ...SHAPE_TEXT_DICT.de, ...WORKSPACE_DICT.de, ...SCREENSHOT_DICT.de },
+  ko: { ...ko, ...KNOWLEDGE_DICT.ko, ...EDGE_KNOWLEDGE_DICT.ko, ...GUIDE_DICT.ko, ...IMPORTED_ICON_DICT.ko, ...PALETTE_ORDER_DICT.ko, ...TAB_ORDER_DICT.ko, ...UPDATES_DICT.ko, ...SHAPE_TEXT_DICT.ko, ...WORKSPACE_DICT.ko, ...SCREENSHOT_DICT.ko },
 };

@@ -15,18 +15,21 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
 const jsonBytes = value => JSON.stringify(value, null, 2) + '\n';
 const templates = new Set(['README.md', 'README.txt', 'Network Diagram Studio.bat']);
-const retiredPackageFiles = new Set(['production_arm/import-demo.mp4', 'production_arm/import-demo.jpg']);
+const retiredPackageFiles = new Set([
+  'production_arm/import-demo.mp4', 'production_arm/import-demo.jpg',
+  'production_demo/demo.js', 'production_demo/demo.css', 'production_demo/walkthrough.mp4', 'production_demo/poster.jpg',
+]);
 const allowed = /^(?:index\.html|AGENTS\.md|README\.(?:md|txt)|Network Diagram Studio\.bat|LICENSE|THIRD-PARTY-NOTICES\.txt|(?:production_(?:arm|demo|editor|vendor)|desktop|licenses)\/.+)$/;
 const suite = [
   'test-release-history.cjs', 'test-release-workflow.cjs', 'test-runtime-build.cjs',
   'test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs',
   'test-all-icons-layout.cjs', 'test-settings-bounds.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs',
   'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-tab-order.cjs',
-  'test-canvas-chrome.cjs', 'test-studiofile.cjs', 'test-screenshot-shapes.cjs',
+  'test-canvas-chrome.cjs', 'test-workspace-ui.cjs', 'test-studiofile.cjs', 'test-screenshot-shapes.cjs',
   'test-demo-video.cjs', 'test-arm-import.cjs', 'test-canvas-motion.cjs',
 ];
 export const releaseChecks = [...suite];
-const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-arm-import.cjs'];
+const installedSuite = ['test-production-launcher.cjs', 'test-public-build.cjs', 'test-updates.cjs', 'test-group-header-fields.cjs', 'test-shape-text-format.cjs', 'test-database-shape.cjs', 'test-shape-connector-selection.cjs', 'test-object-selection.cjs', 'test-arm-import.cjs', 'test-demo-video.cjs', 'test-workspace-ui.cjs', 'test-screenshot-shapes.cjs'];
 
 function localPath(base, relative) {
   if (!relative || relative.includes('\\') || relative.split('/').some(part => !part || part === '.' || part === '..')) {

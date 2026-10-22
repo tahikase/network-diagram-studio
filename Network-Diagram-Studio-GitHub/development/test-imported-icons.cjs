@@ -4,6 +4,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const os = require('node:os');
 const { chromium } = require('playwright');
+const { openHeaderMenu, clickHeaderAction } = require('./test-header-menu-helper.cjs');
 
 const ENTRY = path.resolve(process.argv.find(arg => arg.endsWith('.html')) || path.join(__dirname, '..', 'index.html'));
 const DIST = path.dirname(ENTRY);
@@ -19,6 +20,7 @@ let browser;
 
 async function boot(options = {}) {
   const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, acceptDownloads: true });
+  await context.addInitScript(version => localStorage.setItem('nds.updates.seen.v1', version), require('./src/updates/release-history.json')[0].version);
   if (!options.portable) await context.route('**/*', route => {
     const url = new URL(route.request().url());
     if (url.hostname !== 'icons.nds.test') {
@@ -80,6 +82,7 @@ async function openSection(page, section) {
 }
 async function download(page, title) {
   const pending = page.waitForEvent('download');
+  if (title.startsWith('Export the full diagram')) await openHeaderMenu(page, 'export');
   await page.getByTitle(title, { exact: true }).click();
   const result = await pending;
   const chunks = [];
@@ -221,7 +224,7 @@ async function clearIconStorage(page) {
 }
 async function loadFile(page, saved) {
   const pending = page.waitForEvent('filechooser');
-  await page.getByTitle('Load a diagram from JSON', { exact: true }).click();
+  await clickHeaderAction(page, 'Load JSON');
   await (await pending).setFiles(file('shared-icons.json', JSON.stringify(saved), 'application/json'));
   await page.waitForFunction(count => window.__nds_diagramStore.getState().diagram.nodes.length === count, saved.nodes.length);
   await settle(page);

@@ -173,7 +173,7 @@ async function checkFeedbackClicks(page, edition) {
   ok(bytes.length > 1_000_000, 'it contains the full application bundle, not a stub', bytes.length);
   const references = [...bytes.matchAll(/<(?:script|link)\b[^>]*(?:src|href)="(\.\/production_[^"]+)"/g)]
     .map(match => match[1]);
-  ok(references.length === 30 && new Set(references).size === 30, 'all 30 local runtime references occur exactly once');
+  ok(references.length === 28 && new Set(references).size === 28, 'all 28 local runtime references occur exactly once');
   for (const reference of references) {
     const relative = reference.split('?')[0].slice(2);
     ok(fs.existsSync(path.join(PACKAGE, relative)), 'packaged dependency exists: ' + relative);

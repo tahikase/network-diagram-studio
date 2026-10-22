@@ -22,6 +22,7 @@
 // looks safe. Subscription IDs and tenant names get destroyed, not covered.
 
 import { INK_HEX } from '../theme/palette';
+import { MIN_FIT_PX } from '../model/text-metrics';
 
 export type ShapeKind =
   | 'arrow' | 'rect' | 'ellipse' | 'highlight' | 'text' | 'counter' | 'callout';
@@ -75,6 +76,7 @@ export interface CalloutShape extends ShapeBase {
   ty: number;
   text: string;
   size: number;
+  fontSize?: number;
   width: number;
 }
 
@@ -92,6 +94,7 @@ export interface TextShape extends ShapeBase {
   y: number;
   text: string;
   size: number;
+  fontSize?: number;
 }
 
 export interface CounterShape extends ShapeBase {
@@ -100,11 +103,20 @@ export interface CounterShape extends ShapeBase {
   y: number;
   n: number;
   size: number;
+  fontSize?: number;
 }
 
 export type Shape =
   | ArrowShape | BoxShape | EllipseShape | HighlightShape
   | TextShape | CounterShape | CalloutShape;
+
+export function hasTextSize(s: Shape | undefined): s is TextShape | CounterShape | CalloutShape {
+  return s?.kind === 'text' || s?.kind === 'counter' || s?.kind === 'callout';
+}
+
+export function annotationTextSize(s: TextShape | CounterShape | CalloutShape): number {
+  return s.fontSize ?? (s.kind === 'counter' ? s.size * 0.82 : s.size);
+}
 
 /** Shapes stored as an axis-aligned box, and therefore resized the same way. */
 export type BoxyShape = BoxShape | EllipseShape | HighlightShape | CalloutShape;
@@ -166,18 +178,19 @@ export function boundsOf(s: Shape, ctx?: CanvasRenderingContext2D): Box {
       return { x: s.x, y: s.y, w: s.w, h: s.h };
     case 'text': {
       const lines = s.text.split('\n');
+      const size = annotationTextSize(s);
       let wide = 0;
       if (ctx) {
         ctx.save();
-        ctx.font = textFont(s.size);
+        ctx.font = textFont(size);
         for (const ln of lines) wide = Math.max(wide, ctx.measureText(ln).width);
         ctx.restore();
       } else {
         // Rough fallback when no context is to hand; only used for hit tests
         // before the first paint.
-        for (const ln of lines) wide = Math.max(wide, ln.length * s.size * 0.55);
+        for (const ln of lines) wide = Math.max(wide, ln.length * size * 0.55);
       }
-      return { x: s.x, y: s.y, w: Math.max(wide, s.size), h: lines.length * s.size * 1.25 };
+      return { x: s.x, y: s.y, w: Math.max(wide, size), h: lines.length * size * 1.25 };
     }
     case 'counter': {
       const r = s.size * 0.75;
@@ -402,17 +415,18 @@ function paintArrow(ctx: CanvasRenderingContext2D, s: ArrowShape): void {
 }
 
 function paintText(ctx: CanvasRenderingContext2D, s: TextShape): void {
-  ctx.font = textFont(s.size);
+  const size = annotationTextSize(s);
+  ctx.font = textFont(size);
   ctx.textBaseline = 'top';
   ctx.fillStyle = s.color;
   // A thin halo in the opposite luminance keeps a callout readable over both
   // a white card and a dark canvas without the user having to think about it.
   ctx.strokeStyle = isDark(s.color) ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,42,0.75)';
-  ctx.lineWidth = Math.max(2, s.size * 0.08);
+  ctx.lineWidth = Math.max(2, size * 0.08);
   ctx.lineJoin = 'round';
   const lines = s.text.split('\n');
   lines.forEach((ln, i) => {
-    const y = s.y + i * s.size * 1.25;
+    const y = s.y + i * size * 1.25;
     if (ln) {
       ctx.strokeText(ln, s.x, y);
       ctx.fillText(ln, s.x, y);
@@ -429,11 +443,19 @@ function paintCounter(ctx: CanvasRenderingContext2D, s: CounterShape): void {
   ctx.lineWidth = Math.max(2, r * 0.12);
   ctx.strokeStyle = isDark(s.color) ? 'rgba(255,255,255,0.9)' : 'rgba(15,23,42,0.85)';
   ctx.stroke();
-  ctx.font = textFont(s.size * 0.82);
+  const label = String(s.n);
+  const preferredSize = annotationTextSize(s);
+  ctx.font = textFont(preferredSize);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  const metrics = ctx.measureText(label);
+  const halfWidth = Math.max(metrics.width / 2, metrics.actualBoundingBoxLeft, metrics.actualBoundingBoxRight);
+  const halfHeight = Math.max(metrics.actualBoundingBoxAscent, metrics.actualBoundingBoxDescent);
+  const availableRadius = Math.max(1, r - ctx.lineWidth / 2 - 2 - r * 0.04);
+  const fit = Math.min(1, availableRadius / Math.max(1, Math.hypot(halfWidth, halfHeight)));
+  ctx.font = textFont(preferredSize * fit);
   ctx.fillStyle = isDark(s.color) ? '#ffffff' : '#0f172a';
-  ctx.fillText(String(s.n), s.x, s.y + r * 0.04);
+  ctx.fillText(label, s.x, s.y + r * 0.04);
   ctx.textAlign = 'start';
   ctx.textBaseline = 'alphabetic';
 }
@@ -465,21 +487,64 @@ function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
   ctx.closePath();
 }
 
-/** Greedy word wrap to a pixel width, honouring explicit newlines first. */
+const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+/** Wrap words and unbroken identifiers without splitting Unicode graphemes. */
 export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const out: string[] = [];
-  for (const para of text.split('\n')) {
+  for (const para of text.replace(/\r\n?/g, '\n').split('\n')) {
     const words = para.split(/\s+/).filter(Boolean);
     if (!words.length) { out.push(''); continue; }
-    let line = words[0];
-    for (let i = 1; i < words.length; i += 1) {
-      const next = `${line} ${words[i]}`;
-      if (ctx.measureText(next).width <= maxWidth) line = next;
-      else { out.push(line); line = words[i]; }
+    let line = '';
+    for (const word of words) {
+      const next = line ? `${line} ${word}` : word;
+      if (ctx.measureText(next).width <= maxWidth) { line = next; continue; }
+      if (line) { out.push(line); line = ''; }
+      if (ctx.measureText(word).width <= maxWidth) { line = word; continue; }
+      for (const { segment } of graphemes.segment(word)) {
+        if (line && ctx.measureText(line + segment).width > maxWidth) {
+          out.push(line);
+          line = segment;
+        } else line += segment;
+      }
     }
     out.push(line);
   }
   return out;
+}
+
+function calloutTextLayout(ctx: CanvasRenderingContext2D, s: CalloutShape) {
+  const pad = Math.max(s.width / 2 + 1, Math.min(Math.max(10, s.width * 2), Math.min(s.w, s.h) / 3));
+  const availableWidth = Math.max(0, s.w - pad * 2);
+  const availableHeight = Math.max(0, s.h - pad * 2);
+  const measure = (size: number) => {
+    ctx.font = textFont(size);
+    const lines = wrapText(ctx, s.text, availableWidth);
+    let ascent = size * 0.8, descent = size * 0.2, width = 0;
+    for (const line of lines) {
+      const m = ctx.measureText(line);
+      width = Math.max(width, m.width, m.actualBoundingBoxLeft * 2, m.actualBoundingBoxRight * 2);
+      ascent = Math.max(ascent, m.actualBoundingBoxAscent);
+      descent = Math.max(descent, m.actualBoundingBoxDescent);
+    }
+    const step = Math.max(size * 1.22, ascent + descent);
+    return { size, lines, ascent, step, width, height: ascent + descent + (lines.length - 1) * step };
+  };
+  const fits = (layout: ReturnType<typeof measure>) =>
+    layout.width <= availableWidth && layout.height <= availableHeight;
+  const preferredSize = annotationTextSize(s);
+  let layout = measure(preferredSize);
+  if (!fits(layout)) {
+    let low = Math.min(MIN_FIT_PX, preferredSize), high = preferredSize;
+    layout = measure(low);
+    while (high - low > 1) {
+      const mid = Math.floor((low + high) / 2);
+      const next = measure(mid);
+      if (fits(next)) { layout = next; low = mid; }
+      else high = mid;
+    }
+  }
+  return { ...layout, pad, availableWidth, availableHeight };
 }
 
 function paintEllipse(ctx: CanvasRenderingContext2D, s: EllipseShape): void {
@@ -508,6 +573,7 @@ function paintCallout(ctx: CanvasRenderingContext2D, s: CalloutShape): void {
   const overX = s.tx < s.x ? s.x - s.tx : s.tx > s.x + s.w ? s.tx - (s.x + s.w) : 0;
   const overY = s.ty < s.y ? s.y - s.ty : s.ty > s.y + s.h ? s.ty - (s.y + s.h) : 0;
   const vertical = overY >= overX;
+  const hasTail = overX > 0 || overY > 0;
   let a: { x: number; y: number };
   let b: { x: number; y: number };
   if (vertical) {
@@ -527,13 +593,15 @@ function paintCallout(ctx: CanvasRenderingContext2D, s: CalloutShape): void {
   ctx.strokeStyle = s.color;
   ctx.lineWidth = s.width;
 
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.lineTo(s.tx, s.ty);
-  ctx.lineTo(b.x, b.y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  if (hasTail) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(s.tx, s.ty);
+    ctx.lineTo(b.x, b.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
 
   roundRectPath(ctx, s.x, s.y, s.w, s.h, r);
   ctx.fill();
@@ -541,22 +609,28 @@ function paintCallout(ctx: CanvasRenderingContext2D, s: CalloutShape): void {
 
   // Erase the bubble border where the tail joins it, so the two read as one
   // outline rather than a triangle stuck onto a box.
-  ctx.beginPath();
-  ctx.moveTo(a.x + (vertical ? 3 : 0), a.y + (vertical ? 0 : 3));
-  ctx.lineTo(b.x - (vertical ? 3 : 0), b.y - (vertical ? 0 : 3));
-  ctx.strokeStyle = fill;
-  ctx.lineWidth = s.width + 2;
-  ctx.stroke();
+  if (hasTail) {
+    ctx.beginPath();
+    ctx.moveTo(a.x + (vertical ? 3 : 0), a.y + (vertical ? 0 : 3));
+    ctx.lineTo(b.x - (vertical ? 3 : 0), b.y - (vertical ? 0 : 3));
+    ctx.strokeStyle = fill;
+    ctx.lineWidth = s.width + 2;
+    ctx.stroke();
+  }
 
-  ctx.font = textFont(s.size);
   ctx.fillStyle = ink;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const pad = Math.max(10, s.width * 2);
-  const lines = wrapText(ctx, s.text, Math.max(s.w - pad * 2, 20));
-  const step = s.size * 1.22;
-  const top = s.y + s.h / 2 - ((lines.length - 1) * step) / 2;
-  lines.forEach((ln, i) => ctx.fillText(ln, s.x + s.w / 2, top + i * step));
+  ctx.textBaseline = 'alphabetic';
+  const layout = calloutTextLayout(ctx, s);
+  ctx.font = textFont(layout.size);
+  const top = s.y + (s.h - layout.height) / 2 + layout.ascent;
+  // A final guard for boxes too small even at the shared minimum font size.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(s.x + layout.pad, s.y + layout.pad, layout.availableWidth, layout.availableHeight);
+  ctx.clip();
+  layout.lines.forEach((ln, i) => ctx.fillText(ln, s.x + s.w / 2, top + i * layout.step));
+  ctx.restore();
   ctx.textAlign = 'start';
   ctx.textBaseline = 'alphabetic';
 }

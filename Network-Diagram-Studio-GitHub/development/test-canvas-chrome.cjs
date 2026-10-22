@@ -7,6 +7,7 @@ const { chromium } = require('playwright');
 
 const targets = {
   fullscreen: '[data-nds-fullscreen]',
+  canvas: '[data-nds-menu-trigger="canvas-background"]',
   toolbar: '[data-nds-annotation-toolbar]',
   tabs: '[data-nds-tabbar]',
   notes: '[data-nds-notes-open]',
@@ -182,7 +183,7 @@ async function verify(browser, entry, index) {
       await page.evaluate(theme => window.__nds_themeStore.getState().setPref(theme), theme);
       await page.mouse.move(4, 4); await settle(page);
       const resting = await expectSurfaces(page);
-      assert.equal(await page.locator('.nds-canvas-chrome').count(), 4);
+      assert.equal(await page.locator('.nds-canvas-chrome').count(), 5);
       const children = await styles(page, {
         tool: '[data-nds-tool="pan"]', chevron: '[data-nds-style-chevron]',
         tab: '[data-nds-tab][aria-selected="false"]', selectedTab: '[data-nds-tab][aria-selected="true"]',
@@ -233,7 +234,7 @@ async function verify(browser, entry, index) {
     await page.waitForFunction(() => !document.fullscreenElement);
     await settle(page);
     await page.setViewportSize({ width: 1000, height: 850 }); await settle(page);
-    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-tabbar]')));
+    assert(await page.locator('#nds-arm-open').evaluate(el => el.parentElement.matches('[data-nds-arm-menu]')));
     const grip = page.locator('[data-nds-dock-grip]');
     for (const [key, edge] of [['ArrowLeft', 'left'], ['ArrowDown', 'bottom'], ['ArrowRight', 'right'], ['ArrowUp', 'top']]) {
       await grip.focus(); await page.keyboard.press(key); await settle(page);
@@ -257,7 +258,7 @@ async function verify(browser, entry, index) {
     await page.locator(`[data-nds-tab="${first}"]`).click({ position: { x: 25, y: 17 } });
     await settle(page);
     assert.deepEqual(await savedDocument(page), saved, 'Tool styling and its interactions never enter the saved diagram.');
-    console.log(`PASS ${label}: native fullscreen, compact ARM layout, all toolbar docks, eight languages, undo, tab creation and unchanged JSON`);
+    console.log(`PASS ${label}: native fullscreen, compact File menu, all toolbar docks, eight languages, undo, tab creation and unchanged JSON`);
     await page.mouse.move(4, 4);
     await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] });
     assert(await page.evaluate(() => matchMedia('(prefers-reduced-transparency: reduce)').matches));

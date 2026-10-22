@@ -23,7 +23,7 @@
   --nds-degraded: #d97706;
   --nds-broken: #dc2626;
   --nds-unknown: #94a3b8;
-  --nds-grid: #e2e8f0;
+  --nds-grid: #94a3b8;
 
   /* Canvas surfaces. Split out from the chrome tokens above because a node
      card floating on the canvas and a docked side panel need to sit at
@@ -555,7 +555,7 @@ html[data-theme='dark'] {
   --nds-accent: #2563eb;
   --nds-accent-soft: rgba(37, 99, 235, 0.18);
   --nds-accent-text: #7cb8ff;
-  --nds-grid: #1e2b3d;
+  --nds-grid: #64748b;
 
   --nds-node-bg: #202d40;
   --nds-node-border: #42556e;
@@ -1064,4 +1064,159 @@ html[data-theme] .nds-canvas-chrome[data-nds-notes-open]:hover {
     --nds-chrome-hover-opacity: 100%;
     --nds-chrome-filter: none;
   }
+}
+
+:root {
+  --nds-grid-line: #e2e8f0;
+  --nds-grid-major: #cbd5e1;
+}
+html[data-theme='dark'] {
+  --nds-grid-line: #26364c;
+  --nds-grid-major: #31445e;
+}
+
+.nds-workspace-header { position: relative; z-index: 70; }
+.nds-header-title { height: 32px; }
+.nds-header-quick-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 0 10px;
+  border-left: 1px solid var(--nds-border);
+  border-right: 1px solid var(--nds-border);
+}
+.nds-header-button, .nds-menu-trigger, .nds-canvas-view-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 6px 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.nds-header-button, .nds-workspace-header .nds-menu-trigger {
+  background: var(--nds-panel);
+  color: var(--color-slate-700);
+  border-color: var(--color-slate-300);
+}
+.nds-header-button:enabled:hover, .nds-workspace-header .nds-menu-trigger:hover {
+  background: var(--color-slate-100);
+}
+.nds-header-button:disabled {
+  color: var(--color-slate-400);
+  border-color: var(--nds-border);
+  background: var(--nds-bg);
+  cursor: not-allowed;
+}
+.nds-header-button.nds-header-save, .nds-header-button.nds-header-save:hover {
+  background: var(--nds-accent);
+  border-color: var(--nds-accent);
+  color: #fff;
+}
+.nds-header-button.nds-header-save:hover { filter: brightness(1.08); }
+.nds-header-button svg, .nds-menu-trigger svg, .nds-menu-item > svg, .nds-canvas-view-button > svg { flex-shrink: 0; }
+.nds-header-button:focus-visible, .nds-menu-trigger:focus-visible, .nds-menu-item:focus-visible {
+  outline: 2px solid var(--nds-accent-text);
+  outline-offset: 2px;
+}
+.nds-header-utilities [data-nds-autosave-indicator] > button,
+.nds-header-utilities [data-nds-settings-button] { height: 32px; }
+[data-nds-feedback-slot] { display: inline-flex; }
+
+.nds-command-menu { position: relative; }
+.nds-command-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 80;
+  width: max-content;
+  min-width: 248px;
+  max-width: min(360px, calc(100vw - 32px));
+  max-height: min(520px, calc(100vh - 96px));
+  overflow-y: auto;
+  padding: 7px;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 10px;
+  background: var(--nds-panel);
+  color: var(--nds-text);
+  box-shadow: 0 10px 28px rgb(15 23 42 / 18%);
+}
+.nds-command-popup[hidden] { display: none !important; }
+.nds-menu-heading {
+  padding: 6px 8px;
+  color: var(--nds-text-dim);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.nds-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 48px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-slate-700);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+}
+.nds-menu-item-copy { display: block; min-width: 0; }
+.nds-menu-item-copy > span, .nds-menu-item-copy > small { display: block; }
+.nds-menu-item-copy > small { margin-top: 2px; color: var(--nds-text-dim); font-size: 11px; font-weight: 400; line-height: 16px; }
+.nds-menu-item:enabled:hover, .nds-menu-item:focus-visible, .nds-menu-item[aria-checked='true'] { background: var(--nds-accent-soft); }
+.nds-menu-item[aria-checked='true'] { border-color: color-mix(in srgb, var(--nds-accent-text) 30%, transparent); }
+.nds-menu-item:disabled { opacity: .5; cursor: not-allowed; }
+.nds-menu-check { margin-left: auto; padding-left: 8px; color: var(--nds-accent-text); font-size: 19px; }
+.nds-menu-separator { margin: 6px -7px; border-top: 1px solid var(--nds-border); }
+.nds-menu-footer { margin: 7px -7px -7px; padding: 10px 15px; border-top: 1px solid var(--nds-border); color: var(--nds-text-dim); font-size: 10px; line-height: 16px; }
+.nds-menu-storage-error { max-width: 300px; margin: 7px 0 0; padding: 8px; color: var(--nds-broken); font-size: 11px; line-height: 16px; }
+.nds-workspace-header .nds-menu-trigger[aria-expanded='true'],
+.nds-canvas-view-button[aria-expanded='true'] { border-color: var(--nds-accent-text); color: var(--nds-accent-text); }
+
+.react-flow__panel.nds-canvas-view-controls {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(136px, 1fr));
+  gap: 8px;
+  width: max-content;
+  z-index: 45;
+}
+.nds-canvas-view-button { width: 100%; color: var(--color-slate-700); }
+.nds-background-swatch {
+  display: block;
+  width: 39px;
+  height: 29px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 4px;
+  background-color: var(--nds-bg);
+}
+.nds-background-swatch-dots { background-image: radial-gradient(var(--nds-grid) 1px, transparent 1px); background-size: 9px 9px; }
+.nds-background-swatch-grid {
+  background-image: linear-gradient(var(--nds-grid-major) 1px, transparent 1px), linear-gradient(90deg, var(--nds-grid-major) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+
+@media (max-width: 1200px) {
+  .nds-workspace-header { gap: 8px; padding-left: 12px; padding-right: 12px; }
+  .nds-header-quick-actions { padding-left: 8px; padding-right: 8px; }
+}
+@media (forced-colors: active) {
+  .nds-header-button.nds-header-save { background: Highlight; color: HighlightText; border-color: Highlight; }
+  .nds-menu-item[aria-checked='true'] { outline: 1px solid Highlight; }
 }
