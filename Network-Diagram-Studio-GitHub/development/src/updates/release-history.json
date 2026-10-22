@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.9.146",
+    "date": "2026-10-22",
+    "category": "Appearance",
+    "title": "Same-size Grid and Dots at every zoom.",
+    "description": "Grid spacing, dot spacing and dot size stay constant when zooming, using Fit or reopening a diagram.",
+    "before": {
+      "file": "0.9.146-before.png",
+      "version": "0.9.145",
+      "caption": "Grid (top) and Dots (bottom) before fixed sizing"
+    },
+    "after": {
+      "file": "0.9.146-after.png",
+      "version": "0.9.146",
+      "caption": "Grid (top) and Dots (bottom) at consistent screen sizes"
+    },
+    "note": "Grid remains the default. Saved background choices, diagram objects and snapping are unchanged."
+  },
+  {
     "version": "0.9.144",
     "date": "2026-10-21",
     "category": "Usability",

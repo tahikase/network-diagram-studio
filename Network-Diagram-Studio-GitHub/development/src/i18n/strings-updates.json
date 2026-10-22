@@ -1,4 +1,49 @@
 {
+  "Same-size Grid and Dots at every zoom.": {
+    "ja": "ズームしてもグリッドとドットの大きさを一定に。",
+    "zh": "网格和圆点在任何缩放级别保持相同大小。",
+    "es": "Cuadrícula y puntos del mismo tamaño con cualquier zoom.",
+    "pt": "Grade e pontos com o mesmo tamanho em qualquer zoom.",
+    "fr": "Grille et points de taille constante à chaque zoom.",
+    "de": "Raster und Punkte bleiben bei jedem Zoom gleich groß.",
+    "ko": "확대·축소해도 격자와 점 크기가 일정합니다."
+  },
+  "Grid spacing, dot spacing and dot size stay constant when zooming, using Fit or reopening a diagram.": {
+    "ja": "拡大・縮小、全体表示、図の再読み込みをしても、グリッドの間隔、ドットの間隔と大きさは変わりません。",
+    "zh": "缩放、适应窗口或重新打开图表时，网格间距、圆点间距和大小保持不变。",
+    "es": "El espaciado de la cuadrícula y los puntos y el tamaño de los puntos no cambian al usar zoom, ajustar la vista o reabrir un diagrama.",
+    "pt": "O espaçamento da grade e dos pontos e o tamanho dos pontos não mudam ao ampliar, ajustar a visualização ou reabrir um diagrama.",
+    "fr": "L'espacement de la grille et des points et la taille des points restent constants lors du zoom, de l'ajustement ou de la réouverture d'un diagramme.",
+    "de": "Rasterabstände, Punktabstände und Punktgröße bleiben beim Zoomen, Einpassen und erneuten Öffnen eines Diagramms konstant.",
+    "ko": "확대·축소, 맞춤 보기 또는 다이어그램을 다시 열어도 격자 간격, 점 간격과 크기가 유지됩니다."
+  },
+  "Grid (top) and Dots (bottom) before fixed sizing": {
+    "ja": "大きさを一定にする前のグリッド（上）とドット（下）",
+    "zh": "固定大小前的网格（上）和圆点（下）",
+    "es": "Cuadrícula (arriba) y puntos (abajo) antes del tamaño fijo",
+    "pt": "Grade (acima) e pontos (abaixo) antes do tamanho fixo",
+    "fr": "Grille (en haut) et points (en bas) avant la taille fixe",
+    "de": "Raster (oben) und Punkte (unten) vor der festen Größe",
+    "ko": "크기 고정 전 격자(위)와 점(아래)"
+  },
+  "Grid (top) and Dots (bottom) at consistent screen sizes": {
+    "ja": "画面上の大きさが一定のグリッド（上）とドット（下）",
+    "zh": "屏幕大小保持不变的网格（上）和圆点（下）",
+    "es": "Cuadrícula (arriba) y puntos (abajo) con tamaño constante en pantalla",
+    "pt": "Grade (acima) e pontos (abaixo) com tamanho constante na tela",
+    "fr": "Grille (en haut) et points (en bas) de taille constante à l'écran",
+    "de": "Raster (oben) und Punkte (unten) mit konstanter Bildschirmgröße",
+    "ko": "화면 크기가 일정한 격자(위)와 점(아래)"
+  },
+  "Grid remains the default. Saved background choices, diagram objects and snapping are unchanged.": {
+    "ja": "既定の背景は引き続きグリッドです。保存済みの背景設定、図のオブジェクト、スナップは変わりません。",
+    "zh": "默认背景仍为网格。已保存的背景选择、图表对象和吸附行为不变。",
+    "es": "La cuadrícula sigue siendo el fondo predeterminado. No cambian las preferencias guardadas, los objetos ni el ajuste.",
+    "pt": "A grade continua sendo o padrão. As preferências salvas, os objetos e o encaixe permanecem inalterados.",
+    "fr": "La grille reste le fond par défaut. Les préférences enregistrées, les objets et l'alignement automatique ne changent pas.",
+    "de": "Raster bleibt der Standard. Gespeicherte Hintergrundauswahl, Diagrammobjekte und Einrasten bleiben unverändert.",
+    "ko": "기본 배경은 계속 격자입니다. 저장된 배경 선택, 다이어그램 개체와 맞춤 동작은 변경되지 않습니다."
+  },
   "More control in the Screenshot editor.": {
     "ja": "スクリーンショット編集の操作が充実しました。",
     "zh": "截图编辑器提供更多控制。",

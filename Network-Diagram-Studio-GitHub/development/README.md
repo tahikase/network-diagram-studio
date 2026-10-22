@@ -124,6 +124,11 @@ does not change snapping. Grid is the initial default; saved background choices
 remain unchanged. Settings retains the Guide and keyboard shortcuts without a
 demo-video player or bundled movie.
 
+Grid spacing stays at 18 CSS pixels, with a major line every 90 pixels.
+Dots stay 30 pixels apart and 4 pixels across. Native canvas zoom, pan, Fit
+and diagram recovery keep those screen sizes; browser zoom still scales the
+whole page normally. These backgrounds do not define diagram snapping.
+
 ## Screenshot editor
 
 The compact annotation toolbar includes separate 8-512px Text size controls for

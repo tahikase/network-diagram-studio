@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.9.146",
+    "date": "2026-10-22",
+    "kind": "ui",
+    "userImpact": "Introduce the requested constant on-screen background sizing at every supported canvas zoom, including Fit and recovered diagrams. Grid uses 18px subdivisions and 90px major lines; Dots uses 30px spacing and 4px diameter. This deliberately changes the presentation from zoom-dependent sizing while retaining Grid as the default, stored background choices, diagram objects and snapping."
+  },
+  {
     "version": "0.9.145",
     "date": "2026-10-22",
     "kind": "fix",

@@ -279,16 +279,15 @@ async function main(browser) {
       await page.keyboard.press('Escape');
     }
     const patterns = await page.locator('.react-flow__background').evaluateAll(elements => {
-      const zoom = new DOMMatrix(getComputedStyle(document.querySelector('.react-flow__viewport')).transform).a;
       return elements.map(el => ({
         id: el.querySelector('pattern').id,
-        gap: Number(el.querySelector('pattern').getAttribute('width')) / zoom,
+        gap: Number(el.querySelector('pattern').getAttribute('width')),
         lines: Boolean(el.querySelector('pattern path')),
         transparent: getComputedStyle(el).backgroundColor === 'rgba(0, 0, 0, 0)',
       }));
     });
     assert.equal(new Set(patterns.map(pattern => pattern.id)).size, 2);
-    assert.deepEqual(patterns.map(pattern => pattern.gap), [24, 120]);
+    assert(patterns.every((pattern, index) => Math.abs(pattern.gap - [18, 90][index]) < .001));
     assert(patterns.every(pattern => pattern.lines) && patterns[1].transparent, 'Minor and major native grid lines are both visible');
     assert.deepEqual(JSON.parse((await downloaded(page, 'Save JSON')).toString()), saved);
     const png = await downloaded(page, 'PNG'), svg = (await downloaded(page, 'SVG')).toString();
@@ -432,7 +431,30 @@ async function backgroundVisibility(browser) {
     await page.mouse.move(4, 4);
     await settle(page);
   };
-  const pixels = async (dots, blank) => page.evaluate(async images => {
+  const geometry = () => page.locator('.react-flow__background').evaluateAll(elements => {
+    const camera = new DOMMatrix(getComputedStyle(document.querySelector('.react-flow__viewport')).transform);
+    return {
+      zoom: camera.a, x: camera.e, y: camera.f,
+      patterns: elements.map(el => {
+        const pattern = el.querySelector('pattern'), circle = pattern.querySelector('circle');
+        return {
+          spacing: Number(pattern.getAttribute('width')), height: Number(pattern.getAttribute('height')),
+          x: Number(pattern.getAttribute('x')), y: Number(pattern.getAttribute('y')),
+          diameter: circle ? Number(circle.getAttribute('r')) * 2 : null,
+        };
+      }),
+    };
+  });
+  const checkGeometry = (value, style, label) => {
+    const spacing = style === 'grid' ? [18, 90] : [30];
+    assert.equal(value.patterns.length, spacing.length, `${label}: native pattern count`);
+    value.patterns.forEach((pattern, index) => {
+      assert(Math.abs(pattern.spacing - spacing[index]) < .001, `${label}: ${style} horizontal spacing stays ${spacing[index]}px`);
+      assert(Math.abs(pattern.height - spacing[index]) < .001, `${label}: ${style} vertical spacing stays ${spacing[index]}px`);
+      if (style === 'dots') assert(Math.abs(pattern.diameter - 4) < .001, `${label}: dots stay 4px across`);
+    });
+  };
+  const pixels = async (background, blank, style) => page.evaluate(async ({ images, style }) => {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d', { willReadFrequently: true });
     const samples = [];
@@ -451,10 +473,23 @@ async function backgroundVisibility(browser) {
       const dot = luminance(samples[0], offset), background = luminance(samples[1], offset);
       const contrast = (Math.max(dot, background) + .05) / (Math.min(dot, background) + .05);
       maximumContrast = Math.max(maximumContrast, contrast);
-      if (contrast >= 1.35) visible++;
+      if (contrast >= (style === 'grid' ? 1.03 : 1.35)) visible++;
     }
-    return { maximumContrast, visibleFraction: visible / (samples[0].length / 4) };
-  }, [dots.toString('base64'), blank.toString('base64')]);
+    const period = style === 'grid' ? 90 : 30, width = canvas.width, height = canvas.height;
+    let difference = 0, comparisons = 0;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const offset = (y * width + x) * 4;
+      for (const shifted of [x + period < width ? offset + period * 4 : -1,
+        y + period < height ? offset + period * width * 4 : -1]) {
+        if (shifted < 0) continue;
+        for (let channel = 0; channel < 3; channel++) {
+          difference += Math.abs(samples[0][offset + channel] - samples[0][shifted + channel]);
+          comparisons++;
+        }
+      }
+    }
+    return { maximumContrast, visibleFraction: visible / (samples[0].length / 4), repeatError: difference / comparisons };
+  }, { images: [background.toString('base64'), blank.toString('base64')], style });
   try {
     await clickHeaderAction(page, 'New');
     assert.equal(await page.locator('.react-flow__node').count(), 0);
@@ -472,39 +507,87 @@ async function backgroundVisibility(browser) {
       ]) {
         const button = page.locator(`.react-flow__controls-zoom${direction}`);
         for (let i = 0; i < count && await button.isEnabled(); i++) await button.click();
-        await choose('dots');
-        const geometry = await page.locator('.react-flow__background').evaluate(el => ({
-          zoom: new DOMMatrix(getComputedStyle(document.querySelector('.react-flow__viewport')).transform).a,
-          spacing: Number(el.querySelector('pattern').getAttribute('width')),
-          diameter: Number(el.querySelector('circle').getAttribute('r')) * 2,
-          color: getComputedStyle(el.querySelector('circle')).fill,
-        }));
-        assert(geometry.zoom >= minimum && geometry.zoom <= maximum, `${theme}/${level}: native zoom reaches the intended range`);
-        const before = await state(page);
-        const dots = await page.screenshot({ clip, animations: 'disabled' });
-        if (evidence) {
-          fs.writeFileSync(path.join(evidence, `${theme}-dots-${level}.png`), dots);
-          if (level === 'normal') await page.screenshot({
-            path: path.join(evidence, `${theme}-dots-controls.png`),
-            clip: { x: canvas.x, y: canvas.y, width: 700, height: 300 }, animations: 'disabled',
+        for (const style of ['grid', 'dots']) {
+          await choose(style);
+          const initial = await geometry();
+          assert(initial.zoom >= minimum && initial.zoom <= maximum, `${theme}/${level}: native zoom reaches the intended range`);
+          checkGeometry(initial, style, `${theme}/${level}`);
+          await page.mouse.move(canvas.x + canvas.width * .7, canvas.y + canvas.height * .6);
+          await page.mouse.down({ button: 'middle' });
+          await page.mouse.move(canvas.x + canvas.width * .7 + 37, canvas.y + canvas.height * .6 + 29, { steps: 5 });
+          await page.mouse.up({ button: 'middle' });
+          await settle(page);
+          const panned = await geometry();
+          checkGeometry(panned, style, `${theme}/${level}/pan`);
+          assert(Math.abs(panned.x - initial.x - 37) < .01 && Math.abs(panned.y - initial.y - 29) < .01,
+            `${theme}/${level}: native middle-drag moves the camera`);
+          panned.patterns.forEach((pattern, index) => {
+            for (const [axis, delta] of [['x', 37], ['y', 29]]) {
+              const remainder = (pattern[axis] - initial.patterns[index][axis] - delta) % pattern.spacing;
+              assert(Math.min(Math.abs(remainder), pattern.spacing - Math.abs(remainder)) < .01,
+                `${theme}/${level}: ${style} follows the native pan origin`);
+            }
           });
+          const before = await state(page);
+          const background = await page.screenshot({ clip, animations: 'disabled' });
+          if (evidence) {
+            fs.writeFileSync(path.join(evidence, `${theme}-${style}-${level}.png`), background);
+            if (level === 'normal') await page.screenshot({
+              path: path.join(evidence, `${theme}-${style}-controls.png`),
+              clip: { x: canvas.x, y: canvas.y, width: 700, height: 300 }, animations: 'disabled',
+            });
+          }
+          await choose('blank');
+          const blank = await page.screenshot({ clip, animations: 'disabled' });
+          assert.equal(await state(page), before, `${theme}/${level}: background does not change the document or camera`);
+          const measured = await pixels(background, blank, style);
+          reports.push({ theme, level, style, ...panned, ...measured });
         }
-        await choose('blank');
-        const blank = await page.screenshot({ clip, animations: 'disabled' });
-        assert.equal(await state(page), before, `${theme}/${level}: background does not change the document or camera`);
-        const measured = await pixels(dots, blank);
-        reports.push({ theme, level, ...geometry, ...measured });
       }
     }
+    const wideFixture = { ...fixture, nodes: fixture.nodes.map((node, index) => ({
+      ...node, position: { x: index * 4000, y: index * 1200 },
+    })) };
+    const choosing = page.waitForEvent('filechooser');
+    await clickHeaderAction(page, 'Load JSON');
+    await (await choosing).setFiles({ name: 'wide-background.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(wideFixture)) });
+    await page.waitForFunction(() => window.__nds_diagramStore.getState().diagram.meta.title === 'Workspace controls');
+    await settle(page);
+    const documentState = () => page.evaluate(() => {
+      const store = window.__nds_diagramStore.getState();
+      return JSON.stringify({ diagram: store.diagram, history: store.history, selection: store.selectedNodeIds });
+    });
+    const documentBefore = await documentState();
+    for (const stage of ['load', 'fit', 'recovery']) {
+      if (stage === 'fit') {
+        await page.locator('.react-flow__controls-zoomin').click();
+        await page.locator('.react-flow__controls-fitview').click();
+      } else if (stage === 'recovery') {
+        await page.waitForTimeout(1100);
+        await page.reload();
+        await page.locator('.react-flow__node[data-id="app"]').waitFor();
+      }
+      await settle(page);
+      for (const style of ['grid', 'dots']) {
+        await choose(style);
+        const value = await geometry();
+        assert(value.zoom < .5, `${stage}: wide content is fitted at reduced zoom`);
+        checkGeometry(value, style, stage);
+      }
+      if (stage !== 'recovery') assert.equal(await documentState(), documentBefore, `${stage}: backgrounds and Fit preserve diagram, undo and selection`);
+      else assert.deepEqual(JSON.parse(await documentState()).diagram, JSON.parse(documentBefore).diagram, 'Recovery preserves the loaded diagram');
+    }
     assert.deepEqual(errors, []); assert.deepEqual(external, []);
-    if (evidence) fs.writeFileSync(path.join(evidence, 'dot-visibility.json'), JSON.stringify(reports, null, 2));
+    if (evidence) fs.writeFileSync(path.join(evidence, 'background-sizing.json'), JSON.stringify(reports, null, 2));
     console.log(JSON.stringify(reports, null, 2));
     for (const report of reports) {
-      assert(report.maximumContrast >= 1.8, `${report.theme}/${report.level}: dots must be visibly darker/lighter than Blank`);
-      assert(report.visibleFraction >= .003 && report.visibleFraction <= .08,
-        `${report.theme}/${report.level}: visible dots must not disappear or merge into a solid field`);
+      const grid = report.style === 'grid', label = `${report.theme}/${report.level}/${report.style}`;
+      assert(report.maximumContrast >= (grid ? 1.1 : 1.8), `${label}: background must remain visibly distinct from Blank`);
+      assert(report.visibleFraction >= (grid ? .03 : .003) && report.visibleFraction <= (grid ? .35 : .08),
+        `${label}: background must not disappear or merge into a solid field`);
+      assert(report.repeatError < .5, `${label}: screenshot pixels repeat at the requested screen spacing in both directions`);
     }
-    console.log('PASS canvas dots: screenshot pixels remain distinct from Blank across both themes and the full native zoom range');
+    console.log('PASS canvas backgrounds: fixed 18/90px Grid and 30px/4px Dots through native zoom, pan, Fit, load and recovery; actual screenshot spacing, theme visibility and unchanged diagram state');
   } finally { await context.close(); }
 }
 (async () => {

@@ -44,16 +44,15 @@ export function CanvasBackground() {
   const style = useCanvasBackground(state => state.style);
   const zoom = useStore(state => state.transform[2]);
   if (style === 'blank') return null;
+  // Background scales its inputs with zoom; compensate to keep the reference sizes in screen pixels.
   if (style === 'dots') {
-    // Keep dots at least 2px across and 12px apart on screen without moving their world origin.
-    const size = 2 / Math.min(1, zoom);
-    const spacing = 16 * 2 ** Math.max(0, Math.ceil(Math.log2(12 / (16 * zoom))));
-    return <Background variant={BackgroundVariant.Dots} gap={spacing} size={size} offset={size / 2} color="var(--nds-grid)" />;
+    const size = 4 / zoom;
+    return <Background variant={BackgroundVariant.Dots} gap={30 / zoom} size={size} offset={size / 2} color="var(--nds-grid)" />;
   }
   return (
     <>
-      <Background id="nds-grid-minor" variant={BackgroundVariant.Lines} gap={24} lineWidth={1} color="var(--nds-grid-line)" />
-      <Background id="nds-grid-major" variant={BackgroundVariant.Lines} gap={120} lineWidth={1} color="var(--nds-grid-major)" style={{ backgroundColor: 'transparent' }} />
+      <Background id="nds-grid-minor" variant={BackgroundVariant.Lines} gap={18 / zoom} lineWidth={1} color="var(--nds-grid-line)" />
+      <Background id="nds-grid-major" variant={BackgroundVariant.Lines} gap={90 / zoom} lineWidth={1} color="var(--nds-grid-major)" style={{ backgroundColor: 'transparent' }} />
     </>
   );
 }
